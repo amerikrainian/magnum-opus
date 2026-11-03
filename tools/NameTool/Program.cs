@@ -32,6 +32,8 @@ namespace MagnumOpus.NameTool
                 {
                     case "import": return Import(args.Skip(1).ToArray());
                     case "refgen": return RefGen(args.Skip(1).ToArray());
+                    case "fingerprint": return Check.Fingerprint(args.Skip(1).ToArray());
+                    case "check": return Check.Run(args.Skip(1).ToArray());
                     case "mvid":
                         if (args.Length < 2) return Usage();
                         using (var m = GameNames.ReadModule(args[1])) Console.WriteLine(m.Mvid.ToString("D"));
@@ -51,6 +53,8 @@ namespace MagnumOpus.NameTool
             Console.Error.WriteLine("usage: NameTool import <om_mappings dir> [--out mappings] [--source TEXT]");
             Console.Error.WriteLine("       NameTool mvid <exe>");
             Console.Error.WriteLine("       NameTool refgen --exe <Lightning.exe> [--mappings mappings] --out <ref.exe> [--analysis <named.exe>]");
+            Console.Error.WriteLine("       NameTool fingerprint --exe <Lightning.exe> [--mappings mappings] --out <fingerprint.tsv>");
+            Console.Error.WriteLine("       NameTool check --exe <new Lightning.exe> --fingerprint <fingerprint.tsv> [--mappings mappings] [--old <known Lightning.exe>] [--module <MagnumOpus.Module.dll>]");
             return 1;
         }
 
