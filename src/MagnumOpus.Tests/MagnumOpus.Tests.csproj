@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MagnumOpus.Names\MagnumOpus.Names.csproj" />
+    <ProjectReference Include="..\MagnumOpus.Core\MagnumOpus.Core.csproj" />
+    <ProjectReference Include="..\MagnumOpus.Contracts\MagnumOpus.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="src/MagnumOpus.Contracts/MagnumOpus.Contracts.csproj" />
+  <Project Path="src/MagnumOpus.Core/MagnumOpus.Core.csproj" />
   <Project Path="src/MagnumOpus.Names/MagnumOpus.Names.csproj" />
   <Project Path="src/MagnumOpus.Tests/MagnumOpus.Tests.csproj" />
   <Project Path="tools/NameTool/NameTool.csproj" />
