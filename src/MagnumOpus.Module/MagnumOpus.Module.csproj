@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The RELOADABLE feature module: day-to-day work happens here. Compiles against
+    game\Lightning.named.ref.exe, the game renamed into human names from the community mappings and
+    made public (tools/NameTool refgen, regenerated below when stale); never shipped. At load the
+    host rewrites this assembly's game references to the running build's shipping names
+    (MagnumOpus.Names.Remapper) and [IgnoresAccessChecksTo("Lightning")] lets the CLR bind the
+    publicized references to private game members. A Debug build deploys this dll and Core into the
+    game's MagnumOpus\ folder; POST /reload (or the reload key) swaps them in with the game running.
+  -->
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AssemblyName>MagnumOpus.Module</AssemblyName>
+    <RootNamespace>MagnumOpus.Module</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <NamedRef>$(GameWork)\Lightning.named.ref.exe</NamedRef>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MagnumOpus.Contracts\MagnumOpus.Contracts.csproj" Private="false" />
+    <ProjectReference Include="..\MagnumOpus.Core\MagnumOpus.Core.csproj" />
+    <ProjectReference Include="..\MagnumOpus\MagnumOpus.csproj" Private="false" />
+    <Reference Include="0Harmony">
+      <HintPath>$(ThirdParty)\harmony\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Lightning">
+      <HintPath>$(NamedRef)</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Steamworks.NET">
+      <HintPath>$(GameDir)\Steamworks.NET.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- The compile reference: copy the installed exe when the workspace lacks it, then (re)generate the
+       named reference. NameTool skips the work when the reference is newer than its inputs. -->
+  <Target Name="EnsureNamedRef" BeforeTargets="ResolveAssemblyReferences">
+    <Copy SourceFiles="$(GameDir)\Lightning.exe" DestinationFiles="$(GameWork)\Lightning.orig.exe"
+          Condition="!Exists('$(GameWork)\Lightning.orig.exe') and Exists('$(GameDir)\Lightning.exe')" />
+    <Error Condition="!Exists('$(GameWork)\Lightning.orig.exe')"
+           Text="game\Lightning.orig.exe is missing and the game was not found (GameDir='$(GameDir)'). Install Opus Magnum (community-edition branch) or set MAGNUMOPUS_DIR." />
+    <Exec Command="dotnet run --project &quot;$(RepoRoot)tools\NameTool&quot; -v q -- refgen --exe &quot;$(GameWork)\Lightning.orig.exe&quot; --mappings &quot;$(RepoRoot)mappings&quot; --out &quot;$(NamedRef)&quot;" />
+  </Target>
+
+  <Target Name="DeployModule" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug' and '$(GameDir)' != ''">
+    <ItemGroup>
+      <ModulePayload Include="$(OutputPath)MagnumOpus.Module.dll" />
+      <ModulePayload Include="$(OutputPath)MagnumOpus.Core.dll" />
+      <LangFiles Include="$(RepoRoot)lang\*.txt" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModulePayload)" DestinationFolder="$(ModDataDir)" />
+    <Copy SourceFiles="@(LangFiles)" DestinationFolder="$(ModDataDir)\lang" />
+  </Target>
+
+</Project>
