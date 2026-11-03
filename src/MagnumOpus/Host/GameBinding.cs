@@ -35,7 +35,14 @@ namespace MagnumOpus.Host
             Log.Info("Game assembly: " + game.FullName + ", build " + Mvid);
 
             var sw = Stopwatch.StartNew();
-            var names = NameSources.Load(Mvid, Path.Combine(GameDir, "Lightning.exe"), DataDir);
+            var names = NameSources.Load(Mvid, ExePath, DataDir);
+
+            // A build the release does not bundle: fetch the community's mapping in the background.
+            // When it lands, the module rebinds onto it (or, without a running module, the next launch
+            // uses the cache).
+            if ((names == null || names.Source == "matched") && MappingDownloader.Enabled)
+                MappingDownloader.Start(Mvid, path => Runtime.Post(Rebind));
+
             if (names == null)
             {
                 Log.Error("[names] no names for build " + Mvid + "; the mod cannot bind to this game build.");
@@ -46,6 +53,7 @@ namespace MagnumOpus.Host
             Source = names.Source;
             Log.Info("[names] build " + Mvid + ": " + Table.TypeCount + " types named from the " + Source
                 + " source in " + sw.ElapsedMilliseconds + " ms.");
+            if (Source == "matched") ModHostImpl.Notices.Enqueue(HostNotice.NamesMatched);
 
             if (!GameHooks.Attach())
             {
@@ -53,6 +61,28 @@ namespace MagnumOpus.Host
                 return;
             }
             Runtime.Start();
+        }
+
+        private static string ExePath => Path.Combine(GameDir, "Lightning.exe");
+
+        /// <summary>A community mapping arrived for this build: rebuild the table from it and reload
+        /// the module onto the new names. Main thread (posted from the download thread).</summary>
+        private static void Rebind()
+        {
+            try
+            {
+                var names = NameSources.Load(Mvid, ExePath, DataDir);
+                if (names == null || names.Source == "matched") return;
+                Table = names.Table;
+                Source = names.Source;
+                Log.Info("[names] rebound build " + Mvid + " to the " + Source + " mapping; reloading the module.");
+                ModHostImpl.Notices.Enqueue(HostNotice.MappingUpdated);
+                Runtime.ReloadModule();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[names] rebinding to the downloaded mapping failed; the matched names stay in use", ex);
+            }
         }
 
         /// <summary>A game type by human full name (Outer/Inner), or null.</summary>

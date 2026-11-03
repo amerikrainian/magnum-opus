@@ -12,6 +12,11 @@ namespace MagnumOpus.Host
         private static ModHostImpl _host;
         private static Modularity.ModuleLoader _loader;
         private static bool _tickErrorLogged;
+        private static readonly System.Collections.Concurrent.ConcurrentQueue<Action> Posted =
+            new System.Collections.Concurrent.ConcurrentQueue<Action>();
+
+        /// <summary>Run an action on the game's main thread at the next frame (from any thread).</summary>
+        public static void Post(Action action) => Posted.Enqueue(action);
 
         public static ModHostImpl Host => _host;
         public static Modularity.ModuleLoader Loader => _loader;
@@ -38,6 +43,11 @@ namespace MagnumOpus.Host
 
         public static void TickFrame()
         {
+            while (Posted.TryDequeue(out var action))
+            {
+                try { action(); }
+                catch (Exception ex) { Log.Error("[host] posted action failed", ex); }
+            }
 #if DEBUG
             try { Dev.DevServer.Instance.Pump(); }
             catch (Exception ex) { Log.Error("[host] dev pump failed", ex); }

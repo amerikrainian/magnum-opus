@@ -34,9 +34,12 @@ namespace MagnumOpus.Module
             {
                 _host.LaunchAnnounced = true;
                 Speech.Say(Strings.ModLoaded(_host.ModVersion));
-                if (_impl != null && _impl.Unresolved.Count > 0)
+                // Matched names announce their own count (with the notice); with a community mapping
+                // an unresolved reference is a mod bug, said all the same.
+                if (_impl != null && _impl.NameSource != "matched" && _impl.Unresolved.Count > 0)
                     Speech.Say(Strings.Unmatched(_impl.Unresolved.Count));
             }
+            SpeakHostNotices();
 
             // Typed access through the remapped human names: the proof the pipeline binds.
             IScreen top = GameLogic.instance.GetCurrentScreen();
@@ -45,6 +48,25 @@ namespace MagnumOpus.Module
             {
                 _host.LogInfo("[module] screen: " + name);
                 _lastScreen = name;
+            }
+        }
+
+        // The host's notices (name sources, the mapping download) in the player's language, after the
+        // launch line; the unresolved count follows whenever the names change.
+        private void SpeakHostNotices()
+        {
+            while (ModHostImpl.Notices.TryDequeue(out var notice))
+            {
+                switch (notice)
+                {
+                    case HostNotice.NamesMatched: Speech.Say(Strings.NamesMatched); break;
+                    case HostNotice.MappingDownloading: Speech.Say(Strings.MappingDownloading); break;
+                    case HostNotice.MappingNotPublished: Speech.Say(Strings.MappingNotPublished); break;
+                    case HostNotice.MappingDownloadFailed: Speech.Say(Strings.MappingFailed); break;
+                    case HostNotice.MappingUpdated: Speech.Say(Strings.MappingUpdated); break;
+                }
+                if ((notice == HostNotice.NamesMatched || notice == HostNotice.MappingUpdated) && _impl != null && _impl.Unresolved.Count > 0)
+                    Speech.Say(Strings.Unmatched(_impl.Unresolved.Count));
             }
         }
 

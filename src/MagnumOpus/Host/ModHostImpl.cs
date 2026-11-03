@@ -46,8 +46,31 @@ namespace MagnumOpus.Host
         /// <summary>1 for the boot load, +1 per successful reload.</summary>
         public int Generation { get; internal set; }
 
+        /// <summary>Things the host must tell the player (the name sources, the mapping download),
+        /// queued from any thread; the module speaks them, localized, after the launch line.</summary>
+        public static readonly System.Collections.Concurrent.ConcurrentQueue<HostNotice> Notices =
+            new System.Collections.Concurrent.ConcurrentQueue<HostNotice>();
+
+        /// <summary>Where the running build's names came from: "bundled", "downloaded", "matched".</summary>
+        public string NameSource => GameBinding.Source;
+
         /// <summary>Game references of the loaded module that the running build lacks (human names).</summary>
         public System.Collections.Generic.IList<string> Unresolved { get; internal set; } = new string[0];
+    }
+
+    /// <summary>What the host reports to the player through the module's speech.</summary>
+    internal enum HostNotice
+    {
+        /// <summary>The build has no community mapping; names come from the fingerprint matcher.</summary>
+        NamesMatched,
+        /// <summary>Fetching the community mapping for this build.</summary>
+        MappingDownloading,
+        /// <summary>The community has not published a mapping for this build yet.</summary>
+        MappingNotPublished,
+        /// <summary>The fetch failed (network, GitHub); retried at the next launch.</summary>
+        MappingDownloadFailed,
+        /// <summary>The downloaded mapping is in use; the module reloaded onto it.</summary>
+        MappingUpdated,
     }
 
     /// <summary>The speech backend: the host's Tts chokepoint (Prism, then SAPI, then the clipboard).</summary>

@@ -33,7 +33,16 @@ namespace MagnumOpus.Core.Strings
             D("app.focus_off", "navigation off"),
             // The game build is newer than the mod's name mappings and some game members could not be
             // matched; {0} = how many. Features that use them stay silent until a mapping arrives.
-            D("app.unmatched", "the game has updated; {0} game members could not be matched, some features may not work"),
+            D("app.unmatched", "{0} game members could not be matched, some features may not work"),
+            // The game build is newer than the mod and no community mapping is installed: the mod
+            // matched the new build against the one it was made for.
+            D("app.names_matched", "the game has updated since this mod version; using automatically matched names"),
+            // The community mapping for the new build is being fetched in the background.
+            D("app.mapping_downloading", "downloading names for the new game build"),
+            // The community has not published a mapping for this build yet; tried again next launch.
+            D("app.mapping_not_published", "no names published for this game build yet; matched names stay in use"),
+            // The download failed (no network, GitHub unreachable); tried again next launch.
+            D("app.mapping_failed", "could not download names for the new game build; trying again next launch"),
             // A mapping for the new game build arrived (downloaded) and the mod reloaded onto it.
             D("app.mapping_updated", "mod updated for the new game build"),
             // The boot gate (the game waits for a click before its first screen).
@@ -257,6 +266,10 @@ namespace MagnumOpus.Core.Strings
         public static string FocusOff => Get("app.focus_off");
         public static string Unmatched(int count) => F("app.unmatched", count);
         public static string MappingUpdated => Get("app.mapping_updated");
+        public static string NamesMatched => Get("app.names_matched");
+        public static string MappingDownloading => Get("app.mapping_downloading");
+        public static string MappingNotPublished => Get("app.mapping_not_published");
+        public static string MappingFailed => Get("app.mapping_failed");
         public static string PressAnyKey => Get("app.press_any_key");
 
         /// <summary>The role word for a control type key ("button" -> "button"); null when none.</summary>

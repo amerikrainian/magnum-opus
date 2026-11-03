@@ -46,6 +46,9 @@
     <Error Condition="!Exists('$(GameWork)\Lightning.orig.exe')"
            Text="game\Lightning.orig.exe is missing and the game was not found (GameDir='$(GameDir)'). Install Opus Magnum (community-edition branch) or set MAGNUMOPUS_DIR." />
     <Exec Command="dotnet run --project &quot;$(RepoRoot)tools\NameTool&quot; -v q -- refgen --exe &quot;$(GameWork)\Lightning.orig.exe&quot; --mappings &quot;$(RepoRoot)mappings&quot; --out &quot;$(NamedRef)&quot;" />
+    <!-- The shipped fingerprint of this build: how the host names a newer build the community has
+         not mapped yet (CLAUDE.md "Surviving game updates"). -->
+    <Exec Command="dotnet run --project &quot;$(RepoRoot)tools\NameTool&quot; -v q --no-build -- fingerprint --exe &quot;$(GameWork)\Lightning.orig.exe&quot; --mappings &quot;$(RepoRoot)mappings&quot; --out &quot;$(GameWork)\fingerprint.tsv&quot;" />
   </Target>
 
   <Target Name="DeployModule" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug' and '$(GameDir)' != ''">
@@ -56,6 +59,7 @@
     </ItemGroup>
     <Copy SourceFiles="@(ModulePayload)" DestinationFolder="$(ModDataDir)" />
     <Copy SourceFiles="@(LangFiles)" DestinationFolder="$(ModDataDir)\lang" />
+    <Copy SourceFiles="$(GameWork)\fingerprint.tsv" DestinationFolder="$(ModDataDir)\mappings" />
   </Target>
 
 </Project>
