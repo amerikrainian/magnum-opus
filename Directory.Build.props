@@ -1,0 +1,38 @@
+<Project>
+  <!-- The release version: FileVersion/InformationalVersion of every assembly, the release zip's
+       name (build_release.ps1) and the tag create-release.ps1 expects. The HOST's AssemblyVersion
+       stays pinned at 1.0.0.0 (deploy/Lightning.exe.config binds it by full display name), so only
+       the file version moves per release. -->
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <ThirdParty>$(RepoRoot)third_party</ThirdParty>
+    <GameWork>$(RepoRoot)game</GameWork>
+    <SteamAppId>558990</SteamAppId>
+  </PropertyGroup>
+
+  <!-- Optional machine-specific overrides (gitignored). Drop a GameDir here if auto-detect misses. -->
+  <Import Project="$(RepoRoot)Directory.Build.local.props" Condition="Exists('$(RepoRoot)Directory.Build.local.props')" />
+
+  <!--
+    Resolve the game install without committing a machine-specific path. Precedence:
+      1. -p:GameDir=... on the CLI, or GameDir in Directory.Build.local.props (imported above)
+      2. the MAGNUMOPUS_DIR environment variable
+      3. Steam's main library, located via the registry
+      4. the default install location
+  -->
+  <PropertyGroup>
+    <GameDir Condition="'$(GameDir)' == '' and '$(MAGNUMOPUS_DIR)' != ''">$(MAGNUMOPUS_DIR)</GameDir>
+    <_SteamPath Condition="'$(GameDir)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_CURRENT_USER\Software\Valve\Steam', 'SteamPath', null, RegistryView.Registry64, RegistryView.Registry32))</_SteamPath>
+    <_SteamPath Condition="'$(GameDir)' == '' and '$(_SteamPath)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam', 'InstallPath', null, RegistryView.Registry32, RegistryView.Registry64))</_SteamPath>
+    <_SteamGameDir Condition="'$(_SteamPath)' != ''">$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(_SteamPath)', 'steamapps', 'common', 'Opus Magnum'))))</_SteamGameDir>
+    <GameDir Condition="'$(GameDir)' == '' and '$(_SteamGameDir)' != '' and Exists('$(_SteamGameDir)')">$(_SteamGameDir)</GameDir>
+    <GameDir Condition="'$(GameDir)' == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Opus Magnum')">C:\Program Files (x86)\Steam\steamapps\common\Opus Magnum</GameDir>
+    <!-- The mod's data folder inside the game folder (mappings, fingerprints, lang). -->
+    <ModDataDir>$(GameDir)\MagnumOpus</ModDataDir>
+  </PropertyGroup>
+</Project>

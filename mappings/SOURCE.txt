@@ -1,0 +1,4 @@
+Imported from QuintessentialOM/om_mappings (https://github.com/QuintessentialOM/om_mappings)
+source: om_mappings@ee45cae975295b164ba92c2deefa1404f2251cb1
+imported: 2026-11-03
+CE obf maps imported: 5 (only the current build is kept in the repo), named version 0.1.0
