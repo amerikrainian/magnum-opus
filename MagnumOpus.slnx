@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/MagnumOpus.Names/MagnumOpus.Names.csproj" />
+  <Project Path="src/MagnumOpus.Tests/MagnumOpus.Tests.csproj" />
+  <Project Path="tools/NameTool/NameTool.csproj" />
+</Solution>

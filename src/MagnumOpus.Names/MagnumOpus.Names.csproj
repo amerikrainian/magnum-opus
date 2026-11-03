@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The name pipeline, shared by the build tool (tools/NameTool: import, refgen, check), the
+    PERMANENT host (the load-time remap of the module, the hook lookup) and the tests. One renaming
+    routine serves every source of names: the community mappings (obfuscated -> intermediary ->
+    human), and the fingerprint matcher for a build no mapping covers yet. Build and runtime run the
+    SAME code over the same metadata, so the compile reference and the load-time remap cannot
+    disagree. netstandard2.0: loads into the game's CLR 4 and into the net8+ tool alike.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>MagnumOpus.Names</AssemblyName>
+    <RootNamespace>MagnumOpus.Names</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MagnumOpus.Tests" />
+  </ItemGroup>
+
+</Project>
