@@ -19,6 +19,9 @@ namespace MagnumOpus.Names
         private readonly Dictionary<string, string> _methods = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly Dictionary<string, List<KeyValuePair<string, string>>> _methodsByName =
             new Dictionary<string, List<KeyValuePair<string, string>>>(StringComparer.Ordinal);
+        // Shipping -> human, for the dev tools (dumps print human names) and log lines.
+        private readonly Dictionary<string, string> _typesBack = new Dictionary<string, string>(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _membersBack = new Dictionary<string, string>(StringComparer.Ordinal);
 
         public Guid Mvid { get; private set; }
         public int TypeCount => _types.Count;
@@ -29,14 +32,21 @@ namespace MagnumOpus.Names
             foreach (var t in renamed.GetTypes())
             {
                 string full = Sig.Full(t);
-                table._types[full] = log.OldTypeFull.TryGetValue(t, out var oldFull) ? oldFull : full;
+                string shippingFull = log.OldTypeFull.TryGetValue(t, out var oldFull) ? oldFull : full;
+                table._types[full] = shippingFull;
+                table._typesBack[shippingFull] = full;
                 foreach (var f in t.Fields)
-                    table._fields[full + "::" + f.Name] = Old(log, f);
+                {
+                    string oldField = Old(log, f);
+                    table._fields[full + "::" + f.Name] = oldField;
+                    table._membersBack[shippingFull + "::" + oldField] = f.Name;
+                }
                 foreach (var m in t.Methods)
                 {
                     string sig = Sig.Method(m);
                     string old = Old(log, m);
                     table._methods[MethodKey(full, m.Name, sig)] = old;
+                    table._membersBack[shippingFull + "::" + old] = m.Name;
                     string byName = full + "::" + m.Name;
                     if (!table._methodsByName.TryGetValue(byName, out var list))
                         table._methodsByName[byName] = list = new List<KeyValuePair<string, string>>();
@@ -65,6 +75,15 @@ namespace MagnumOpus.Names
             _methodsByName.TryGetValue(namedDeclFull + "::" + namedName, out var list)
                 ? (IList<KeyValuePair<string, string>>)list
                 : new KeyValuePair<string, string>[0];
+
+        /// <summary>Human full name of a type by its shipping full name (Outer/Inner); the input itself
+        /// when unknown.</summary>
+        public string HumanType(string shippingFull) => _typesBack.TryGetValue(shippingFull, out var h) ? h : shippingFull;
+
+        /// <summary>Human name of a field or method by its declaring type's shipping full name and its
+        /// shipping name (overloads sharing a shipping name share a human name); the input when unknown.</summary>
+        public string HumanMember(string shippingDeclFull, string shippingName) =>
+            _membersBack.TryGetValue(shippingDeclFull + "::" + shippingName, out var h) ? h : shippingName;
 
         /// <summary>Reflection's form of a shipping type name: nested types joined with '+'.</summary>
         public static string ReflectionName(string shippingFull) => shippingFull.Replace('/', '+');

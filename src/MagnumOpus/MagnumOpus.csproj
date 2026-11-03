@@ -1,0 +1,81 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The PERMANENT host. Opus Magnum (community edition) is one .NET Framework 4.x x64 executable
+    (Lightning.exe) on Zachtronics' own SDL2 engine, not Unity: deploy/Lightning.exe.config names
+    MagnumOpus.Bootstrap as the process AppDomainManager, so the STOCK exe instantiates this assembly
+    before any game code runs. A host change needs the game closed (the dll is locked) and a relaunch;
+    keep it minimal: entry, speech, the name binding, the two game hooks, the module loader, the dev
+    server. Every feature lives in the reloadable module.
+  -->
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AssemblyName>MagnumOpus</AssemblyName>
+    <RootNamespace>MagnumOpus</RootNamespace>
+    <!-- Pinned: deploy/Lightning.exe.config binds the AppDomainManager by FULL display name. The
+         release version moves FileVersion only; bump this and the config in lockstep or the mod
+         silently stops loading. -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MagnumOpus.Module" />
+    <InternalsVisibleTo Include="MagnumOpus.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MagnumOpus.Contracts\MagnumOpus.Contracts.csproj" />
+    <ProjectReference Include="..\MagnumOpus.Names\MagnumOpus.Names.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Harmony 2.4.2 (net48, MIT), vendored. Ships next to the host. -->
+    <Reference Include="0Harmony">
+      <HintPath>$(ThirdParty)\harmony\0Harmony.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <!-- In-box framework assemblies (nothing shipped): the SAPI fallback, JSON (settings and
+         downloaded community mappings) through JavaScriptSerializer. -->
+    <Reference Include="System.Speech" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+
+  <!-- DEBUG-only dev server: /screenshot (PrintWindow -> PNG) and the /eval REPL (Mono.CSharp). A
+       Release build neither compiles against nor ships either. -->
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <Reference Include="System.Drawing" />
+    <Reference Include="Mono.CSharp">
+      <HintPath>$(ThirdParty)\monocsharp\Mono.CSharp.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Deploy into the game folder after a Debug build; then launch the game normally. -->
+  <Target Name="DeployHost" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug' and '$(GameDir)' != ''">
+    <ItemGroup>
+      <HostPayload Include="$(OutputPath)MagnumOpus.dll" />
+      <HostPayload Include="$(OutputPath)MagnumOpus.Contracts.dll" />
+      <HostPayload Include="$(OutputPath)MagnumOpus.Names.dll" />
+      <HostPayload Include="$(OutputPath)Mono.Cecil.dll" />
+      <HostPayload Include="$(OutputPath)0Harmony.dll" />
+      <HostPayload Include="$(OutputPath)Mono.CSharp.dll" />
+      <HostPayload Include="$(ThirdParty)\prism\prism.dll" />
+      <HostPayload Include="$(RepoRoot)deploy\Lightning.exe.config" />
+      <NamedMappings Include="$(RepoRoot)mappings\named\**\*.txt" />
+      <ObfMappings Include="$(RepoRoot)mappings\obf\*.tsv" />
+    </ItemGroup>
+    <!-- ContinueOnError: the host dlls are locked while the game runs; the deploy is then stale and
+         the warning says so (the module deploys fine with the game running). -->
+    <Copy SourceFiles="@(HostPayload)" DestinationFolder="$(GameDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(NamedMappings)" DestinationFiles="@(NamedMappings->'$(ModDataDir)\mappings\named\%(RecursiveDir)%(Filename)%(Extension)')" ContinueOnError="true" />
+    <Copy SourceFiles="@(ObfMappings)" DestinationFolder="$(ModDataDir)\mappings\obf" ContinueOnError="true" />
+    <!-- steam_appid.txt: a launch that did not come from Steam is then accepted by Steamworks and
+         not bounced through Steam by SteamAPI.RestartAppIfNecessary. Bootstrap writes it too. -->
+    <WriteLinesToFile File="$(GameDir)\steam_appid.txt" Lines="$(SteamAppId)" Overwrite="true" />
+  </Target>
+
+</Project>
