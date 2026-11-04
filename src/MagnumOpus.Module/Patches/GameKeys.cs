@@ -49,7 +49,15 @@ namespace MagnumOpus.Module.Patches
             try
             {
                 int key = Convert.ToInt32(__args[0]);
-                if (Forced != 0 && key == Forced) { __result = true; return false; }
+                // A synthesized press reaches only the screen with input access, as a real key does:
+                // the game updates the screens below the top one too (with isKeyInputEnabled off),
+                // and a forced Escape seen there opened the options menu under a letter, which the
+                // letter's own close then popped instead of itself.
+                if (Forced != 0 && key == Forced)
+                {
+                    __result = global::InputManager.isKeyInputEnabled;
+                    return false;
+                }
                 if (!Claimed.Contains(key) || !FocusMode.Active) return true;
                 var screen = ScreenManager.Current;
                 if (screen == null || screen.CapturesRawInput) return true;
