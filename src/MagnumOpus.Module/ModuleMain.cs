@@ -109,6 +109,8 @@ namespace MagnumOpus.Module
             ScreenManager.Register(new DocumentGameScreen());
             ScreenManager.Register(new EscapeGameScreen());
             ScreenManager.Register(new OptionsGameScreen());
+            ScreenManager.Register(new ControlsGameScreen());
+            ScreenManager.Register(new MessageBoxGameScreen());
             ScreenManager.Register(new ModMenuScreen());
             ScreenManager.Register(new HelpScreen());
         }
