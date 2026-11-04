@@ -14,7 +14,7 @@
 | Letters | Jump to the item starting with what you type |
 | F1 | Keys that work here |
 | Ctrl+Shift+M | The Magnum Opus menu (settings, all keys) |
-| Ctrl+Shift+A | Hand the keyboard back to the game, and take it again |
+| Ctrl+Shift+N | Hand the keyboard back to the game, and take it again |
 
 ## Dropdowns
 

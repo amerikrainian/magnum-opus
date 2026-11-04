@@ -15,7 +15,7 @@ choose, set `"speech.output"` in `%LOCALAPPDATA%\MagnumOpus\settings.json` to `"
 
 ## The keyboard does nothing in the game
 
-Ctrl+Shift+A toggles the mod's keyboard navigation; with it off, the game gets every key. The mod
+Ctrl+Shift+N toggles the mod's keyboard navigation; with it off, the game gets every key. The mod
 menu (Ctrl+Shift+M) has a setting for whether navigation is on at launch.
 
 ## Removing the mod

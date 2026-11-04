@@ -239,7 +239,7 @@ Type-ahead characters come from the same snapshot through `SDL_GetKeyFromScancod
   `isMouseButtonInputEnabled`). Prefer them to replicating game code: the game then runs its exact path
   (layout-dependent message boxes, sounds, transitions).
 - **Keys**: arrows, Tab / Shift+Tab, Enter, Backspace (secondary), Escape, Home / End, Alt+Up / Alt+Down;
-  F1 keys here (Enter runs one); Ctrl+Shift+M mod menu; Ctrl+Shift+A focus mode; F6 reload (DEBUG).
+  F1 keys here (Enter runs one); Ctrl+Shift+M mod menu; Ctrl+Shift+N focus mode (moved from Ctrl+Shift+A 2026-11-04: the game selects all instructions there); F6 reload (DEBUG).
 - **Tab** wraps round the ends on every screen; with a single stop it does nothing and says nothing (user
   rule 2026-11-04; `GraphNavigator.Tab`, `TabWrapTests`).
 - **Announcement text never throws out**: `NodeAnnouncement.Resolve` evaluates every label delegate; one

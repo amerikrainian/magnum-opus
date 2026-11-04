@@ -90,7 +90,7 @@ namespace MagnumOpus.Module
 
             // Global: always live, so the player can hand the keyboard back to the game and reclaim it.
             InputManager.Register("mod.focus", "Toggle navigation", InputCategory.Global, ToggleFocus)
-                .AddBinding(new KeyboardBinding(Scancode.A, ctrl: true, shift: true));
+                .AddBinding(new KeyboardBinding(Scancode.N, ctrl: true, shift: true));
             InputManager.Register("mod.menu", "Mod menu", InputCategory.Global, ModMenuScreen.Toggle)
                 .AddBinding(new KeyboardBinding(Scancode.M, ctrl: true, shift: true));
             InputManager.Register(HelpScreen.ActionKey, "Keys here", InputCategory.Global, HelpScreen.Toggle)
