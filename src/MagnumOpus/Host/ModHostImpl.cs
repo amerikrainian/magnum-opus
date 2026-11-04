@@ -71,6 +71,9 @@ namespace MagnumOpus.Host
         MappingDownloadFailed,
         /// <summary>The downloaded mapping is in use; the module reloaded onto it.</summary>
         MappingUpdated,
+        /// <summary>The Steam install is not on the community-edition branch (the one the mod and
+        /// the community mappings follow).</summary>
+        WrongBranch,
     }
 
     /// <summary>The speech backend: the host's Tts chokepoint (Prism, then SAPI, then the clipboard).</summary>

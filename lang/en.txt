@@ -13,6 +13,7 @@ app.names_matched=the game has updated since this mod version; using automatical
 app.mapping_downloading=downloading names for the new game build
 app.mapping_not_published=no names published for this game build yet; matched names stay in use
 app.mapping_failed=could not download names for the new game build; trying again next launch
+app.wrong_branch=Opus Magnum is not on the community-edition branch, the one Magnum Opus supports; switch it in the game's Steam properties, under Game Versions and Betas
 app.mapping_updated=mod updated for the new game build
 app.press_any_key=Press any key to continue
 role.button=button

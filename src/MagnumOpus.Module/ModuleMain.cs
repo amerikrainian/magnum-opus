@@ -177,6 +177,7 @@ namespace MagnumOpus.Module
                     case HostNotice.MappingNotPublished: Speech.Say(Strings.MappingNotPublished); break;
                     case HostNotice.MappingDownloadFailed: Speech.Say(Strings.MappingFailed); break;
                     case HostNotice.MappingUpdated: Speech.Say(Strings.MappingUpdated); break;
+                    case HostNotice.WrongBranch: Speech.Say(Strings.WrongBranch); break;
                 }
                 if ((notice == HostNotice.NamesMatched || notice == HostNotice.MappingUpdated) && _impl != null && _impl.Unresolved.Count > 0)
                     Speech.Say(Strings.Unmatched(_impl.Unresolved.Count));

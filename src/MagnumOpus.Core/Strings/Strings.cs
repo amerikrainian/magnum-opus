@@ -43,6 +43,8 @@ namespace MagnumOpus.Core.Strings
             D("app.mapping_not_published", "no names published for this game build yet; matched names stay in use"),
             // The download failed (no network, GitHub unreachable); tried again next launch.
             D("app.mapping_failed", "could not download names for the new game build; trying again next launch"),
+            // The game is on a Steam branch other than community-edition (the one the mod follows).
+            D("app.wrong_branch", "Opus Magnum is not on the community-edition branch, the one Magnum Opus supports; switch it in the game's Steam properties, under Game Versions and Betas"),
             // A mapping for the new game build arrived (downloaded) and the mod reloaded onto it.
             D("app.mapping_updated", "mod updated for the new game build"),
             // The boot gate (the game waits for a click before its first screen).
@@ -291,6 +293,7 @@ namespace MagnumOpus.Core.Strings
         public static string Unmatched(int count) => F("app.unmatched", count);
         public static string MappingUpdated => Get("app.mapping_updated");
         public static string NamesMatched => Get("app.names_matched");
+        public static string WrongBranch => Get("app.wrong_branch");
         public static string MappingDownloading => Get("app.mapping_downloading");
         public static string MappingNotPublished => Get("app.mapping_not_published");
         public static string MappingFailed => Get("app.mapping_failed");

@@ -34,6 +34,8 @@ namespace MagnumOpus.Host
             DataDir = Path.Combine(GameDir, "MagnumOpus");
             Log.Info("Game assembly: " + game.FullName + ", build " + Mvid);
 
+            CheckBranch();
+
             var sw = Stopwatch.StartNew();
             var names = NameSources.Load(Mvid, ExePath, DataDir);
 
@@ -64,6 +66,33 @@ namespace MagnumOpus.Host
         }
 
         private static string ExePath => Path.Combine(GameDir, "Lightning.exe");
+
+        /// <summary>The Steam branch, from steamapps\appmanifest_558990.acf (game dir =
+        /// steamapps\common\Opus Magnum): its BetaKey, "public" without one, null off Steam.</summary>
+        public static string SteamBranch()
+        {
+            try
+            {
+                var common = Directory.GetParent(GameDir.TrimEnd('\\', '/'));
+                var steamapps = common?.Parent;
+                string manifest = steamapps == null ? null : Path.Combine(steamapps.FullName, "appmanifest_558990.acf");
+                if (manifest == null || !File.Exists(manifest)) return null;
+                var m = System.Text.RegularExpressions.Regex.Match(File.ReadAllText(manifest), "\"BetaKey\"\\s+\"([^\"]*)\"");
+                return m.Success ? m.Groups[1].Value : "public";
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[names] reading the Steam branch failed: " + ex.Message);
+                return null;
+            }
+        }
+
+        private static void CheckBranch()
+        {
+            string branch = SteamBranch();
+            Log.Info("[names] Steam branch: " + (branch ?? "unknown (not a Steam library install)"));
+            if (branch != null && branch != "community-edition") ModHostImpl.Notices.Enqueue(HostNotice.WrongBranch);
+        }
 
         /// <summary>A community mapping arrived for this build: rebuild the table from it and reload
         /// the module onto the new names. Main thread (posted from the download thread).</summary>
