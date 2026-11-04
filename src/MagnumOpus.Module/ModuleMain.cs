@@ -31,6 +31,8 @@ namespace MagnumOpus.Module
         private ModHostImpl _impl;
         private Harmony _harmony;
         private bool _armed;
+        private readonly UpdateChecker _updateCheck = new UpdateChecker();
+        private bool _updateAnnounced;
 
         /// <summary>The host of the live generation (settings, logging), for screens that need it.</summary>
         public static IModHost Host { get; private set; }
@@ -60,6 +62,9 @@ namespace MagnumOpus.Module
             RegisterInput();
             RegisterScreens();
             FocusMode.Set(host.Settings.FocusModeOnLaunch);
+            // Once per launch: a reloaded module does not ask again.
+            if (!host.LaunchAnnounced) _updateCheck.Start(host.ModVersion);
+            else _updateAnnounced = true;
             host.LogInfo("[module] loaded, generation " + (_impl?.Generation ?? 0) + ": " + ScreenManager.Registered.Count
                 + " screens, " + InputManager.Actions.Count + " input actions, focus " + (FocusMode.Active ? "on" : "off"));
         }
@@ -155,6 +160,11 @@ namespace MagnumOpus.Module
                 // an unresolved reference is a mod bug, said all the same.
                 if (_impl != null && _impl.NameSource != "matched" && _impl.Unresolved.Count > 0)
                     Speech.Say(Strings.Unmatched(_impl.Unresolved.Count));
+            }
+            if (!_updateAnnounced && _updateCheck.NewerVersion != null)
+            {
+                _updateAnnounced = true;
+                Speech.Say(Strings.UpdateAvailable(_updateCheck.NewerVersion));
             }
             while (ModHostImpl.Notices.TryDequeue(out var notice))
             {
