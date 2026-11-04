@@ -153,7 +153,7 @@ namespace MagnumOpus.Core.Graph
             for (int i = 0; i < anns.Count; i++)
             {
                 string t = null;
-                if (anns[i]?.Text != null) t = anns[i].Text();
+                if (anns[i] != null) t = anns[i].Resolve();
                 if (string.IsNullOrEmpty(t)) continue;
                 if (sb.Length > 0) sb.Append(", ");
                 sb.Append(t);
@@ -201,7 +201,7 @@ namespace MagnumOpus.Core.Graph
         {
             var anns = node?.Vtable?.Announcements;
             if (anns == null || anns.Count == 0) return null;
-            return anns[0]?.Text?.Invoke();
+            return anns[0]?.Resolve();
         }
 
         // The next part "starts as" this label: equal, or its first comma-separated segment is the label

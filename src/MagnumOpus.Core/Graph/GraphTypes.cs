@@ -60,6 +60,29 @@ namespace MagnumOpus.Core.Graph
         }
 
         public static NodeAnnouncement Static(string text) => new NodeAnnouncement(() => text);
+
+        // Distinct failures already logged (nodes are rebuilt every render, so the memory is shared).
+        private static readonly HashSet<string> _logged = new HashSet<string>();
+
+        /// <summary>The part's text, resolved now. A delegate that throws reads as silent, and each
+        /// distinct failure is logged once: a broken label must not take the module's tick down with
+        /// it (it did: a null check through a game type's == operator, re-thrown on every rebuild).</summary>
+        public string Resolve()
+        {
+            if (Text == null) return null;
+            try { return Text(); }
+            catch (Exception e)
+            {
+                string signature = e.ToString();
+                bool first;
+                lock (_logged)
+                {
+                    first = _logged.Count < 200 && _logged.Add(signature);
+                }
+                if (first) CoreLog.Error("announcement text threw (later repeats not logged): " + e);
+                return null;
+            }
+        }
     }
 
     /// <summary>

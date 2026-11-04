@@ -16,9 +16,6 @@ namespace MagnumOpus.Core.Screens
     /// </summary>
     public abstract class Screen
     {
-        /// <summary>Whether Tab wraps from the last stop back to the first.</summary>
-        public bool Wrap { get; set; }
-
         /// <summary>Screen-level actions (Back/Escape handlers and the like), dispatched by id.</summary>
         public virtual IEnumerable<ElementAction> GetActions() { yield break; }
 

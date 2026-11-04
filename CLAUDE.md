@@ -231,13 +231,21 @@ Type-ahead characters come from the same snapshot through `SDL_GetKeyFromScancod
   game's four key queries, unless the screen passes them (`GameScreen.PassKeyToGame`: Escape by default,
   so the game's own back-out keeps working). A mod overlay and a CHILD screen (a dropdown's list) own
   every key: Escape closing a list must not also close the screen beneath. Unclaimed keys (letters,
-  Space, Delete, F2...) always reach the game.
+  Space, Delete, F2...) reach the game, except where a screen claims more (`GameScreen.ClaimsKey`: the
+  solution editor takes every printable key, Delete and the numpad, since the game's instruction hotkeys
+  act on the mouse position and Z deletes the selection).
 - **Synthesized game input**: `GameKeys.Forced` makes the game see one key for one frame (only where
   `isKeyInputEnabled`); `ButtonPress.Press(label)` presses a drawn button (only where
   `isMouseButtonInputEnabled`). Prefer them to replicating game code: the game then runs its exact path
   (layout-dependent message boxes, sounds, transitions).
 - **Keys**: arrows, Tab / Shift+Tab, Enter, Backspace (secondary), Escape, Home / End, Alt+Up / Alt+Down;
   F1 keys here (Enter runs one); Ctrl+Shift+M mod menu; Ctrl+Shift+A focus mode; F6 reload (DEBUG).
+- **Tab** wraps round the ends on every screen; with a single stop it does nothing and says nothing (user
+  rule 2026-11-04; `GraphNavigator.Tab`, `TabWrapTests`).
+- **Announcement text never throws out**: `NodeAnnouncement.Resolve` evaluates every label delegate; one
+  that throws reads silent and each distinct failure is logged once (a throwing label once failed the
+  tick on every navigator rebuild). The host counts repeats of the same tick failure instead of logging
+  them, until a reload (`Runtime.TickFrame`).
 
 ## 12. Screens (`src/MagnumOpus.Module/Screens/`; verified live 2026-11-03 unless noted)
 `GameScreen<T>` is active while game screen T is on top with no fade running; every `GameScreen<T>`
@@ -261,9 +269,28 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
 - **Dropdowns are real dropdowns** (user rule): a combo-box node (`Nodes.Dropdown`) whose Enter opens
   Core's `ChoiceSubmenuScreen` on the current value; never a slider. Sliders only for numbers (volumes,
   Left/Right in tenths). Options writes the settings exactly as the game's widgets do.
+- **Solution editor** (`SolutionEditorGameScreen`, read-only stage, verified live 2026-11-04 on the first
+  lesson): stops Board / Program / Run log. Board: hex cursor (`Game/Hex`: axial Q east, R up the
+  screen, pointy-top, turn k = direction k counter-clockwise from east; spoken as Civ's half-step x, y,
+  x = Q + R/2, origin the game's (0, 0)). Keys Q NW, E NE, A W, D E, Z SW, C SE (scancodes; numpad 7 9 4
+  6 1 3; Left / Right too), Alt+them skip to the next hex that reads differently, ; and ' move the
+  program cursor a cycle on the arm under the board cursor, [ ] categories, , . items, S details, W the
+  molecule, X neighbours. A hex reads coordinates, then the atom in play, arm bases ("arm 1, Piston
+  Arm, northeast, length 1"), grippers, other parts (`Game/Board`); empty = coordinates only. Arms are
+  numbered by the game's program rows. Program: rows = arms, columns = cycles (1-based); cells a Reset
+  or Repeat fills read "clockwise, from reset" (`CompiledProgramGrid`, `isExpansion`). Everywhere:
+  digits 1-9 jump to an arm, Space play / pause, Ctrl+Space step, Alt+Space fast forward (the game's own
+  buttons via `GameKeys.Forced`; its refusal text is spoken when it would not start), Alt+S score (the
+  game's labels; '$' in a cost is its gold mark), Alt+T tutorial tips (the puzzle's sticky notes, also
+  spoken on entry). Narration (`Patches/SimNarration`): arm moves from the sim states' deltas after
+  `Sim.BeginCycle`, glyph work as the atom / bond difference across each `RunCycleGlyphs` (content-mod
+  glyphs included), products from `outputDone`; one sentence per actor; stepping speaks all with "cycle
+  N", playing replaces the last cycle's speech, fast forward speaks products only; errors when the game
+  shows them (message + hexes, the board cursor moved there). Error narration is NOT yet verified live
+  (needs an edited solution).
 - **Fallback** (`FallbackScreen`): the screen's human type name ("Journal Submission"), the text it draws
   top to bottom (`TextCapture`, only while the fallback is up) and its labeled buttons (ButtonPress).
-  Covers the journal (readable, not yet operable), the solution editor's text buttons, and the rest.
+  Covers the journal (readable, not yet operable) and the rest.
 
 ## 13. Languages
 The mod's words follow the GAME's language (`LanguageSync`: `Translations.currentLanguage` ->
@@ -284,12 +311,20 @@ Game terms are the game's own (`GameText.Translate`, `LocString`s).
 - **Never focus the game window** in automation; **live tests have no side effects** (section 9).
 
 ## 15. Roadmap
-- Phase 5: Sigmar's Garden (`SolitaireScreen`), the hex-navigation warm-up (keyboard model for six
-  directions to be decided with the user).
-- Phase 6: the solution editor: read-only board (hex grid: parts, arms, glyphs, reagents and products,
-  tracks), parts tray and placement through the game's own operations (undo intact), the instruction tape,
-  the simulation with event and failure narration, the completion screen (cost / cycles / area, histogram
-  percentiles). Read part, atom and puzzle names from the game's registries, never hardcoded (content mods).
+- Phase 5: Sigmar's Garden (`SolitaireScreen`) on the editor's hex model (section 12).
+- Phase 6: the solution editor. DONE: the read-only stage (section 12). NEXT, the editing stage, as
+  decided with the user 2026-11-04 ("the most fluid, quick ways to program"): on the tape the game's
+  instruction letters (its mapped keys) type at the cursor and advance it a cycle; plain letter =
+  overwrite (`SetInstruction`), Shift+letter = insert (`InsertInstruction`, the push stops at the first
+  gap); Delete clears the cell, Backspace clears the previous cell and steps back; Shift+arrows select,
+  Ctrl+C / X / V. On the board, Ctrl+letter programs the arm under the cursor at the program cursor's
+  cycle (the board needs no clipboard); Enter picks a part up (carry mode: cursor keys carry it, Enter
+  drops, Escape cancels, Ctrl+Enter clones); Shift+A / D rotate and Shift+W / S change arm length (the
+  game's own letters). Parts tray stop (Enter places at the board cursor into carry mode); tracks drawn
+  hex by hex in carry mode. Undo / redo (Ctrl+Z / Y through the game) with the change spoken. Live
+  editing tests use a throwaway solution (New on puzzle info, deleted afterwards; user-approved). Then
+  the completion screen (cost / cycles / area, histogram percentiles). Read part, atom and puzzle names
+  from the game's registries, never hardcoded (content mods).
 - Phase 7: the journal (operable), the puzzle editor, the solution browser, the GIF recorder, Workshop and
   leaderboards; histograms on puzzle info.
 - Phase 9: the Quintessential copy: a net10.0 shim mod (CoreCLR has no AppDomainManager), the module

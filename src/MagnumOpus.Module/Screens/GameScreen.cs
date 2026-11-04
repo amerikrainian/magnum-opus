@@ -31,5 +31,11 @@ namespace MagnumOpus.Module.Screens
         /// the screen has focus. Escape by default: the game's own back-out (to the previous screen,
         /// the pause menu) keeps working, and a screen that handles Back itself says false.</summary>
         public virtual bool PassKeyToGame(int sdlKeycode) => sdlKeycode == GameKeys.Escape;
+
+        /// <summary>Keys beyond the navigation set that this screen takes from the game while it
+        /// is up (an SDL keycode): the solution editor takes the letters, digits and punctuation, which
+        /// the game would act on by itself (instruction hotkeys under the mouse, Z deleting the
+        /// selection). Default none.</summary>
+        public virtual bool ClaimsKey(int sdlKeycode) => false;
     }
 }

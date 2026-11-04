@@ -57,6 +57,16 @@ namespace MagnumOpus.Module.Patches
             return screen is GameScreen gs && gs.PassKeyToGame(key);
         }
 
+        // A modeled game screen anywhere on our stack that takes this key too (the editor's letters
+        // stay ours while the key help is open over it).
+        private static bool ScreenClaims(int key)
+        {
+            if (!FocusMode.Active) return false;
+            foreach (var s in ScreenManager.Stack)
+                if (s is GameScreen gs && gs.ClaimsKey(key)) return true;
+            return false;
+        }
+
         private static bool Prefix(object[] __args, ref bool __result)
         {
             try
@@ -71,7 +81,7 @@ namespace MagnumOpus.Module.Patches
                     __result = global::InputManager.isKeyInputEnabled;
                     return false;
                 }
-                if (!Claimed.Contains(key) || GameSees(key)) return true;
+                if (!(Claimed.Contains(key) || ScreenClaims(key)) || GameSees(key)) return true;
                 __result = false;
                 return false;
             }

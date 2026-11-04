@@ -126,6 +126,8 @@ namespace MagnumOpus.Module.Input
         F10 = 67, F11 = 68, F12 = 69,
         Insert = 73, Home = 74, PageUp = 75, Delete = 76, End = 77, PageDown = 78,
         Right = 79, Left = 80, Down = 81, Up = 82,
-        KpEnter = 88,
+        KpDivide = 84, KpMultiply = 85, KpMinus = 86, KpPlus = 87, KpEnter = 88,
+        Kp1 = 89, Kp2 = 90, Kp3 = 91, Kp4 = 92, Kp5 = 93, Kp6 = 94, Kp7 = 95, Kp8 = 96, Kp9 = 97,
+        Kp0 = 98, KpPeriod = 99,
     }
 }

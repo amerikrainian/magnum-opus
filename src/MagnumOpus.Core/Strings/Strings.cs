@@ -161,6 +161,146 @@ namespace MagnumOpus.Core.Strings
             D("select.chapter_unlocked", "new chapter: {0}"),
             // The puzzle info screen's list of saved solutions.
             D("info.solutions", "Solutions"),
+
+            // ---- the solution editor ----
+            // A hex's coordinates, Civ's half-step style: {0} = x (in hex widths, halves allowed),
+            // {1} = y (the row, growing up the screen). Origin = the game's own (0, 0).
+            D("hex.coords", "{0}, {1}"),
+            // The six hex directions, in the game's rotation order (counter-clockwise from east).
+            D("hex.dir.0", "east"),
+            D("hex.dir.1", "northeast"),
+            D("hex.dir.2", "northwest"),
+            D("hex.dir.3", "west"),
+            D("hex.dir.4", "southwest"),
+            D("hex.dir.5", "southeast"),
+            // An offset of zero.
+            D("hex.here", "here"),
+            // A run of steps one way: {0} = count, {1} = direction ("3 east").
+            D("hex.steps", "{0} {1}"),
+            // The editor's Tab stops.
+            D("editor.board", "Board"),
+            D("editor.program", "Program"),
+            D("editor.log", "Run log"),
+            // An arm (a programmable part) by its program row number.
+            D("editor.arm", "arm {0}"),
+            // An arm's base hex: {0} = row number, {1} = the game's part name, {2} = the direction
+            // it points, {3} = its length.
+            D("editor.arm_base", "arm {0}, {1}, {2}, length {3}"),
+            // An arm's gripper hex; closed = holding on while the engine runs.
+            D("editor.grip", "arm {0} grip"),
+            D("editor.grip_closed", "arm {0} grip, closed"),
+            // An atom's bonds as directions; triplex = the three-colour bonds.
+            D("editor.bonds", "bonds {0}"),
+            D("editor.triplex", "triplex bonds {0}"),
+            // The arm holding an atom.
+            D("editor.held_by", "held by arm {0}"),
+            // A tape cell: {0} = column, {1} = instruction.
+            D("editor.cell", "{0}, {1}"),
+            // A cycle of the run.
+            D("editor.cycle", "cycle {0}"),
+            // A board category and how many things it holds.
+            D("editor.category", "{0}, {1}"),
+            D("editor.cat.reagents", "Reagents"),
+            D("editor.cat.products", "Products"),
+            D("editor.cat.arms", "Arms"),
+            D("editor.cat.glyphs", "Glyphs"),
+            D("editor.cat.tracks", "Tracks"),
+            D("editor.cat.atoms", "Atoms"),
+            // A molecule's atom and where it lies from the cursor ("Fire 1 east").
+            D("editor.molecule_atom", "{0} {1}"),
+            // A neighbour of the cursor: {0} = direction, {1} = what is there.
+            D("editor.neighbour", "{0}: {1}"),
+            // A score figure: {0} = the game's label, {1} = the value.
+            D("editor.score_item", "{0} {1}"),
+            // The gold mark after a cost (the game draws it as a small G).
+            D("editor.gold_mark", "g"),
+            // A tape cell filled by a Reset or Repeat: {0} = what runs there, {1} = the source.
+            D("editor.expansion", "{0}, from {1}"),
+            // A run log line: {0} = cycle, {1} = the event.
+            D("editor.log_entry", "{0}: {1}"),
+            // The engine's state, spoken when it changes.
+            D("run.running", "running"),
+            D("run.fast", "fast forward"),
+            D("run.paused", "paused"),
+            D("run.stopped", "stopped"),
+            // An error the game shows: {0} = its message, {1} = where.
+            D("run.error", "{0} at {1}"),
+            D("run.error_places", "{0} and {1}"),
+            // Instruction names (the game names both directions of a pair alike).
+            D("instr.grab", "grab"),
+            D("instr.drop", "drop"),
+            D("instr.rotate_cw", "clockwise"),
+            D("instr.rotate_ccw", "counter"),
+            D("instr.extend", "extend"),
+            D("instr.retract", "retract"),
+            D("instr.pivot_cw", "pivot clockwise"),
+            D("instr.pivot_ccw", "pivot counter"),
+            D("instr.move_plus", "move plus"),
+            D("instr.move_minus", "move minus"),
+            D("instr.reset", "reset"),
+            D("instr.repeat", "repeat"),
+            D("instr.halt", "halt"),
+            D("instr.period_override", "period override"),
+            D("instr.wait", "wait"),
+            // Run events, worded as what happened. An arm's sentence: {0} = row, {1} = its actions.
+            D("event.arm", "arm {0}: {1}"),
+            // A part's sentence (a glyph, a reagent): {0} = its name, {1} = what happened there.
+            D("event.actor", "{0}: {1}"),
+            D("event.grabbed", "grabbed {0}"),
+            D("event.grabbed_nothing", "grabbed nothing"),
+            D("event.dropped", "dropped {0}"),
+            D("event.dropped_nothing", "released"),
+            D("event.clockwise", "clockwise"),
+            D("event.counter", "counter"),
+            D("event.pivot_clockwise", "pivot clockwise"),
+            D("event.pivot_counter", "pivot counter"),
+            D("event.extended", "extended"),
+            D("event.retracted", "retracted"),
+            // An arm carried along its track: {0} = direction.
+            D("event.moved", "moved {0}"),
+            D("event.halted", "halted"),
+            // A move made more than once in a cycle: {0} = the move, {1} = times.
+            D("event.times", "{0} {1} times"),
+            D("event.appeared", "{0} appeared"),
+            D("event.removed", "{0} removed"),
+            D("event.transmuted", "{0} became {1}"),
+            D("event.bonded", "bonded {0} and {1}"),
+            D("event.unbonded", "unbonded {0} and {1}"),
+            // An atom and its hex: {0} = atom, {1} = coordinates.
+            D("event.atom_at", "{0} at {1}"),
+            // Atoms of one kind in a molecule: {0} = count, {1} = atom.
+            D("event.count", "{0} {1}"),
+            // A product completed: {0} = product, {1} = done, {2} = required.
+            D("event.product", "{0}: {1} of {2}"),
+
+            // Key help labels of the editor's keys.
+            D("bind.ed.hex.nw", "Cursor northwest"),
+            D("bind.ed.hex.ne", "Cursor northeast"),
+            D("bind.ed.hex.w", "Cursor west"),
+            D("bind.ed.hex.e", "Cursor east"),
+            D("bind.ed.hex.sw", "Cursor southwest"),
+            D("bind.ed.hex.se", "Cursor southeast"),
+            D("bind.ed.skip.nw", "Skip northwest"),
+            D("bind.ed.skip.ne", "Skip northeast"),
+            D("bind.ed.skip.w", "Skip west"),
+            D("bind.ed.skip.e", "Skip east"),
+            D("bind.ed.skip.sw", "Skip southwest"),
+            D("bind.ed.skip.se", "Skip southeast"),
+            D("bind.ed.tape.prev", "Program cursor back a cycle"),
+            D("bind.ed.tape.next", "Program cursor forward a cycle"),
+            D("bind.ed.arm", "Jump to arm"),
+            D("bind.ed.cat.prev", "Previous category"),
+            D("bind.ed.cat.next", "Next category"),
+            D("bind.ed.item.prev", "Previous item"),
+            D("bind.ed.item.next", "Next item"),
+            D("bind.ed.details", "Details"),
+            D("bind.ed.molecule", "Molecule"),
+            D("bind.ed.neighbours", "Neighbours"),
+            D("bind.ed.score", "Score"),
+            D("bind.ed.tips", "Tutorial tips"),
+            D("bind.ed.play", "Play or pause"),
+            D("bind.ed.step", "Step one cycle"),
+            D("bind.ed.fast", "Fast forward"),
         };
 
         private static readonly Dictionary<string, string> _defaults = BuildDefaults();
@@ -361,6 +501,62 @@ namespace MagnumOpus.Core.Strings
         public static string SelectCompleted(string what) => F("select.completed", what);
         public static string SelectChapterUnlocked(string what) => F("select.chapter_unlocked", what);
         public static string InfoSolutions => Get("info.solutions");
+
+        // ---- the solution editor ----
+        public static string HexCoords(string x, string y) => F("hex.coords", x, y);
+        public static string HexDirection(int dir) => Get("hex.dir." + dir);
+        public static string HexHere => Get("hex.here");
+        public static string HexSteps(int count, string direction) => F("hex.steps", count, direction);
+        public static string EditorBoard => Get("editor.board");
+        public static string EditorProgram => Get("editor.program");
+        public static string EditorLog => Get("editor.log");
+        public static string EditorArm(int n) => F("editor.arm", n);
+        public static string EditorArmBase(int n, string part, string direction, int length) => F("editor.arm_base", n, part, direction, length);
+        public static string EditorGrip(int n) => F("editor.grip", n);
+        public static string EditorGripClosed(int n) => F("editor.grip_closed", n);
+        public static string EditorBonds(string directions) => F("editor.bonds", directions);
+        public static string EditorTriplex(string directions) => F("editor.triplex", directions);
+        public static string EditorHeldBy(int n) => F("editor.held_by", n);
+        public static string EditorCell(int column, string instruction) => F("editor.cell", column, instruction);
+        public static string EditorCycle(int n) => F("editor.cycle", n);
+        public static string EditorCategory(string name, int count) => F("editor.category", name, count);
+        public static string EditorCategoryName(string key) => Get("editor.cat." + key);
+        public static string EditorMoleculeAtom(string atom, string where) => F("editor.molecule_atom", atom, where);
+        public static string EditorNeighbour(string direction, string what) => F("editor.neighbour", direction, what);
+        public static string EditorScoreItem(string label, string value) => F("editor.score_item", label, value);
+        public static string EditorGoldMark => Get("editor.gold_mark");
+        public static string EditorExpansion(string what, string source) => F("editor.expansion", what, source);
+        public static string EditorLogEntry(int cycle, string text) => F("editor.log_entry", cycle, text);
+        public static string RunRunning => Get("run.running");
+        public static string RunFast => Get("run.fast");
+        public static string RunPaused => Get("run.paused");
+        public static string RunStopped => Get("run.stopped");
+        public static string RunError(string message, string where) => F("run.error", message, where);
+        public static string RunErrorPlaces(string a, string b) => F("run.error_places", a, b);
+        public static string Instruction(string key) => Get("instr." + key);
+        public static string EventArm(int n, string what) => F("event.arm", n, what);
+        public static string EventActor(string who, string what) => F("event.actor", who, what);
+        public static string EventGrabbed(string what) => F("event.grabbed", what);
+        public static string EventGrabbedNothing => Get("event.grabbed_nothing");
+        public static string EventDropped(string what) => F("event.dropped", what);
+        public static string EventDroppedNothing => Get("event.dropped_nothing");
+        public static string EventClockwise => Get("event.clockwise");
+        public static string EventCounter => Get("event.counter");
+        public static string EventPivotClockwise => Get("event.pivot_clockwise");
+        public static string EventPivotCounter => Get("event.pivot_counter");
+        public static string EventExtended => Get("event.extended");
+        public static string EventRetracted => Get("event.retracted");
+        public static string EventMoved(string direction) => F("event.moved", direction);
+        public static string EventHalted => Get("event.halted");
+        public static string EventTimes(string what, int times) => F("event.times", what, times);
+        public static string EventAppeared(string atom) => F("event.appeared", atom);
+        public static string EventRemoved(string atom) => F("event.removed", atom);
+        public static string EventTransmuted(string from, string to) => F("event.transmuted", from, to);
+        public static string EventBonded(string a, string b) => F("event.bonded", a, b);
+        public static string EventUnbonded(string a, string b) => F("event.unbonded", a, b);
+        public static string EventAtomAt(string atom, string where) => F("event.atom_at", atom, where);
+        public static string EventCount(int count, string atom) => F("event.count", count, atom);
+        public static string EventProduct(string product, int done, int required) => F("event.product", product, done, required);
 
         /// <summary>The all-keys heading of an input category ("Global keys").</summary>
         public static string KeyCategory(string category)

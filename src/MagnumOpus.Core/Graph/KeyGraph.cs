@@ -471,7 +471,7 @@ namespace MagnumOpus.Core.Graph
                     if (a != null && a.Kind == AnnouncementKinds.Selected)
                     {
                         string t = null;
-                        try { t = a.Text?.Invoke(); } catch { }
+                        t = a.Resolve();
                         if (!string.IsNullOrEmpty(t)) return n;
                     }
             }

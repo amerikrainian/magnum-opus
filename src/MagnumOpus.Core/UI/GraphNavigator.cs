@@ -321,7 +321,7 @@ namespace MagnumOpus.Core.UI
                     continue;
                 }
                 string v = null;
-                try { v = anns[i].Text?.Invoke(); } catch { }
+                v = anns[i].Resolve();
                 if (baseline) { _liveValues.Add(v); continue; }
                 if (!string.Equals(_liveValues[i], v))
                 {
@@ -373,7 +373,7 @@ namespace MagnumOpus.Core.UI
             for (int i = 0; i < anns.Count; i++)
             {
                 if (anns[i] == null || anns[i].LiveReadoutIgnore) continue;
-                sb.Append(anns[i].Text?.Invoke()).Append('');
+                sb.Append(anns[i].Resolve()).Append('');
             }
             return sb.ToString();
         }
@@ -640,6 +640,9 @@ namespace MagnumOpus.Core.UI
                 return LandOnStop(stops[step >= 0 ? 0 : stops.Count - 1]);
             }
 
+            // A lone stop: Tab has nowhere to go and says nothing (user rule 2026-11-04).
+            if (stops.Count == 1) return true;
+
             int ni = idx + step;
             if (ni < 0 || ni >= stops.Count)
             {
@@ -649,10 +652,8 @@ namespace MagnumOpus.Core.UI
                     if (!string.IsNullOrEmpty(Screen.ScreenName)) Speak(Screen.ScreenName, interrupt: true);
                     return true;
                 }
-                if (Screen != null && Screen.Wrap)
-                    ni = ((ni % stops.Count) + stops.Count) % stops.Count;
-                else
-                    return true; // at the end; consume, no wrap
+                // Tab and Shift+Tab wrap round the ends on every screen (user rule 2026-11-04).
+                ni = ((ni % stops.Count) + stops.Count) % stops.Count;
             }
             return LandOnStop(stops[ni]);
         }
@@ -873,7 +874,7 @@ namespace MagnumOpus.Core.UI
             {
                 var first = n.Vtable.Announcements != null && n.Vtable.Announcements.Count > 0
                     ? n.Vtable.Announcements[0] : null;
-                t = first?.Text?.Invoke();
+                t = first?.Resolve();
             }
             return t == null ? null : TextUtil.StripRichText(t);
         }

@@ -11,7 +11,11 @@ namespace MagnumOpus.Host
     {
         private static ModHostImpl _host;
         private static Modularity.ModuleLoader _loader;
-        private static bool _tickErrorLogged;
+        // The module tick's last logged failure and how often it has repeated since. Keyed by the
+        // exception itself, not cleared by a clean tick: a failure on only some frames (a navigator
+        // rebuild every sixth) otherwise alternates with clean ticks and was logged ten times a second.
+        private static string _tickError;
+        private static int _tickErrorRepeats;
         private static readonly System.Collections.Concurrent.ConcurrentQueue<Action> Posted =
             new System.Collections.Concurrent.ConcurrentQueue<Action>();
 
@@ -57,13 +61,16 @@ namespace MagnumOpus.Host
             try
             {
                 module.Tick();
-                _tickErrorLogged = false;
             }
             catch (Exception ex)
             {
-                if (_tickErrorLogged) return;
-                _tickErrorLogged = true;
-                Log.Error("[module] Tick threw; suppressing repeats until it recovers or reloads", ex);
+                string signature = ex.ToString();
+                if (signature == _tickError) { _tickErrorRepeats++; return; }
+                if (_tickError != null && _tickErrorRepeats > 0)
+                    Log.Error("[module] the previous Tick failure repeated " + _tickErrorRepeats + " more times");
+                _tickError = signature;
+                _tickErrorRepeats = 0;
+                Log.Error("[module] Tick threw; repeats of this failure are counted, not logged, until a reload", ex);
             }
         }
 
@@ -72,7 +79,10 @@ namespace MagnumOpus.Host
         {
             if (_loader == null) return "[no module loader]\n";
             bool ok = _loader.Reload();
-            _tickErrorLogged = false;
+            if (_tickError != null && _tickErrorRepeats > 0)
+                Log.Error("[module] the previous Tick failure repeated " + _tickErrorRepeats + " more times");
+            _tickError = null;
+            _tickErrorRepeats = 0;
 #if DEBUG
             if (ok) { try { Dev.DevServer.Instance.ResetEvaluator(); } catch { } }
 #endif

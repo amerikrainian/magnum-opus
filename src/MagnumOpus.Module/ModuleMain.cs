@@ -86,6 +86,7 @@ namespace MagnumOpus.Module
             InputManager.Register(UiActions.End, "Jump to last", InputCategory.UI).AddBinding(new KeyboardBinding(Scancode.End));
             InputManager.Register(UiActions.RegionPrev, "Previous section", InputCategory.UI).AddBinding(new KeyboardBinding(Scancode.Up, alt: true));
             InputManager.Register(UiActions.RegionNext, "Next section", InputCategory.UI).AddBinding(new KeyboardBinding(Scancode.Down, alt: true));
+            EditorKeys.Register();
 
             // Global: always live, so the player can hand the keyboard back to the game and reclaim it.
             InputManager.Register("mod.focus", "Toggle navigation", InputCategory.Global, ToggleFocus)
@@ -120,6 +121,7 @@ namespace MagnumOpus.Module
             ScreenManager.Register(new PuzzleInfoGameScreen());
             ScreenManager.Register(new CinematicGameScreen());
             ScreenManager.Register(new UploadGameScreen());
+            ScreenManager.Register(new SolutionEditorGameScreen());
             ScreenManager.Register(new FallbackScreen());
             ScreenManager.Register(new ModMenuScreen());
             ScreenManager.Register(new HelpScreen());
@@ -150,6 +152,8 @@ namespace MagnumOpus.Module
             _armed = true;
             try { Patches.GameKeys.Apply(_harmony); Patches.ButtonPress.Apply(_harmony); Patches.TextCapture.Apply(_harmony); }
             catch (Exception e) { _host.LogError("[module] arming game patches failed: " + e); }
+            try { Patches.SimNarration.Apply(_harmony); }
+            catch (Exception e) { _host.LogError("[module] arming simulation narration failed: " + e); }
         }
 
         private void Announce()
