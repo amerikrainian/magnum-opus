@@ -19,7 +19,10 @@ namespace MagnumOpus.Module.Screens
         public override bool IsActive() => GameScreens.TopAs<T>() != null && !GameScreens.InTransition;
     }
 
-    public abstract class GameScreen : Screen
+    /// <summary>The base of every game-screen model: a composite (<see cref="CompositeScreen"/>), so a
+    /// large screen can be built of sections; a screen without sections overrides Build and friends
+    /// itself and behaves as a plain Screen.</summary>
+    public abstract class GameScreen : MagnumOpus.Core.Screens.CompositeScreen
     {
         // The game screen types a GameScreen<T> models (the fallback covers the rest). Per module
         // generation: the statics come fresh with each reload.

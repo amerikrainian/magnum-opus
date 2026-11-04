@@ -273,6 +273,53 @@ namespace MagnumOpus.Core.Strings
             // A product completed: {0} = product, {1} = done, {2} = required.
             D("event.product", "{0}: {1} of {2}"),
 
+            // Editing the solution.
+            D("editor.tray", "Parts"),
+            // A part picked up on the board: {0} = its name.
+            D("editor.carrying", "carrying {0}"),
+            D("editor.placed", "placed {0}"),
+            D("editor.cancelled", "cancelled"),
+            // {0} = what went: a part's name, or instructions.
+            D("editor.deleted", "deleted {0}"),
+            // A part's direction after a turn: {0} = name, {1} = direction.
+            D("editor.part_facing", "{0}, {1}"),
+            // A track turned (its shape is its hexes, it has no one direction).
+            D("editor.rotated", "rotated"),
+            D("editor.length", "length {0}"),
+            // Drawing a track from its end: {0} = its hexes so far.
+            D("editor.drawing", "drawing track, {0} hexes"),
+            D("editor.track_done", "track, {0} hexes"),
+            D("editor.track_hexes", "{0} hexes"),
+            D("editor.stop_to_edit", "Stop the engine to edit."),
+            D("editor.finish_first", "Put the part down or cancel first."),
+            // {0} = a part's name or "arm 2".
+            D("editor.fixed", "{0} cannot be changed"),
+            D("editor.cannot_copy", "{0} cannot be copied"),
+            D("editor.no_arm", "no arm here"),
+            // An instruction this puzzle does not allow: {0} = its name.
+            D("editor.unavailable", "{0} not available"),
+            // More than three instructions, by count.
+            D("editor.instruction_count", "{0} instructions"),
+            // Instructions in the tape's selection: {0} = how many.
+            D("editor.selected", "{0} selected"),
+            D("editor.selection_cleared", "selection cleared"),
+            D("editor.copied", "copied {0}"),
+            D("editor.cut", "cut {0}"),
+            D("editor.pasted", "pasted {0}"),
+            // Clipboard instructions with no arm row or permission to land on: {0} = how many.
+            D("editor.not_pasted", "{0} did not fit"),
+            D("editor.nothing_to_undo", "nothing to undo"),
+            D("editor.nothing_to_redo", "nothing to redo"),
+            D("editor.no_change", "no change"),
+            // More than three changes by an undo, by count.
+            D("editor.changes", "{0} changes"),
+            // A part and its hex: {0} = name, {1} = coordinates.
+            D("editor.part_at", "{0} at {1}"),
+            D("editor.removed", "removed {0}"),
+            // A program cell an undo changed: {0} = arm, {1} = column, {2} = instruction.
+            D("editor.cell_change", "arm {0}, {1}, {2}"),
+            D("editor.cell_removed", "arm {0}, {1}, removed {2}"),
+
             // Key help labels of the editor's keys.
             D("bind.ed.hex.nw", "Cursor northwest"),
             D("bind.ed.hex.ne", "Cursor northeast"),
@@ -301,6 +348,27 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.play", "Play or pause"),
             D("bind.ed.step", "Step one cycle"),
             D("bind.ed.fast", "Fast forward"),
+            D("bind.ed.instr", "Place instruction, Shift inserts"),
+            D("bind.ed.program_arm", "Program the arm here"),
+            D("bind.ed.delete", "Delete"),
+            D("bind.ed.cancel", "Cancel"),
+            D("bind.ed.clone", "Pick up a copy"),
+            D("bind.ed.track", "Extend track"),
+            D("bind.ed.rot.ccw", "Rotate counter-clockwise"),
+            D("bind.ed.rot.cw", "Rotate clockwise"),
+            D("bind.ed.len.up", "Longer arm"),
+            D("bind.ed.len.down", "Shorter arm"),
+            D("bind.ed.sel.up", "Select up"),
+            D("bind.ed.sel.down", "Select down"),
+            D("bind.ed.sel.left", "Select left"),
+            D("bind.ed.sel.right", "Select right"),
+            D("bind.ed.sel.all", "Select all instructions"),
+            D("bind.ed.unselect", "Clear selection"),
+            D("bind.ed.copy", "Copy"),
+            D("bind.ed.cut", "Cut"),
+            D("bind.ed.paste", "Paste"),
+            D("bind.ed.undo", "Undo"),
+            D("bind.ed.redo", "Redo"),
         };
 
         private static readonly Dictionary<string, string> _defaults = BuildDefaults();
@@ -525,6 +593,38 @@ namespace MagnumOpus.Core.Strings
         public static string EditorNeighbour(string direction, string what) => F("editor.neighbour", direction, what);
         public static string EditorScoreItem(string label, string value) => F("editor.score_item", label, value);
         public static string EditorGoldMark => Get("editor.gold_mark");
+        public static string EditorTray => Get("editor.tray");
+        public static string EditorCarrying(string part) => F("editor.carrying", part);
+        public static string EditorPlaced(string part) => F("editor.placed", part);
+        public static string EditorCancelled => Get("editor.cancelled");
+        public static string EditorDeleted(string what) => F("editor.deleted", what);
+        public static string EditorPartFacing(string part, string direction) => F("editor.part_facing", part, direction);
+        public static string EditorRotated => Get("editor.rotated");
+        public static string EditorLength(int length) => F("editor.length", length);
+        public static string EditorDrawing(int hexes) => F("editor.drawing", hexes);
+        public static string EditorTrackDone(int hexes) => F("editor.track_done", hexes);
+        public static string EditorTrackHexes(int hexes) => F("editor.track_hexes", hexes);
+        public static string EditorStopToEdit => Get("editor.stop_to_edit");
+        public static string EditorFinishFirst => Get("editor.finish_first");
+        public static string EditorFixed(string what) => F("editor.fixed", what);
+        public static string EditorCannotCopy(string what) => F("editor.cannot_copy", what);
+        public static string EditorNoArm => Get("editor.no_arm");
+        public static string EditorUnavailable(string what) => F("editor.unavailable", what);
+        public static string EditorInstructionCount(int n) => F("editor.instruction_count", n);
+        public static string EditorSelected(int n) => F("editor.selected", n);
+        public static string EditorSelectionCleared => Get("editor.selection_cleared");
+        public static string EditorCopied(string what) => F("editor.copied", what);
+        public static string EditorCut(string what) => F("editor.cut", what);
+        public static string EditorPasted(string what) => F("editor.pasted", what);
+        public static string EditorNotPasted(int n) => F("editor.not_pasted", n);
+        public static string EditorNothingToUndo => Get("editor.nothing_to_undo");
+        public static string EditorNothingToRedo => Get("editor.nothing_to_redo");
+        public static string EditorNoChange => Get("editor.no_change");
+        public static string EditorChanges(int n) => F("editor.changes", n);
+        public static string EditorPartAt(string part, string where) => F("editor.part_at", part, where);
+        public static string EditorRemoved(string what) => F("editor.removed", what);
+        public static string EditorCellChange(int arm, int col, string instruction) => F("editor.cell_change", arm, col, instruction);
+        public static string EditorCellRemoved(int arm, int col, string instruction) => F("editor.cell_removed", arm, col, instruction);
         public static string EditorExpansion(string what, string source) => F("editor.expansion", what, source);
         public static string EditorLogEntry(int cycle, string text) => F("editor.log_entry", cycle, text);
         public static string RunRunning => Get("run.running");

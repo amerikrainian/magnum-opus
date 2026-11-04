@@ -21,9 +21,9 @@ namespace MagnumOpus.Module.Patches
     /// simulation the editor is showing is narrated (the program panel builds throwaway ones every
     /// frame to check the program).
     ///
-    /// Every cycle goes to the run log (<see cref="RunLog"/>). Speech: every event while stepping;
-    /// while playing, each cycle replaces the last one's speech (no backlog at speed); in fast
-    /// forward, products only. Errors are spoken by the editor screen when the game shows them.
+    /// Every cycle goes to the run log (<see cref="RunLog"/>). Speech, one message per event: every
+    /// event while stepping, after "cycle N"; while playing, each cycle's first message cuts off the
+    /// last cycle's (no backlog at speed); in fast forward, products only. Errors are spoken by the editor screen when the game shows them.
     /// </summary>
     internal static class SimNarration
     {
@@ -205,18 +205,22 @@ namespace MagnumOpus.Module.Patches
                 foreach (var kv in _bondsBefore)
                     if (!bonds.ContainsKey(kv.Key) && ParseBond(kv.Key, out var a, out var b))
                         events.Add(new KeyValuePair<HexIndex, string>(a, Strings.EventUnbonded(AtomAt(_atomsBefore, a), AtomAt(_atomsBefore, b))));
-                // One sentence per part that did the work, in the order it happened. A product taking
-                // its molecule is said by its count at the cycle's end, not atom by atom here.
-                var byPart = new List<KeyValuePair<string, List<string>>>();
+                // One sentence per part that did the work (two reagents of one name are two parts),
+                // in the order it happened; work on no part is keyed by its hex. A product taking its
+                // molecule is said by its count at the cycle's end, not atom by atom here.
+                var byPart = new List<KeyValuePair<object, List<string>>>();
+                var names = new Dictionary<object, string>();
                 foreach (var ev in events)
                 {
                     if (OnProduct(ed, ev.Key)) continue;
-                    string who = PartAt(ed, ev.Key) ?? Hex.Coords(ev.Key);
-                    var entry = byPart.FirstOrDefault(p => p.Key == who);
-                    if (entry.Value == null) { entry = new KeyValuePair<string, List<string>>(who, new List<string>()); byPart.Add(entry); }
+                    var part = PartAt(ed, ev.Key);
+                    object key = (object)part ?? Hex.Coords(ev.Key);
+                    if (!names.ContainsKey(key)) names[key] = part != null ? Board.PartName(ed, part) : Hex.Coords(ev.Key);
+                    var entry = byPart.FirstOrDefault(p => Equals(p.Key, key));
+                    if (entry.Value == null) { entry = new KeyValuePair<object, List<string>>(key, new List<string>()); byPart.Add(entry); }
                     entry.Value.Add(ev.Value);
                 }
-                foreach (var p in byPart) _cycle.Others.Add(Strings.EventActor(p.Key, string.Join(", ", p.Value)));
+                foreach (var p in byPart) _cycle.Others.Add(Strings.EventActor(names[p.Key], string.Join(", ", p.Value)));
             }
             catch (Exception e) { CoreLog.Warning("[sim] glyph events: " + e.Message); }
             finally { _atomsBefore = null; }
@@ -258,13 +262,13 @@ namespace MagnumOpus.Module.Patches
             atoms.TryGetValue(h, out var a) ? Strings.EventAtomAt(Board.AtomName(a.Type), Hex.Coords(h)) : Hex.Coords(h);
 
         // The non-arm part covering a hex (a glyph, a reagent, a product), by name.
-        private static string PartAt(SolutionEditorScreen ed, HexIndex h)
+        private static Part PartAt(SolutionEditorScreen ed, HexIndex h)
         {
             var solution = ed.GetSolution();
             foreach (var part in solution.parts)
             {
                 if (part.GetType().isProgrammable || part.GetType().isTrack) continue;
-                if (part.GetHexFootprint(solution).Contains(h)) return Board.PartName(ed, part);
+                if (part.GetHexFootprint(solution).Contains(h)) return part;
             }
             return null;
         }
@@ -317,17 +321,14 @@ namespace MagnumOpus.Module.Patches
                 foreach (var s in cycle.Products) Speech.Say(s);
                 return;
             }
+            // One message per event, SpeechChem's way ("cycle 3", "arm 1: grabbed Fire", "arm 2: ..."):
+            // the first interrupts, the rest queue behind it. A step opens with the cycle's number;
+            // at speed each cycle's first message cuts the last cycle's off, so what is said is the
+            // present and nothing backs up.
             var all = new List<string>(sentences);
             all.AddRange(cycle.Products);
-            if (state == SimPlayState.Playing)
-            {
-                // At speed each cycle replaces the last: what is said is always the present.
-                if (all.Count > 0) Speech.Say(string.Join("; ", all), interrupt: true);
-                return;
-            }
-            // A step: the cycle's number, then what happened in it.
-            all.Insert(0, Strings.EditorCycle(cycle.Number));
-            Speech.Say(string.Join("; ", all), interrupt: true);
+            if (state != SimPlayState.Playing) all.Insert(0, Strings.EditorCycle(cycle.Number));
+            for (int i = 0; i < all.Count; i++) Speech.Say(all[i], interrupt: i == 0);
         }
 
         /// <summary>A molecule in words: its atoms by name with counts ("Fire", "2 Fire, Salt").</summary>

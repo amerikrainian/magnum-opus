@@ -19,17 +19,22 @@ namespace MagnumOpus.Module.Game
         public static bool Running(SolutionEditorScreen ed) => ed.GetSimPlayState() != SimPlayState.Stopped;
 
         /// <summary>The programmable parts in tape order (row 1 first).</summary>
+        /// <summary>The programmable parts in tape order (row 1 first): the game's own ordering (by
+        /// program index, as Solution.OrderProgrammables sorts them) applied to the parts in the
+        /// solution now. The solution's cached list refreshes only when it saves, so it can hold a
+        /// part just picked up or miss one just put down.</summary>
         public static List<Part> Arms(SolutionEditorScreen ed)
         {
-            var list = SolutionOf(ed)?.GetOrderedProgrammables();
-            return list == null ? new List<Part>() : new List<Part>(list);
+            var solution = SolutionOf(ed);
+            if (solution == null) return new List<Part>();
+            return solution.parts.Where(p => p.GetType().isProgrammable).OrderBy(p => p.programIndex).ToList();
         }
 
-        /// <summary>1-based tape row of a part, or 0 when it is not programmable.</summary>
+        /// <summary>1-based tape row of a part, or 0 when it is not programmable or not on the board.</summary>
         public static int ArmNumber(SolutionEditorScreen ed, Part part)
         {
-            var arms = SolutionOf(ed)?.GetOrderedProgrammables();
-            if (arms == null || part == null) return 0;
+            var arms = Arms(ed);
+            if (part == null) return 0;
             var root = part.GetRootPart();
             int i = arms.IndexOf(root);
             return i < 0 ? 0 : i + 1;
