@@ -105,6 +105,7 @@ namespace MagnumOpus.Module
         private static void RegisterScreens()
         {
             ScreenManager.Register(new TitleGateScreen());
+            ScreenManager.Register(new PuzzleSelectGameScreen());
             ScreenManager.Register(new ModMenuScreen());
             ScreenManager.Register(new HelpScreen());
         }

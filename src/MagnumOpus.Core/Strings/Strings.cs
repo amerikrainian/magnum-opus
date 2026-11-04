@@ -135,6 +135,28 @@ namespace MagnumOpus.Core.Strings
             D("mod.category.global", "Global"),
             D("mod.category.ui", "UI"),
             D("mod.category.game", "Game"),
+
+            // Campaign item kinds and states on the puzzle select (the game shows them as icons and
+            // check boxes only).
+            D("item.puzzle", "puzzle"),
+            D("item.cutscene", "cutscene"),
+            D("item.letter", "letter"),
+            D("item.solitaire", "solitaire"),
+            D("state.completed", "completed"),
+            D("state.locked", "locked"),
+            // The chapter gems, as a list.
+            D("select.chapters", "Chapters"),
+            // {0} = the chapter's title ("Chapter 1"), {1} = its name.
+            D("select.chapter", "{0}, {1}"),
+            D("select.journal", "Journal"),
+            // The campaign switch; {0} = the other campaign's name.
+            D("select.switch_campaign", "Switch to {0}"),
+            D("select.dlc_not_owned", "not owned, opens the store page"),
+            D("campaign.opus_magnum", "Opus Magnum"),
+            // The unlock sequence the game plays on return to the map; {0} = the item or chapter.
+            D("select.unlocked", "{0} unlocked"),
+            D("select.completed", "{0} completed"),
+            D("select.chapter_unlocked", "new chapter: {0}"),
         };
 
         private static readonly Dictionary<string, string> _defaults = BuildDefaults();
@@ -320,6 +342,19 @@ namespace MagnumOpus.Core.Strings
         public static string ModClose => Get("mod.close");
         public static string ModSpeakPositions => Get("mod.speak_positions");
         public static string ModFocusOnLaunch => Get("mod.focus_on_launch");
+
+        public static string ItemKind(string kind) => Get("item." + kind);
+        public static string StateCompleted => Get("state.completed");
+        public static string StateLocked => Get("state.locked");
+        public static string SelectChapters => Get("select.chapters");
+        public static string SelectChapter(string title, string name) => F("select.chapter", title, name);
+        public static string SelectJournal => Get("select.journal");
+        public static string SwitchCampaign(string campaign) => F("select.switch_campaign", campaign);
+        public static string DlcNotOwned => Get("select.dlc_not_owned");
+        public static string CampaignOpusMagnum => Get("campaign.opus_magnum");
+        public static string SelectUnlocked(string what) => F("select.unlocked", what);
+        public static string SelectCompleted(string what) => F("select.completed", what);
+        public static string SelectChapterUnlocked(string what) => F("select.chapter_unlocked", what);
 
         /// <summary>The all-keys heading of an input category ("Global keys").</summary>
         public static string KeyCategory(string category)
