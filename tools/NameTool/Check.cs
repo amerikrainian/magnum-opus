@@ -83,10 +83,12 @@ namespace MagnumOpus.NameTool
             string obfPath = Path.Combine(mappings, "obf", fresh.Mvid.ToString("D") + ".tsv");
             if (File.Exists(obfPath))
             {
+                // Final names on both sides (after the renamer's collision fallbacks), by position.
                 using var truthModule = GameNames.ReadModule(exe);
-                var truthSource = new MappingNameSource(ObfMap.ReadTsvFile(obfPath), named);
-                var truth = Names(truthModule.GetTypes().ToList(), truthSource);
-                Compare(matched, truth);
+                var truthLog = Renamer.Apply(truthModule, new MappingNameSource(ObfMap.ReadTsvFile(obfPath), named));
+                using var matchedModule = GameNames.ReadModule(exe);
+                var matchedLog = Renamer.Apply(matchedModule, new Matcher(matchedModule, fp));
+                Compare(Renamed(matchedModule, matchedLog), Renamed(truthModule, truthLog));
             }
             else
             {
@@ -116,6 +118,23 @@ namespace MagnumOpus.NameTool
                 foreach (var u in result.Unresolved) Console.WriteLine("  unresolved: " + u);
             }
             return 0;
+        }
+
+        // Item key (kind + metadata position) -> its name after a rename, for items the rename changed.
+        private static Dictionary<string, string> Renamed(ModuleDefinition module, RenameLog log)
+        {
+            var d = new Dictionary<string, string>(StringComparer.Ordinal);
+            var types = module.GetTypes().ToList();
+            for (int i = 0; i < types.Count; i++)
+            {
+                var t = types[i];
+                if (log.OldTypeFull[t] != Sig.Full(t)) d["T" + i] = t.Name;
+                for (int f = 0; f < t.Fields.Count; f++)
+                    if (log.OldMemberName[t.Fields[f]] != t.Fields[f].Name) d["T" + i + ".F" + f] = t.Fields[f].Name;
+                for (int m = 0; m < t.Methods.Count; m++)
+                    if (log.OldMemberName[t.Methods[m]] != t.Methods[m].Name) d["T" + i + ".M" + m] = t.Methods[m].Name;
+            }
+            return d;
         }
 
         // Item key (kind + metadata position) -> the first-choice name a source gives it.
