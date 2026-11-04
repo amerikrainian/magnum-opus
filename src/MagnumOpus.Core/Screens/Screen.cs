@@ -82,8 +82,13 @@ namespace MagnumOpus.Core.Screens
 
         public virtual void OnPush() { }
 
+        // Set when a child screen (a dropdown's list, a prompt) closes: focus coming back from it is
+        // not a screen change, so the name is not said again ("Options" after cancelling a list).
+        private bool _returningFromChild;
+
         public virtual void OnFocus()
         {
+            if (_returningFromChild) { _returningFromChild = false; return; }
             // Screen-change announcement (never interrupt). The Navigator separately announces the
             // focused element within the screen.
             if (!string.IsNullOrEmpty(ScreenName) && Navigation.FocusActive())
@@ -135,6 +140,7 @@ namespace MagnumOpus.Core.Screens
             Navigation.ScreenClosed(child); // while ParentScreen is still set: the navigator reads it
             child.ParentScreen = null;
             ActiveChild = null;
+            _returningFromChild = true;
         }
     }
 }

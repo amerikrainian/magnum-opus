@@ -122,6 +122,7 @@ namespace MagnumOpus.Host
         {
             if (t == null) return "null";
             if (Table == null || t.Assembly != Game) return t.Name;
+            if (t.IsGenericType && !t.IsGenericTypeDefinition) t = t.GetGenericTypeDefinition();
             return Table.HumanType(t.FullName.Replace('+', '/'));
         }
 

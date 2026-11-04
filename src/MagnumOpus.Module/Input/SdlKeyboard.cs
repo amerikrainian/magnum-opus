@@ -45,6 +45,7 @@ namespace MagnumOpus.Module.Input
 
             // A dev-driver press (dev.key:): held for exactly this frame, released the next, so it
             // edges like a real tap. No OS input and no window focus involved.
+            NoteInjection(_injected);
             if (_injected != null)
             {
                 foreach (int sc in _injected)
@@ -55,9 +56,23 @@ namespace MagnumOpus.Module.Input
 
         private static int[] _injected;
 
+        /// <summary>The SDL keycode of the last injected chord's key, for the frame it is held: the
+        /// game never sees an injected key (it reads its own SDL events), so the module forwards it
+        /// (GameKeys.Forced) where the focused screen passes that key to the game.</summary>
+        public static int InjectedGameKey { get; private set; }
+
         /// <summary>Press a chord on the next frame (the dev driver; tests). Modifiers are scancodes
         /// too (224 LCtrl, 225 LShift, 226 LAlt).</summary>
         public static void Inject(params int[] scancodes) => _injected = scancodes;
+
+        /// <summary>Clear the forwarded key after its frame; set it when an injection lands.</summary>
+        internal static void NoteInjection(int[] scancodes)
+        {
+            InjectedGameKey = 0;
+            if (scancodes == null) return;
+            foreach (int sc in scancodes)
+                if (!IsModifier(sc)) InjectedGameKey = KeyFor(sc);
+        }
 
         public static bool Held(int scancode) => _primed && scancode >= 0 && scancode < _current.Length && _current[scancode] != 0;
 

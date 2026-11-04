@@ -107,6 +107,8 @@ namespace MagnumOpus.Module
             ScreenManager.Register(new TitleGateScreen());
             ScreenManager.Register(new PuzzleSelectGameScreen());
             ScreenManager.Register(new DocumentGameScreen());
+            ScreenManager.Register(new EscapeGameScreen());
+            ScreenManager.Register(new OptionsGameScreen());
             ScreenManager.Register(new ModMenuScreen());
             ScreenManager.Register(new HelpScreen());
         }
@@ -115,6 +117,10 @@ namespace MagnumOpus.Module
         {
             SdlKeyboard.Update();
             Patches.GameKeys.Forced = 0; // a synthesized press lasts one game frame
+            // A dev-driver key the game would see if it were real: forward it (the game reads its
+            // own SDL events and never sees an injection).
+            int injected = SdlKeyboard.InjectedGameKey;
+            if (injected != 0 && Patches.GameKeys.GameSees(injected)) Patches.GameKeys.Forced = injected;
             if (!_armed) Arm();
             Announce();
             InputManager.Tick();

@@ -44,6 +44,19 @@ namespace MagnumOpus.Module.Patches
         /// <summary>Set for one frame to make the game see a key as pressed (synthesized presses).</summary>
         public static int Forced;
 
+        /// <summary>Whether the game should see this navigation key now: focus mode off, no modeled
+        /// screen, a raw-input screen, or a game screen that passes it. A mod overlay (the key help,
+        /// the mod menu) and a child screen (a dropdown's list, a prompt) own every key they get:
+        /// Escape closing a dropdown list must not also close the screen beneath it.</summary>
+        public static bool GameSees(int key)
+        {
+            if (!FocusMode.Active) return true;
+            var screen = ScreenManager.Current;
+            if (screen == null || screen.CapturesRawInput) return true;
+            if (screen.ParentScreen != null) return false;
+            return screen is GameScreen gs && gs.PassKeyToGame(key);
+        }
+
         private static bool Prefix(object[] __args, ref bool __result)
         {
             try
@@ -58,13 +71,7 @@ namespace MagnumOpus.Module.Patches
                     __result = global::InputManager.isKeyInputEnabled;
                     return false;
                 }
-                if (!Claimed.Contains(key) || !FocusMode.Active) return true;
-                var screen = ScreenManager.Current;
-                if (screen == null || screen.CapturesRawInput) return true;
-                // A mod overlay (the key help, the mod menu, a choice list) owns every key it shows.
-                var top = screen;
-                while (top.ParentScreen != null) top = top.ParentScreen;
-                if (top is GameScreen gs && gs.PassKeyToGame(key)) return true;
+                if (!Claimed.Contains(key) || GameSees(key)) return true;
                 __result = false;
                 return false;
             }

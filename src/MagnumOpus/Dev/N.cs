@@ -50,14 +50,31 @@ namespace MagnumOpus
 
         public static object Get(object obj, string member) => Get(obj, member, obj?.GetType());
 
+        // A game member by human name on the RUNTIME type: the name table is keyed by the generic
+        // definition (SettingsItem`1), the member is bound on the closed type (SettingsItem<string>).
+        private static FieldInfo FieldOn(System.Type t, string member)
+        {
+            var def = t.IsGenericType ? t.GetGenericTypeDefinition() : t;
+            if (GameBinding.Table == null || def.Assembly != GameBinding.Game) return null;
+            return GameBinding.Table.TryField(GameBinding.HumanName(def), member, out var shipping) ? t.GetField(shipping, GameBinding.All) : null;
+        }
+
+        private static MethodInfo MethodOn(System.Type t, string member, int argc)
+        {
+            var def = t.IsGenericType ? t.GetGenericTypeDefinition() : t;
+            if (GameBinding.Table == null || def.Assembly != GameBinding.Game) return null;
+            var names = new HashSet<string>(GameBinding.Table.Methods(GameBinding.HumanName(def), member).Select(o => o.Value));
+            var hits = t.GetMethods(GameBinding.All).Where(m => names.Contains(m.Name) && m.GetParameters().Length == argc).ToList();
+            return hits.Count == 1 ? hits[0] : null;
+        }
+
         private static object Get(object obj, string member, System.Type type)
         {
             for (var t = type; t != null; t = t.BaseType)
             {
-                string human = GameBinding.HumanName(t);
-                var f = GameBinding.Field(human, member);
+                var f = FieldOn(t, member);
                 if (f != null) return f.GetValue(f.IsStatic ? null : obj);
-                var m = GameBinding.Method(human, member, 0);
+                var m = MethodOn(t, member, 0);
                 if (m != null) return m.Invoke(m.IsStatic ? null : obj, null);
             }
             // Not a game member (BCL types, real names): plain reflection.
@@ -72,7 +89,7 @@ namespace MagnumOpus
         {
             for (var t = obj.GetType(); t != null; t = t.BaseType)
             {
-                var f = GameBinding.Field(GameBinding.HumanName(t), member);
+                var f = FieldOn(t, member);
                 if (f != null) { f.SetValue(f.IsStatic ? null : obj, value); return; }
             }
             throw new MissingMemberException(GameBinding.HumanName(obj.GetType()), member);
@@ -89,7 +106,7 @@ namespace MagnumOpus
             args = args ?? new object[0];
             for (var t = type; t != null; t = t.BaseType)
             {
-                var m = GameBinding.Method(GameBinding.HumanName(t), method, args.Length);
+                var m = MethodOn(t, method, args.Length);
                 if (m != null) return m.Invoke(m.IsStatic ? null : obj, args);
             }
             throw new MissingMethodException(GameBinding.HumanName(type), method + "/" + args.Length);
