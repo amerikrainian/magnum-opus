@@ -100,3 +100,4 @@ campaign.opus_magnum=Opus Magnum
 select.unlocked={0} unlocked
 select.completed={0} completed
 select.chapter_unlocked=new chapter: {0}
+info.solutions=Solutions

@@ -157,6 +157,8 @@ namespace MagnumOpus.Core.Strings
             D("select.unlocked", "{0} unlocked"),
             D("select.completed", "{0} completed"),
             D("select.chapter_unlocked", "new chapter: {0}"),
+            // The puzzle info screen's list of saved solutions.
+            D("info.solutions", "Solutions"),
         };
 
         private static readonly Dictionary<string, string> _defaults = BuildDefaults();
@@ -355,6 +357,7 @@ namespace MagnumOpus.Core.Strings
         public static string SelectUnlocked(string what) => F("select.unlocked", what);
         public static string SelectCompleted(string what) => F("select.completed", what);
         public static string SelectChapterUnlocked(string what) => F("select.chapter_unlocked", what);
+        public static string InfoSolutions => Get("info.solutions");
 
         /// <summary>The all-keys heading of an input category ("Global keys").</summary>
         public static string KeyCategory(string category)

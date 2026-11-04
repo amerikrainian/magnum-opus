@@ -39,7 +39,9 @@ namespace MagnumOpus.Module.Screens
             var g = Game;
             if (g == null) return;
             b.PushContext(null, null);
-            b.AddItem(ControlId.Structural("box:message"), Nodes.Text(() => GameText.Clean(Game?.message)));
+            // A text box's message is its field's label; said once, on the field.
+            if (!g.isTextbox)
+                b.AddItem(ControlId.Structural("box:message"), Nodes.Text(() => GameText.Clean(Game?.message)));
             if (g.messagePart2.HasValue())
                 b.AddItem(ControlId.Structural("box:message2"), Nodes.Text(() => Game != null && Game.messagePart2.HasValue() ? GameText.Clean(Game.messagePart2.GetValue()) : ""));
             if (g.isTextbox)
