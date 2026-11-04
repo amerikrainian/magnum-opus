@@ -11,6 +11,8 @@ namespace MagnumOpus.Module.Screens
     /// </summary>
     public abstract class GameScreen<T> : GameScreen where T : class, IScreen
     {
+        protected GameScreen() { Modeled.Add(typeof(T)); }
+
         /// <summary>The live game screen, or null when it is not on top.</summary>
         protected T Game => GameScreens.TopAs<T>();
 
@@ -19,6 +21,12 @@ namespace MagnumOpus.Module.Screens
 
     public abstract class GameScreen : Screen
     {
+        // The game screen types a GameScreen<T> models (the fallback covers the rest). Per module
+        // generation: the statics come fresh with each reload.
+        protected static readonly System.Collections.Generic.HashSet<System.Type> Modeled = new System.Collections.Generic.HashSet<System.Type>();
+
+        protected static bool IsModeled(System.Type t) => Modeled.Contains(t);
+
         /// <summary>Whether the game should still see this navigation key (an SDL keycode) while
         /// the screen has focus. Escape by default: the game's own back-out (to the previous screen,
         /// the pause menu) keeps working, and a screen that handles Back itself says false.</summary>
