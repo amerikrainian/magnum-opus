@@ -56,6 +56,7 @@ namespace MagnumOpus.Module
             // UnpatchSelf removes by id, so a fixed id would let the old teardown strip the new patches.
             _harmony = new Harmony("com.magnumopus.module." + Guid.NewGuid().ToString("N"));
 
+            LanguageSync.Start(host.PluginDir);
             RegisterInput();
             RegisterScreens();
             FocusMode.Set(host.Settings.FocusModeOnLaunch);
@@ -128,6 +129,7 @@ namespace MagnumOpus.Module
             int injected = SdlKeyboard.InjectedGameKey;
             if (injected != 0 && Patches.GameKeys.GameSees(injected)) Patches.GameKeys.Forced = injected;
             if (!_armed) Arm();
+            LanguageSync.Tick(); // before anything speaks this frame
             Announce();
             InputManager.Tick();
             ScreenManager.Tick();
