@@ -104,12 +104,11 @@ namespace MagnumOpus.Module.Screens.Editor
                     {
                         // No role word: "Fixed-Length Arm, 20g" (user rule 2026-11-04).
                         ControlType = ControlTypes.Text,
-                        // "disabled" leads the label: the state decides whether the rest matters (user
-                        // rule 2026-11-04; the control types speak an Enabled part last).
                         Announcements = new List<NodeAnnouncement>
                         {
-                            Nodes.LabelPart(() => it.Available ? Name(it) : Strings.StateDisabled + ", " + Name(it)),
+                            Nodes.LabelPart(() => Name(it)),
                             Nodes.ValuePart(() => Cost(it) ?? Summary(it)),
+                            Nodes.DisabledPart(() => it.Available),
                         },
                         SearchText = () => Name(it),
                         OnActivate = () => Take(it),

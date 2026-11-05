@@ -10,13 +10,15 @@ namespace MagnumOpus.Core.UI
     /// </summary>
     public static class ControlTypes
     {
+        // "disabled" first: whether the control can be used decides whether the rest matters (user
+        // rule 2026-11-04: "disabled, Continue Editing, button").
         private static readonly string[] StandardOrder =
         {
+            AnnouncementKinds.Enabled,
             AnnouncementKinds.Label,
             AnnouncementKinds.Role,
             AnnouncementKinds.Value,
             AnnouncementKinds.Selected,
-            AnnouncementKinds.Enabled,
             AnnouncementKinds.Tooltip,
             AnnouncementKinds.Position,
         };
