@@ -23,7 +23,8 @@ namespace MagnumOpus.Module.Patches
     ///
     /// Every cycle goes to the run log (<see cref="RunLog"/>). Speech, one message per event: every
     /// event while stepping, after "cycle N"; while playing, each cycle's first message cuts off the
-    /// last cycle's (no backlog at speed); in fast forward, products only. Errors are spoken by the editor screen when the game shows them.
+    /// last cycle's (no backlog at speed); fast forward is silent. The log empties when a run starts
+    /// and when the editor opens. Errors are spoken by the editor screen when the game shows them.
     /// </summary>
     internal static class SimNarration
     {

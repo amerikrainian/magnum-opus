@@ -23,6 +23,7 @@ namespace MagnumOpus.Module.Screens
         private readonly EditorContext _ctx;
         private readonly RunSection _run;
         private bool _tipsPending;
+        private string _solutionKey;
 
         public SolutionEditorGameScreen()
         {
@@ -58,9 +59,18 @@ namespace MagnumOpus.Module.Screens
 
         public override void OnPush()
         {
-            _ctx.Reset();
+            // The editor comes back on top after anything opened over it (the completion screen, a
+            // message box): only another solution resets the cursors, the clipboards and the run log
+            // and replays the tips. Its save file names it (a string, no game object kept).
+            string key = Game?.GetSolution()?.GetFilePath();
+            if (key == null || key != _solutionKey)
+            {
+                _solutionKey = key;
+                RunLog.Clear();
+                _ctx.Reset();
+                _tipsPending = true;
+            }
             _run.Reset();
-            _tipsPending = true;
         }
 
         public override void OnFocus()
