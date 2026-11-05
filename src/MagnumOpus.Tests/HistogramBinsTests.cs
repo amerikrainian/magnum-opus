@@ -41,6 +41,16 @@ namespace MagnumOpus.Tests
         }
 
         [Fact]
+        public void TwoMarkersTagTheirBars()
+        {
+            // 25 stands over the third bar, 5 over the first; the empty middle bar stays out.
+            var bins = HistogramBins.Bins(new[] { 1f, 0f, 0.5f }, 30, 25, 5);
+            Assert.Equal(2, bins.Count);
+            Assert.True(bins[1].Marked && !bins[1].Marked2);
+            Assert.True(bins[0].Marked2 && !bins[0].Marked);
+        }
+
+        [Fact]
         public void NoDataNoBins()
         {
             Assert.Empty(HistogramBins.Bins(new float[0], 30, 5));

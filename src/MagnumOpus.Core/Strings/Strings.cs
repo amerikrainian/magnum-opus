@@ -295,6 +295,9 @@ namespace MagnumOpus.Core.Strings
             D("histogram.tiny", "under 1%"),
             // The bar the game's marker line stands over (this solution's score).
             D("histogram.now", "now"),
+            // Puzzle info's markers: the selected solution's bar and the best score's bar.
+            D("histogram.this", "this"),
+            D("histogram.best", "best"),
             // A tray instruction the puzzle does not permit / one the solution may hold only once.
             D("editor.not_available", "not available"),
             D("editor.limit_reached", "limit reached"),
@@ -655,6 +658,8 @@ namespace MagnumOpus.Core.Strings
         public static string HistogramPercent(int n) => F("histogram.percent", n);
         public static string HistogramTiny => Get("histogram.tiny");
         public static string HistogramNow => Get("histogram.now");
+        public static string HistogramThis => Get("histogram.this");
+        public static string HistogramBest => Get("histogram.best");
         public static string EditorNotAvailable => Get("editor.not_available");
         public static string EditorLimitReached => Get("editor.limit_reached");
         public static string EditorPlaced(string part) => F("editor.placed", part);

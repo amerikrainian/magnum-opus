@@ -261,7 +261,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   (as Space). NOT yet verified live (no cutscene unlocked on the test profile).
 - **Puzzle info** (`PuzzleInfoGameScreen`): solutions (focus selects, Enter opens), New / Open / Rename /
   Copy / Delete via ButtonPress, the leaderboard notice, the story panel (`StoryPanelNodes`, shared with
-  Options). Histograms of solved puzzles are not read yet.
+  Options). Histograms: `ScoreTable` in comparing mode.
 - **Message boxes** (`MessageBoxGameScreen`): notice / confirm / text box; the game keeps typed
   characters and Backspace in a text box (type-ahead stands down), each change echoed. The typing echo is
   NOT verified live (needs OS input).
@@ -352,7 +352,8 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   "% of the tallest bar", SpeechChem's rule), "under 1%" for a drawn bar rounding to 0, the bar under
   the game's marker tagged (bucket = clamp((score - 1) * n / max), `Core/Text/HistogramBins`,
   unit-tested). Then Continue Editing / Record GIF (disabled in tutorials) / Return to Menu via
-  ButtonPress. Verified live on Stabilized Water. Puzzle info's histograms are not read yet.
+  ButtonPress. Verified live on Stabilized Water. The table is `Screens/ScoreTable`, shared with puzzle
+  info (comparing mode: "This: x" = the selected solution or N/A, "Best: y", bars tagged this / best).
 - **Puzzle tips** (`PuzzleTipGameScreen`, 2026-11-04): the tip's name, its text as the game draws it
   (the dragging tip filled with the layout's drag letters), Close (the game's Escape). The animated
   demonstration is not described. Verified live.
@@ -386,7 +387,7 @@ Game terms are the game's own (`GameText.Translate`, `LocString`s).
 - Phase 6: the solution editor. DONE: reading, narration and editing (section 12). Left: the items
   section 12 lists as not verified; reading the game's instruction errors (the red cells behind
   "Instruction errors must be fixed."); dropping a new arm from the tray onto an arm to swap it (the
-  game's drag does); a "step to next event" key; puzzle info's histograms (`HistogramBins` is ready). Read part, atom and puzzle names from the game's registries, never hardcoded
+  game's drag does); a "step to next event" key. Read part, atom and puzzle names from the game's registries, never hardcoded
   (content mods).
 - Phase 7: the journal (operable), the puzzle editor, the solution browser, the GIF recorder, Workshop and
   leaderboards; histograms on puzzle info.

@@ -16,7 +16,8 @@ namespace MagnumOpus.Module.Screens
     ///     the selection), Enter opens it in the editor;
     ///  2. New, Open, Rename, Copy, Delete: the game's own buttons, pressed through ButtonPress, so
     ///     Rename and Delete open the game's own message boxes (modeled separately);
-    ///  3. the leaderboard area: the game's notice when there is nothing to show (tutorial, custom,
+    ///  3. the histograms (ScoreTable, comparing: the selected solution's score as "this" and the
+    ///     best, each tagged on its bar), or the game's notice when it draws none (tutorial, custom,
     ///     hermit mode, unsolved);
     ///  4. the story panel.
     /// The game's own keys keep working where they are not ours: Delete asks to delete, F2 renames.
@@ -65,7 +66,10 @@ namespace MagnumOpus.Module.Screens
             }
 
             b.BeginStop("leaderboard");
-            b.AddItem(ControlId.Structural("info:leaderboard"), Nodes.Text(LeaderboardNotice));
+            if (ShowsHistograms(g))
+                ScoreTable.Build(b, "info", () => Game?.scoreData, ScoreTable.Metrics(g.puzzle), comparing: true);
+            else
+                b.AddItem(ControlId.Structural("info:leaderboard"), Nodes.Text(LeaderboardNotice));
 
             b.BeginStop("story");
             StoryPanelNodes.Build(b, "info:story", () => Game?.storyPanel);
@@ -94,6 +98,11 @@ namespace MagnumOpus.Module.Screens
             }
             return GameText.Clean(string.Format(Translations.Translate("Not Yet Solved  /  {0} Parts").GetTranslated(), solution.parts.Count)).Replace("  /  ", ", ");
         }
+
+        // The game draws the histograms only for a solved campaign or journal puzzle outside hermit mode.
+        private static bool ShowsHistograms(PuzzleInfoScreen g) =>
+            !g.puzzle.isTutorial && !g.puzzle.isCustom && !GameLogic.instance.settingsData.enableHermitMode.Get()
+            && GameLogic.instance.saveData.IsComplete(g.puzzle) && g.scoreData != null;
 
         // What the game draws where the histograms go when it has none to show.
         private string LeaderboardNotice()
