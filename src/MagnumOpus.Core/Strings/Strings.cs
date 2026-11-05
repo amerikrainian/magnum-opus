@@ -389,6 +389,7 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.instr", "Place instruction, Shift inserts"),
             D("bind.ed.program_arm", "Program the arm here"),
             D("bind.ed.jump", "Jump between the board and the tape"),
+            D("bind.ed.origin", "Cursor to the origin"),
             D("bind.ed.mark", "Mark a corner"),
             D("bind.ed.toggle_select", "Select or unselect the part here"),
             D("bind.ed.select_parts", "Select all parts"),

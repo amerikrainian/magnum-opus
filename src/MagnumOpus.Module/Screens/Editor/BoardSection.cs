@@ -17,7 +17,7 @@ namespace MagnumOpus.Module.Screens.Editor
     /// are not board keys (user rule 2026-11-04); Alt with them skips to the next hex that reads
     /// differently; Alt+Shift on the letters, Alt on the numpad). A hex
     /// reads its half-step coordinates, then what is on it (<see cref="Board"/>).
-    /// Reading: [ ] categories, , . items, S details, W the molecule, X neighbours, ; and ' the
+    /// Home goes to the origin, 0, 0. Reading: [ ] categories, , . items, S details, W the molecule, X neighbours, ; and ' the
     /// program cursor a cycle back and forward on the arm under the cursor, digits jump to an arm.
     /// Editing (stopped engine): Enter picks the part under the cursor up (<see cref="CarryMode"/>)
     /// and puts it down; Ctrl+Enter picks up a copy; Shift+A / Shift+D rotate, Shift+W / Shift+S
@@ -91,6 +91,7 @@ namespace MagnumOpus.Module.Screens.Editor
                 yield break;
             }
 
+            yield return new ElementAction(UiActions.Home, Strings.Get("bind.ed.origin"), _ => { _ctx.Cursor = new HexIndex(0, 0); SayHex(); });
             yield return new ElementAction(EditorActions.SkipNW, Strings.Get("bind.ed.skip.nw"), _ => Skip(HexDir.NorthWest));
             yield return new ElementAction(EditorActions.SkipNE, Strings.Get("bind.ed.skip.ne"), _ => Skip(HexDir.NorthEast));
             yield return new ElementAction(EditorActions.SkipW, Strings.Get("bind.ed.skip.w"), _ => Skip(HexDir.West));

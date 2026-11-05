@@ -276,7 +276,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   answering from anywhere. Board: hex cursor (`Game/Hex`: axial Q east, R up the screen, pointy-top, turn
   k = direction k counter-clockwise from east; spoken as Civ's half-step x, y, x = Q + R/2, origin the
   game's (0, 0)). Keys Q NW, E NE, A W, D E, Z SW, C SE (scancodes; numpad 7 9 4 6 1 3; never the
-  arrows, user rule 2026-11-04), Alt+Shift+them skip (Alt+numpad), ; and ' move the program cursor on the arm under the board cursor, [ ] categories,
+  arrows, user rule 2026-11-04), Alt+Shift+them skip (Alt+numpad), Home the origin, ; and ' move the program cursor on the arm under the board cursor, [ ] categories,
   , . items, S or / details, W molecule (size, composition, bonds, holder; the layout is read hex by hex), X neighbours. A hex reads coordinates, then the atom in play, arm
   bases ("arm 1, Piston Arm, northeast, length 1"), grippers, other parts (`Game/Board`; a track hex
   reads its joins marked with the move that goes there, "Track, +northeast, -southeast": the game
