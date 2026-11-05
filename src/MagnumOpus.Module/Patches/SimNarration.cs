@@ -157,7 +157,14 @@ namespace MagnumOpus.Module.Patches
 
             int turns = s.deltaRotation.GetNumberOfTurns();
             if (turns != 0) _cycle.Arm(n, Repeat(turns > 0 ? Strings.EventCounter : Strings.EventClockwise, Math.Abs(turns)));
-            int pivot = s.deltaPivot.GetNumberOfTurns();
+            // A pivot turns the grippers, not the arm: the game records it on each gripper's state.
+            int pivot = 0;
+            if (arm.subparts != null)
+                foreach (var grip in arm.subparts)
+                {
+                    int t = ((ISim)sim).GetSimState(grip).deltaPivot.GetNumberOfTurns();
+                    if (t != 0) { pivot = t; break; }
+                }
             if (pivot != 0) _cycle.Arm(n, Repeat(pivot > 0 ? Strings.EventPivotCounter : Strings.EventPivotClockwise, Math.Abs(pivot)));
             if (s.deltaLength > 0) _cycle.Arm(n, Strings.EventExtended);
             else if (s.deltaLength < 0) _cycle.Arm(n, Strings.EventRetracted);
