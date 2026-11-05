@@ -213,6 +213,9 @@ namespace MagnumOpus.Module.Game
                 if (!part.GetHexFootprint(solution).Contains(hex)) continue;
                 string name = PartName(ed, part);
                 if (type.isTrack) name = TrackHere(part, hex, name);
+                // What this hex of a glyph takes or gives (the game draws it on the hex).
+                string role = GlyphRoles.At(part, hex);
+                if (role != null) name += ", " + role;
                 var io = IoAtom(ed, part, hex);
                 if (io.HasValue)
                 {

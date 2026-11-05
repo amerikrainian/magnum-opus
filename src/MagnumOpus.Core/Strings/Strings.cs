@@ -317,6 +317,11 @@ namespace MagnumOpus.Core.Strings
             D("editor.track_minus", "-{0}"),
             D("editor.stop_to_edit", "Stop the engine to edit."),
             D("editor.stop_first", "Stop the engine first."),
+            D("glyph.metal", "metal"),
+            D("glyph.cardinal", "cardinal element"),
+            D("glyph.centre", "centre"),
+            D("glyph.in", "{0} in"),
+            D("glyph.out", "{0} out"),
             D("diagram.salt", "{0}, joined to {1}"),
             D("diagram.placed", "{0} {1}"),
             D("diagram.vitae_mors", "{0} and {1}, on a line through {2}"),
@@ -704,6 +709,11 @@ namespace MagnumOpus.Core.Strings
         public static string EditorTrackHexes(int hexes) => F("editor.track_hexes", hexes);
         public static string EditorStopToEdit => Get("editor.stop_to_edit");
         public static string EditorStopFirst => Get("editor.stop_first");
+        public static string GlyphMetal => Get("glyph.metal");
+        public static string GlyphCardinal => Get("glyph.cardinal");
+        public static string GlyphCentre => Get("glyph.centre");
+        public static string GlyphIn(string what) => F("glyph.in", what);
+        public static string GlyphOut(string what) => F("glyph.out", what);
         public static string DiagramSalt(string salt, string joined) => F("diagram.salt", salt, joined);
         public static string DiagramPlaced(string name, string direction) => F("diagram.placed", name, direction);
         public static string DiagramVitaeMors(string vitae, string mors, string through) => F("diagram.vitae_mors", vitae, mors, through);

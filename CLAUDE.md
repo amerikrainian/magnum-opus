@@ -286,7 +286,10 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   bases ("arm 1, Piston Arm, northeast, length 1"), grippers, other parts (`Game/Board`; a track hex
   reads its joins marked with the move that goes there, "Track, +northeast, -southeast": the game
   draws a minus sign on the end drawn first and a plus on the last (both at a loop's seam); no "end" /
-  "loop" words, user rules 2026-11-04); empty =
+  "loop" words, user rules 2026-11-04; a glyph hex adds its role, "Glyph of Projection, metal in",
+  "Glyph of Rejection, Quicksilver out": `Game/GlyphRoles`, a table transcribed from Sim's glyph
+  pass, since neither the game nor Quintessential's recipes store what a hex takes (checked
+  2026-11-05); a content mod's glyph reads no role); empty =
   coordinates only. Arms are numbered by program index (the game's own order; its cached list lags a
   pickup or drop until it saves). Program: rows = arms, columns = cycles (1-based); Reset / Repeat cells
   read "clockwise, from reset" (`CompiledProgramGrid`, `isExpansion`). Everywhere: digits 1-9 jump to an
