@@ -278,7 +278,10 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   game's (0, 0)). Keys Q NW, E NE, A W, D E, Z SW, C SE (scancodes; numpad 7 9 4 6 1 3; never the
   arrows, user rule 2026-11-04), Alt+Shift+them skip (Alt+numpad), ; and ' move the program cursor on the arm under the board cursor, [ ] categories,
   , . items, S or / details, W molecule (size, composition, bonds, holder; the layout is read hex by hex), X neighbours. A hex reads coordinates, then the atom in play, arm
-  bases ("arm 1, Piston Arm, northeast, length 1"), grippers, other parts (`Game/Board`); empty =
+  bases ("arm 1, Piston Arm, northeast, length 1"), grippers, other parts (`Game/Board`; a track hex
+  reads its joins marked with the move that goes there, "Track, +northeast, -southeast": the game
+  draws a minus sign on the end drawn first and a plus on the last (both at a loop's seam); no "end" /
+  "loop" words, user rules 2026-11-04); empty =
   coordinates only. Arms are numbered by program index (the game's own order; its cached list lags a
   pickup or drop until it saves). Program: rows = arms, columns = cycles (1-based); Reset / Repeat cells
   read "clockwise, from reset" (`CompiledProgramGrid`, `isExpansion`). Everywhere: digits 1-9 jump to an

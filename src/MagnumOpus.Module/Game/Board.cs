@@ -202,6 +202,7 @@ namespace MagnumOpus.Module.Game
                 if (type.isProgrammable) continue;
                 if (!part.GetHexFootprint(solution).Contains(hex)) continue;
                 string name = PartName(ed, part);
+                if (type.isTrack) name = TrackHere(part, hex, name);
                 var io = IoAtom(ed, part, hex);
                 if (io.HasValue)
                 {
@@ -214,6 +215,35 @@ namespace MagnumOpus.Module.Game
                 result.Add(name);
             }
             return result;
+        }
+
+        /// <summary>A track hex: the directions it joins in, each marked with the way a move takes it
+        /// there: "Track, +northeast, -southeast" (track plus goes to the next hex as drawn, minus to
+        /// the previous; an end joins one way; a loop wraps). The game shows the same thing: a minus
+        /// sign on the end drawn first, a plus on the last, both at a loop's seam (user decision
+        /// 2026-11-04).</summary>
+        private static string TrackHere(Part track, HexIndex hex, string name)
+        {
+            var hexes = track.GetTrack();
+            var origin = track.GetHexPos();
+            int i = -1;
+            for (int k = 0; k < hexes.Count; k++) if (origin + hexes[k] == hex) { i = k; break; }
+            if (i < 0 || hexes.Count < 2) return name;
+            bool loop = track.IsTrackLooping();
+            var parts = new List<string> { name };
+            int next = i + 1 < hexes.Count ? i + 1 : (loop ? 0 : -1);
+            int prev = i > 0 ? i - 1 : (loop ? hexes.Count - 1 : -1);
+            if (next >= 0)
+            {
+                var d = Hex.DirOf(hexes[next].Q - hexes[i].Q, hexes[next].R - hexes[i].R);
+                if (d.HasValue) parts.Add(Strings.EditorTrackPlus(Hex.Word(d.Value)));
+            }
+            if (prev >= 0)
+            {
+                var d = Hex.DirOf(hexes[prev].Q - hexes[i].Q, hexes[prev].R - hexes[i].R);
+                if (d.HasValue) parts.Add(Strings.EditorTrackMinus(Hex.Word(d.Value)));
+            }
+            return string.Join(", ", parts);
         }
 
         public static string DescribeArmBase(SolutionEditorScreen ed, Part arm, int number) =>

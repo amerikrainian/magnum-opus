@@ -305,6 +305,9 @@ namespace MagnumOpus.Core.Strings
             D("editor.drawing", "drawing track, {0} hexes"),
             D("editor.track_done", "track, {0} hexes"),
             D("editor.track_hexes", "{0} hexes"),
+            // A track hex's joins: {0} = the direction track plus / track minus moves an arm from here.
+            D("editor.track_plus", "+{0}"),
+            D("editor.track_minus", "-{0}"),
             D("editor.stop_to_edit", "Stop the engine to edit."),
             D("editor.finish_first", "Put the part down or cancel first."),
             // {0} = a part's name or "arm 2".
@@ -657,6 +660,8 @@ namespace MagnumOpus.Core.Strings
         public static string EditorFinishFirst => Get("editor.finish_first");
         public static string EditorFixed(string what) => F("editor.fixed", what);
         public static string EditorCannotCopy(string what) => F("editor.cannot_copy", what);
+        public static string EditorTrackPlus(string dir) => F("editor.track_plus", dir);
+        public static string EditorTrackMinus(string dir) => F("editor.track_minus", dir);
         public static string EditorNoArm => Get("editor.no_arm");
         public static string EditorUnavailable(string what) => F("editor.unavailable", what);
         public static string EditorInstructionCount(int n) => F("editor.instruction_count", n);
