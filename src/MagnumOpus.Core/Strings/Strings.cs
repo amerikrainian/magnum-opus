@@ -296,8 +296,6 @@ namespace MagnumOpus.Core.Strings
             D("editor.cancelled", "cancelled"),
             // {0} = what went: a part's name, or instructions.
             D("editor.deleted", "deleted {0}"),
-            // A part's direction after a turn: {0} = name, {1} = direction.
-            D("editor.part_facing", "{0}, {1}"),
             // A track turned (its shape is its hexes, it has no one direction).
             D("editor.rotated", "rotated"),
             D("editor.length", "length {0}"),
@@ -650,7 +648,6 @@ namespace MagnumOpus.Core.Strings
         public static string EditorPlaced(string part) => F("editor.placed", part);
         public static string EditorCancelled => Get("editor.cancelled");
         public static string EditorDeleted(string what) => F("editor.deleted", what);
-        public static string EditorPartFacing(string part, string direction) => F("editor.part_facing", part, direction);
         public static string EditorRotated => Get("editor.rotated");
         public static string EditorLength(int length) => F("editor.length", length);
         public static string EditorDrawing(int hexes) => F("editor.drawing", hexes);

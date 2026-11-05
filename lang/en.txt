@@ -195,7 +195,6 @@ editor.carrying=carrying {0}
 editor.placed=placed {0}
 editor.cancelled=cancelled
 editor.deleted=deleted {0}
-editor.part_facing={0}, {1}
 editor.rotated=rotated
 editor.length=length {0}
 editor.drawing=drawing track, {0} hexes

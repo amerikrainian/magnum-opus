@@ -151,21 +151,12 @@ namespace MagnumOpus.Module.Screens.Editor
             return track;
         }
 
-        /// <summary>A part's facing for speech: an arm reads its base line, a track nothing (its
-        /// shape is its hexes), anything else its name and the direction it points.</summary>
+        /// <summary>What a turn says (Shift+A / Shift+D): just the new direction (user rule
+        /// 2026-11-04); a track, which has no one direction (its shape is its hexes), "rotated".</summary>
         public string Facing(Part part)
         {
-            var ed = Ed;
-            if (part.GetType().isProgrammable)
-            {
-                int n = Board.ArmNumber(ed, part);
-                if (n > 0) return Board.DescribeArmBase(ed, part, n);
-                // Not on the board (carried): no row yet.
-                return Strings.EditorPartFacing(Board.PartName(ed, part), Hex.Word(Hex.FromTurns(part.GetRotation().GetNumberOfTurns())))
-                    + ", " + Strings.EditorLength(part.GetArmLength());
-            }
             if (part.GetType().isTrack) return Strings.EditorRotated;
-            return Strings.EditorPartFacing(Board.PartName(ed, part), Hex.Word(Hex.FromTurns(part.GetRotation().GetNumberOfTurns())));
+            return Hex.Word(Hex.FromTurns(part.GetRotation().GetNumberOfTurns()));
         }
 
         public static string Error(string message) => GameText.Clean(message ?? "");
