@@ -30,6 +30,9 @@ namespace MagnumOpus.Module.Screens
 
         protected static bool IsModeled(System.Type t) => Modeled.Contains(t);
 
+        // Modeled game screens that read the text the game draws (TextCapture), as the fallback does.
+        protected static readonly System.Collections.Generic.HashSet<System.Type> ReadsText = new System.Collections.Generic.HashSet<System.Type>();
+
         /// <summary>Whether the game should still see this navigation key (an SDL keycode) while
         /// the screen has focus. Escape by default: the game's own back-out (to the previous screen,
         /// the pause menu) keeps working, and a screen that handles Back itself says false.</summary>

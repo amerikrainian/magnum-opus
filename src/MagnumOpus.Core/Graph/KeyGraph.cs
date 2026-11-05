@@ -451,6 +451,12 @@ namespace MagnumOpus.Core.Graph
                 var node = render.NodeAt(remembered);
                 if (node != null && Equals(node.StopKey, stopKey)) return node;
             }
+            ControlId start;
+            if (stopKey != null && render.StopStarts.TryGetValue(stopKey, out start))
+            {
+                var node = render.NodeAt(start);
+                if (node != null) return node;
+            }
             var selected = SelectedNodeInStop(render, stopKey);
             if (selected != null) return selected;
             foreach (var n in render.Order)

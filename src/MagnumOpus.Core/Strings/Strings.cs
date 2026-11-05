@@ -316,6 +316,33 @@ namespace MagnumOpus.Core.Strings
             D("editor.track_plus", "+{0}"),
             D("editor.track_minus", "-{0}"),
             D("editor.stop_to_edit", "Stop the engine to edit."),
+            D("editor.stop_first", "Stop the engine first."),
+            D("diagram.salt", "{0}, joined to {1}"),
+            D("diagram.placed", "{0} {1}"),
+            D("diagram.vitae_mors", "{0} and {1}, on a line through {2}"),
+            D("diagram.metals", "Metals, {0}: {1}; {2} between each"),
+            D("diagram.metals_plain", "Metals: {0}; {1} between each"),
+            D("diagram.extra", "{0}, {1}"),
+            D("diagram.dir.right", "right"),
+            D("diagram.dir.upper_right", "upper right"),
+            D("diagram.dir.above", "above"),
+            D("diagram.dir.upper_left", "upper left"),
+            D("diagram.dir.left", "left"),
+            D("diagram.dir.lower_left", "lower left"),
+            D("diagram.dir.below", "below"),
+            D("diagram.dir.lower_right", "lower right"),
+            D("diagram.rel.right", "right of {0}"),
+            D("diagram.rel.upper_right", "upper right of {0}"),
+            D("diagram.rel.above", "above {0}"),
+            D("diagram.rel.upper_left", "upper left of {0}"),
+            D("diagram.rel.left", "left of {0}"),
+            D("diagram.rel.lower_left", "lower left of {0}"),
+            D("diagram.rel.below", "below {0}"),
+            D("diagram.rel.lower_right", "lower right of {0}"),
+            D("diagram.order.above", "bottom to top"),
+            D("diagram.order.below", "top to bottom"),
+            D("diagram.order.right", "left to right"),
+            D("diagram.order.left", "right to left"),
             D("editor.finish_first", "Put the part down or cancel first."),
             // {0} = a part's name or "arm 2".
             D("editor.fixed", "{0} cannot be changed"),
@@ -399,6 +426,7 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.fast", "Fast forward"),
             D("bind.ed.instr", "Place instruction, Shift inserts"),
             D("bind.ed.program_arm", "Program the chosen arm"),
+            D("bind.ed.diagram", "Show diagram"),
             D("bind.ed.jump", "Jump between the board and the tape"),
             D("bind.ed.origin", "Cursor to the origin"),
             D("bind.cinematic.next", "Next line"),
@@ -675,6 +703,32 @@ namespace MagnumOpus.Core.Strings
         public static string EditorTrackDone(int hexes) => F("editor.track_done", hexes);
         public static string EditorTrackHexes(int hexes) => F("editor.track_hexes", hexes);
         public static string EditorStopToEdit => Get("editor.stop_to_edit");
+        public static string EditorStopFirst => Get("editor.stop_first");
+        public static string DiagramSalt(string salt, string joined) => F("diagram.salt", salt, joined);
+        public static string DiagramPlaced(string name, string direction) => F("diagram.placed", name, direction);
+        public static string DiagramVitaeMors(string vitae, string mors, string through) => F("diagram.vitae_mors", vitae, mors, through);
+        public static string DiagramMetals(string order, string metals, string between) => F("diagram.metals", order, metals, between);
+        public static string DiagramMetalsPlain(string metals, string between) => F("diagram.metals_plain", metals, between);
+        public static string DiagramExtra(string text, string where) => F("diagram.extra", text, where);
+        public static string DiagramDir(Text.Compass.Dir d) => Get("diagram.dir." + DirKey(d));
+        public static string DiagramRelative(Text.Compass.Dir d, string anchor) => F("diagram.rel." + DirKey(d), anchor);
+        // Runs go along an axis: Above, Below, Right or Left.
+        public static string DiagramOrder(Text.Compass.Dir d) => Get("diagram.order." + DirKey(d));
+
+        private static string DirKey(Text.Compass.Dir d)
+        {
+            switch (d)
+            {
+                case Text.Compass.Dir.Right: return "right";
+                case Text.Compass.Dir.UpperRight: return "upper_right";
+                case Text.Compass.Dir.Above: return "above";
+                case Text.Compass.Dir.UpperLeft: return "upper_left";
+                case Text.Compass.Dir.Left: return "left";
+                case Text.Compass.Dir.LowerLeft: return "lower_left";
+                case Text.Compass.Dir.Below: return "below";
+                default: return "lower_right";
+            }
+        }
         public static string EditorFinishFirst => Get("editor.finish_first");
         public static string EditorFixed(string what) => F("editor.fixed", what);
         public static string EditorCannotCopy(string what) => F("editor.cannot_copy", what);

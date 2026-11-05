@@ -20,6 +20,9 @@ namespace MagnumOpus.Module.Screens.Editor
     /// molecule in brief (the tile draws it), and W opens it in <see cref="MoleculeViewerScreen"/> to
     /// walk its atoms and bonds before placing. Enter creates the part at the board cursor and
     /// carries it there (<see cref="CarryMode"/>).
+    /// Above the products, the toolbar's Show Information and Show Diagram buttons
+    /// (<see cref="EditorTools"/>; user decision 2026-11-05); focus entering the stop still lands on
+    /// the first part.
     /// </summary>
     internal sealed class TraySection : ScreenSection
     {
@@ -89,9 +92,13 @@ namespace MagnumOpus.Module.Screens.Editor
             var ed = _ctx.Ed;
             if (ed == null || ed.GetSolution() == null) return;
             var sections = Sections(ed);
-            if (sections.Count == 0) return;
             b.BeginStop(EditorContext.StopTray);
             b.PushContext(Strings.EditorTray, null, positions: false);
+            b.AddItem(ControlId.Structural("editor:tray:info"), Nodes.Button(() => EditorTools.InformationLabel,
+                () => EditorTools.ShowInformation(_ctx.Ed), () => EditorTools.InformationEnabled(_ctx.Ed), () => EditorTools.InformationDescription));
+            b.AddItem(ControlId.Structural("editor:tray:diagram"), Nodes.Button(() => EditorTools.DiagramLabel,
+                () => EditorTools.ShowDiagram(_ctx.Ed), () => EditorTools.DiagramEnabled(_ctx.Ed), () => EditorTools.DiagramDescription));
+            bool first = true;
             foreach (var section in sections)
             {
                 b.PushContext(section.Key, Strings.RoleList);
@@ -100,6 +107,7 @@ namespace MagnumOpus.Module.Screens.Editor
                     var it = item;
                     string id = "editor:tray:" + it.Type.id + ":" + it.Index;
                     _byId[id] = it;
+                    if (first) { b.SetStopStart(ControlId.Structural(id)); first = false; }
                     b.AddItem(ControlId.Structural(id), new NodeVtable
                     {
                         // No role word: "Fixed-Length Arm, 20g" (user rule 2026-11-04).

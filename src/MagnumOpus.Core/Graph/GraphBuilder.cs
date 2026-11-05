@@ -78,6 +78,7 @@ namespace MagnumOpus.Core.Graph
         // Shared.
         private readonly HashSet<ControlId> _ids = new HashSet<ControlId>();
         private ControlId _start;
+        private readonly Dictionary<object, ControlId> _stopStarts = new Dictionary<object, ControlId>();
 
         // Stop / region / parent state applied to nodes as they are added.
         private object _stopKey = AutoStopKey(0);
@@ -200,6 +201,15 @@ namespace MagnumOpus.Core.Graph
         public GraphBuilder SetStart(ControlId id)
         {
             _start = id;
+            return this;
+        }
+
+        /// <summary>Focus lands here when it enters the CURRENT stop with no remembered position there
+        /// (Tab, a jump), instead of the stop's first node: a stop whose first nodes are extras before
+        /// its main content (the editor's tray: two buttons above the products).</summary>
+        public GraphBuilder SetStopStart(ControlId id)
+        {
+            _stopStarts[_stopKey] = id;
             return this;
         }
 
@@ -356,9 +366,13 @@ namespace MagnumOpus.Core.Graph
             WireColumns();
             StitchModeBoundaries();
 
+            foreach (var kv in _stopStarts)
+                if (kv.Value != null && render.Nodes.TryGetValue(kv.Value, out var startNode) && Equals(startNode.StopKey, kv.Key))
+                    render.StopStarts[kv.Key] = kv.Value;
+            ControlId firstStopStart;
             render.StartKey = _start != null && render.Nodes.ContainsKey(_start)
                 ? _start
-                : render.Order[0].Id;
+                : render.StopStarts.TryGetValue(render.Order[0].StopKey ?? "", out firstStopStart) ? firstStopStart : render.Order[0].Id;
             StampPositions();
             return render;
         }

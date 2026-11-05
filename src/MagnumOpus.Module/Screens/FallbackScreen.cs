@@ -24,7 +24,9 @@ namespace MagnumOpus.Module.Screens
         {
             var top = GameScreens.Top;
             bool active = top != null && !GameScreens.InTransition && !IsModeled(top.GetType());
-            TextCapture.Enabled = active; // capture costs nothing while a modeled screen is up
+            // Capture costs nothing while a modeled screen is up, unless that screen reads it too: then
+            // also during its opening fade, so its first lines read with what it draws.
+            TextCapture.Enabled = active || (top != null && ReadsText.Contains(top.GetType()));
             return active;
         }
 

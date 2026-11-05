@@ -292,7 +292,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   read "clockwise, from reset" (`CompiledProgramGrid`, `isExpansion`). Everywhere: digits 1-9 jump to an
   arm, Space play / pause, Ctrl+Space step, Alt+Space fast forward (the game's buttons via
   `GameKeys.Forced`; its refusal text spoken), Ctrl+Shift+S score ('$' in a cost is the game's gold mark), Ctrl+Shift+T
-  tips (the puzzle's sticky notes, also spoken on entry), Alt+P each product's count ("Product (X) at 4, 0:
+  tips (the puzzle's sticky notes, also spoken on entry), Ctrl+Shift+D the game's Show Diagram, Alt+P each product's count ("Product (X) at 4, 0:
   6 of 6"; Alt+P is never an instruction).
   Editing (user decisions 2026-11-04, "the most fluid, quick ways to program"; every edit through the
   game's own operations, so its snapshot and save follow at frame end): on the tape the game's
@@ -323,6 +323,10 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   after a cut the first paste moves the cut parts, later pastes copy). Copied arms are numbered right after the highest-numbered
   carried part (the game's rule). NOT yet verified live: anything on non-fixed parts. Parts stop: the
   game's toolbar rules (`SolutionEditorPartsPanel`), Enter carries a new part from the board cursor.
+  Above the products, the program panel's Show Information and Show Diagram icon buttons
+  (`Editor/EditorTools`: the game's enabled rules and click code, its private button builder escaping
+  ButtonPress; user decision 2026-11-05); entering the stop still lands on the first part
+  (`GraphBuilder.SetStopStart`, a per-stop landing).
   Parts tray: a reagent or product reads its molecule in brief ("Salt, Water; 1 bond"; the
   game draws the whole molecule on the tile), W opens `MoleculeViewerScreen` (a child screen: hex keys
   walk the molecule in its own frame, each hex its atom and bond directions; W summary; Escape). S or /
@@ -360,6 +364,20 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
 - **Puzzle tips** (`PuzzleTipGameScreen`, 2026-11-04): the tip's name, its text as the game draws it
   (the dragging tip filled with the layout's drag letters), Close (the game's Escape). The animated
   demonstration is not described. Verified live.
+- **Diagram** (`PeriodicTableGameScreen`, 2026-11-05; the editor's Show Diagram, "Common Alchemical
+  Primes & Their Transmutations"): one picture with the names drawn over it, read as its links (checked
+  against the game's screen): "Salt, joined to Air above, Fire left, Water right, Earth below";
+  "Vitae upper right and Mors lower left, on a line through Salt"; "Metals, bottom to top: Lead, ...
+  Gold; Quicksilver between each"; then the quote, Close. What comes from where (content mods, user
+  request 2026-11-05): names live; DIRECTIONS from where the game draws each label (`TextCapture`
+  positions through `Core/Text/Compass`, unit-tested; a label not drawn leaves its direction out;
+  capture stays on through the opening fade, `GameScreen.ReadsText`); metal chains from
+  `AtomTypes.atoms` successor links; the links themselves (Salt to the cardinals, Salt to Vitae and
+  Mors) are the stock picture's, fixed (the game has them only as drawn lines and glyph rules); any
+  other text drawn is read after them, placed by the nearest element label ("Zinc, below Lead").
+  Opening it marks the diagram learned (the button blinks on Refined Gold until then): a live test
+  restores `SetDiagramLearned(false)`. NOT yet verified live: the label-derived directions (the
+  fixed-wording version was), extra labels (no mod to test with).
 - **GIF recorder** (`SolutionRecorderGameScreen`, 2026-11-04): the game's status line (recording, saved
   to the desktop / the specified folder, or the collision error), spoken again when it changes; Close
   (the game's Escape; cancels a recording in progress). The animation is not described.

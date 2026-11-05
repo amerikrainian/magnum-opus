@@ -51,6 +51,12 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.Products, Strings.Get("bind.ed.products"), _ => EditorContext.Say(ProductsText()));
             if (TipsText() != null)
                 yield return new ElementAction(EditorActions.Tips, Strings.Get("bind.ed.tips"), _ => EditorContext.Say(TipsText()));
+            // The toolbar's Show Diagram (also a button atop the parts tray).
+            yield return new ElementAction(EditorActions.Diagram, Strings.Get("bind.ed.diagram"), _ =>
+            {
+                if (EditorTools.DiagramEnabled(_ctx.Ed)) EditorTools.ShowDiagram(_ctx.Ed);
+                else EditorContext.Say(Strings.EditorStopFirst);
+            });
         }
 
         public override void OnUpdate()

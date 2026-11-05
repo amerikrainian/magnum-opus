@@ -278,6 +278,10 @@ namespace MagnumOpus.Core.Graph
     public sealed class GraphRender
     {
         public ControlId StartKey;
+
+        /// <summary>Where focus lands entering a stop with no remembered position, per stop key, when
+        /// the screen named one (<see cref="GraphBuilder.SetStopStart"/>); else the stop's first node.</summary>
+        public readonly Dictionary<object, ControlId> StopStarts = new Dictionary<object, ControlId>();
         public readonly Dictionary<ControlId, GraphNode> Nodes = new Dictionary<ControlId, GraphNode>();
 
         /// <summary>Declaration order: drives stop/region cycling and type-ahead scan order.</summary>
