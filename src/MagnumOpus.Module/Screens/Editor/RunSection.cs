@@ -136,7 +136,14 @@ namespace MagnumOpus.Module.Screens.Editor
             Speech.Say(text, interrupt: true);
             RunLog.Add(ed.GetCycle() + 1, text);
             var hexes = ErrorHexes(e);
-            if (hexes.Count > 0) _ctx.Cursor = hexes[0];
+            if (hexes.Count > 0 && hexes[0] != _ctx.Cursor)
+            {
+                // The board cursor goes to the error; when it actually moves and the board is where
+                // the player is, the new hex is read after the message.
+                _ctx.Cursor = hexes[0];
+                if (Equals(Navigation.FocusedStopKey, EditorContext.StopBoard))
+                    Speech.Say(Board.Readout(ed, _ctx.Cursor), interrupt: false);
+            }
         }
 
         private static List<HexIndex> ErrorHexes(SimError e)
@@ -151,7 +158,7 @@ namespace MagnumOpus.Module.Screens.Editor
             return hexes;
         }
 
-        private static string ErrorText(SimError e)
+        internal static string ErrorText(SimError e)
         {
             string message = GameText.Clean(e.errorMessage);
             var hexes = ErrorHexes(e);
@@ -231,6 +238,65 @@ namespace MagnumOpus.Module.Screens.Editor
                 foreach (var point in note.points) lines.Add(GameText.Of(point));
             }
             return lines.Count == 0 ? null : string.Join(" ", lines);
+        }
+    }
+
+    /// <summary>
+    /// The error panel (SolutionEditorScreen.RenderErrorPanel), a stop while the game shows it: the
+    /// game's word "Error" with its message and the hexes, then Replay (the failing cycle played
+    /// again up to the error: cycleTime runs within a cycle and the error time is a fraction of one;
+    /// disabled when the error is at the cycle's start, as the game has it) and Okay (stops the
+    /// engine). The game hides the panel while the replay runs; the stop stays, so focus does not
+    /// drop to the board. The game draws those two buttons through a private builder the button
+    /// patch does not see, so they run the game's own click code (ResetCycleTime / StopSim and their
+    /// sounds).
+    /// </summary>
+    internal sealed class ErrorSection : ScreenSection
+    {
+        public const string Stop = "editor.error";
+        private readonly EditorContext _ctx;
+
+        public ErrorSection(EditorContext ctx) { _ctx = ctx; }
+
+        private SimError _reached; // the error the run reached (kept through a replay of its cycle)
+
+        private SimError Shown()
+        {
+            var ed = _ctx.Ed;
+            if (ed == null || ed.GetSimPlayState() == SimPlayState.Stopped) { _reached = null; return null; }
+            var error = ed.GetSimulationError();
+            if (!error.HasValue()) { _reached = null; return null; }
+            var e = error.GetValue();
+            if (ed.GetCycleTime() >= e.errorTime) _reached = e;
+            return ReferenceEquals(e, _reached) ? e : null;
+        }
+
+        public override void Build(GraphBuilder b)
+        {
+            if (Shown() == null) return;
+            b.BeginStop(Stop);
+            b.PushContext(GameText.Translate("Error"), null, positions: false);
+            b.AddItem(ControlId.Structural("editor:error:text"), Nodes.Text(() => { var e = Shown(); return e == null ? "" : RunSection.ErrorText(e); }));
+            b.AddItem(ControlId.Structural("editor:error:replay"), Nodes.Button(() => GameText.Translate("Replay"), Replay,
+                enabled: () => { var e = Shown(); return e != null && e.errorTime > 0f; }));
+            b.AddItem(ControlId.Structural("editor:error:okay"), Nodes.Button(() => GameText.Translate("Okay"), Okay));
+            b.PopContext();
+        }
+
+        private void Replay()
+        {
+            var ed = _ctx.Ed;
+            if (Shown() == null) return;
+            ed.ResetCycleTime();
+            Assets.sounds.click_button.PlaySound(1f);
+        }
+
+        private void Okay()
+        {
+            var ed = _ctx.Ed;
+            if (Shown() == null) return;
+            ed.StopSim();
+            Assets.sounds.sim_stop.PlaySound(1f);
         }
     }
 

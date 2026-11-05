@@ -29,6 +29,7 @@ namespace MagnumOpus.Module.Screens
         {
             _ctx = Add(new EditorContext(() => Game));
             Add(new BoardSection(_ctx));
+            Add(new ErrorSection(_ctx));
             Add(new ProgramSection(_ctx));
             Add(new InstructionTraySection(_ctx));
             Add(new TraySection(_ctx));

@@ -331,7 +331,11 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   cycle's first message interrupts the last cycle's; fast forward says nothing (user rule 2026-11-04;
   a product is announced only up to its required count: the game keeps counting past it); errors when the
   game shows them (message + hexes, the board cursor moved there).
-  NOT yet verified live: error narration, track drawing, reagents / products from the tray, placing a
+  Error panel (`ErrorSection`, a stop after Board while the game shows it): "Error, <message> at
+  <hexes>", Replay (replays the failing cycle up to the error; disabled when it is at the cycle's
+  start) and Okay (stops the engine), the game's click code run directly (its private button
+  builder escapes ButtonPress). Verified live 2026-11-04.
+  NOT yet verified live: track drawing, reagents / products from the tray, placing a
   copy, Alt+Space (the game reads Alt itself), the numpad.
 - **Completion** (`CompletionGameScreen`, 2026-11-04): the puzzle's name, the game's message, then its
   notice (tutorial, custom, hermit mode) or cost / cycles / area-or-instructions with the figures the game
