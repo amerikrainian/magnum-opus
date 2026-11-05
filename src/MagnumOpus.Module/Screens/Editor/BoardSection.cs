@@ -18,7 +18,7 @@ namespace MagnumOpus.Module.Screens.Editor
     /// differently; Alt+Shift on the letters, Alt on the numpad). A hex
     /// reads its half-step coordinates, then what is on it (<see cref="Board"/>).
     /// Home goes to the origin, 0, 0. Where a hex holds several parts, edits take the first of
-    /// arm base, other part, track, gripper; Alt+Up / Alt+Down choose another (until the cursor
+    /// arm base, other part, track, gripper; Ctrl+Up / Ctrl+Down choose another (until the cursor
     /// moves). Reading: [ ] categories, , . items, S details, W the molecule, X neighbours, ; and ' the
     /// program cursor a cycle back and forward on the arm under the cursor, digits jump to an arm.
     /// Editing (stopped engine): Enter picks the part under the cursor up (<see cref="CarryMode"/>)
@@ -142,10 +142,10 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.Cut, Strings.Get("bind.ed.cut"), _ => CopyParts(cut: true));
             yield return new ElementAction(EditorActions.Paste, Strings.Get("bind.ed.paste"), _ => PasteParts());
 
-            // Editing the part under the cursor (Alt+Up / Alt+Down choose which, when several).
+            // Editing the part under the cursor (Ctrl+Up / Ctrl+Down choose which, when several).
             if (_ctx.PartAt(_ctx.Cursor) == null) yield break;
-            yield return new ElementAction(UiActions.RegionPrev, Strings.Get("bind.ed.part_prev"), _ => _ctx.CyclePart(-1));
-            yield return new ElementAction(UiActions.RegionNext, Strings.Get("bind.ed.part_next"), _ => _ctx.CyclePart(1));
+            yield return new ElementAction(EditorActions.PartPrev, Strings.Get("bind.ed.part_prev"), _ => _ctx.CyclePart(-1));
+            yield return new ElementAction(EditorActions.PartNext, Strings.Get("bind.ed.part_next"), _ => _ctx.CyclePart(1));
             yield return new ElementAction(EditorActions.RotateCcw, Strings.Get("bind.ed.rot.ccw"), _ => Rotate(true));
             yield return new ElementAction(EditorActions.RotateCw, Strings.Get("bind.ed.rot.cw"), _ => Rotate(false));
             yield return new ElementAction(EditorActions.Longer, Strings.Get("bind.ed.len.up"), _ => Length(1));

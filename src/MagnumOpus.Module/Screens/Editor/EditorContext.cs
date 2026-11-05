@@ -36,7 +36,7 @@ namespace MagnumOpus.Module.Screens.Editor
         public SolutionEditorScreen Ed => _editor();
 
         // ---- cursors ----
-        /// <summary>The board cursor. Moving it drops a part chosen with Alt+Up / Alt+Down (the
+        /// <summary>The board cursor. Moving it drops a part chosen with Ctrl+Up / Ctrl+Down (the
         /// hex's default comes back).</summary>
         public HexIndex Cursor
         {
@@ -144,7 +144,7 @@ namespace MagnumOpus.Module.Screens.Editor
         /// there, what covers the hex, a track, then an arm whose gripper is there (user decision
         /// 2026-11-04). The game picks by pixel (an arm's drawing wins, but a gripper is smaller than
         /// its hex, so the part around it stays clickable); by whole hexes the order decides, and
-        /// Alt+Up / Alt+Down choose another (<see cref="CyclePart"/>). Read live every time.</summary>
+        /// Ctrl+Up / Ctrl+Down choose another (<see cref="CyclePart"/>). Read live every time.</summary>
         public List<Part> PartsAt(HexIndex hex)
         {
             var result = new List<Part>();
@@ -167,7 +167,7 @@ namespace MagnumOpus.Module.Screens.Editor
         }
 
         /// <summary>The part an edit on a hex acts on: on the cursor hex the one chosen with
-        /// Alt+Up / Alt+Down, else (and anywhere else) the first in <see cref="PartsAt"/>.</summary>
+        /// Ctrl+Up / Ctrl+Down, else (and anywhere else) the first in <see cref="PartsAt"/>.</summary>
         public Part PartAt(HexIndex hex)
         {
             var parts = PartsAt(hex);
@@ -176,7 +176,7 @@ namespace MagnumOpus.Module.Screens.Editor
             return parts[i];
         }
 
-        /// <summary>Alt+Up / Alt+Down: the previous or next part on the cursor hex becomes the one
+        /// <summary>Ctrl+Up / Ctrl+Down: the previous or next part on the cursor hex becomes the one
         /// edits take, said by name; wraps. Like Tab: with one part or none it does nothing and says
         /// nothing (user rule 2026-11-04).</summary>
         public void CyclePart(int step)

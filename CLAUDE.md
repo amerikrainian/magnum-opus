@@ -242,7 +242,7 @@ Type-ahead characters come from the same snapshot through `SDL_GetKeyFromScancod
   F1 keys here (Enter runs one); Ctrl+Shift+M mod menu; Ctrl+Shift+N focus mode (moved from Ctrl+Shift+A 2026-11-04: the game selects all instructions there); F6 reload (DEBUG).
 - **Tab** wraps round the ends on every screen; with a single stop it does nothing and says nothing (user
   rule 2026-11-04; `GraphNavigator.Tab`, `TabWrapTests`). The same rule holds for EVERY cycling key
-  (Alt+Up / Alt+Down through a hex's parts, categories...): wrap with two or more, silent no-op with one.
+  (Ctrl+Up / Ctrl+Down through a hex's parts, categories...): wrap with two or more, silent no-op with one.
 - **Announcement text never throws out**: `NodeAnnouncement.Resolve` evaluates every label delegate; one
   that throws reads silent and each distinct failure is logged once (a throwing label once failed the
   tick on every navigator rebuild). The host counts repeats of the same tick failure instead of logging
@@ -277,7 +277,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   answering from anywhere. Board: hex cursor (`Game/Hex`: axial Q east, R up the screen, pointy-top, turn
   k = direction k counter-clockwise from east; spoken as Civ's half-step x, y, x = Q + R/2, origin the
   game's (0, 0)). Keys Q NW, E NE, A W, D E, Z SW, C SE (scancodes; numpad 7 9 4 6 1 3; never the
-  arrows, user rule 2026-11-04), Alt+Shift+them skip (Alt+numpad), Home the origin, Alt+Up / Alt+Down the part on the hex edits
+  arrows, user rule 2026-11-04), Alt+Shift+them skip (Alt+numpad), Home the origin, Ctrl+Up / Ctrl+Down the part on the hex edits
   take (default order arm base, other part, track, gripper; reset when the cursor moves), ; and ' move the program cursor on the arm under the board cursor, [ ] categories,
   , . items, S or / details, W molecule (size, composition, bonds, holder; the layout is read hex by hex), X neighbours. A hex reads coordinates, then the atom in play, arm
   bases ("arm 1, Piston Arm, northeast, length 1"), grippers, other parts (`Game/Board`; a track hex

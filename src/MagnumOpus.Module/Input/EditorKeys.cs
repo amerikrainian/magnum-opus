@@ -26,6 +26,7 @@ namespace MagnumOpus.Module.Input
         public const string Copy = "ed.copy", Cut = "ed.cut", Paste = "ed.paste";
         public const string MarkCorner = "ed.mark", ToggleSelect = "ed.toggle_select", SelectParts = "ed.select_parts";
         public const string Jump = "ed.jump";
+        public const string PartPrev = "ed.part.prev", PartNext = "ed.part.next";
         public const string Undo = "ed.undo", Redo = "ed.redo";
     }
 
@@ -115,6 +116,8 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.ToggleSelect, "Select or unselect the part here", new KeyboardBinding(Scancode.Space, ctrl: true, shift: true));
             Key(EditorActions.SelectParts, "Select all parts", new KeyboardBinding(Scancode.A, ctrl: true));
             Key(EditorActions.Jump, "Jump between the board and the tape", new KeyboardBinding(Scancode.Backspace, alt: true));
+            Key(EditorActions.PartPrev, "Previous part on this hex", new KeyboardBinding(Scancode.Up, ctrl: true));
+            Key(EditorActions.PartNext, "Next part on this hex", new KeyboardBinding(Scancode.Down, ctrl: true));
             Key(EditorActions.Copy, "Copy", new KeyboardBinding(Scancode.C, ctrl: true));
             Key(EditorActions.Cut, "Cut", new KeyboardBinding(Scancode.X, ctrl: true));
             Key(EditorActions.Paste, "Paste", new KeyboardBinding(Scancode.V, ctrl: true));
