@@ -24,6 +24,8 @@ namespace MagnumOpus.Module.Input
         public const string RotateCcw = "ed.rot.ccw", RotateCw = "ed.rot.cw", Longer = "ed.len.up", Shorter = "ed.len.down";
         public const string SelectUp = "ed.sel.up", SelectDown = "ed.sel.down", SelectLeft = "ed.sel.left", SelectRight = "ed.sel.right", SelectAll = "ed.sel.all";
         public const string Copy = "ed.copy", Cut = "ed.cut", Paste = "ed.paste";
+        public const string MarkCorner = "ed.mark", ToggleSelect = "ed.toggle_select", SelectParts = "ed.select_parts";
+        public const string Jump = "ed.jump";
         public const string Undo = "ed.undo", Redo = "ed.redo";
     }
 
@@ -90,7 +92,6 @@ namespace MagnumOpus.Module.Input
             {
                 if (k != InstructionKeys[0]) instr.AddBinding(new KeyboardBinding(k));
                 instr.AddBinding(new KeyboardBinding(k, shift: true));
-                instr.AddBinding(new KeyboardBinding(k, ctrl: true));
             }
             Key(EditorActions.Delete, "Delete", new KeyboardBinding(Scancode.Delete));
             Key(EditorActions.Clone, "Pick up a copy", new KeyboardBinding(Scancode.Return, ctrl: true));
@@ -104,6 +105,10 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.SelectLeft, "Select left", new KeyboardBinding(Scancode.Left, shift: true)).Repeating();
             Key(EditorActions.SelectRight, "Select right", new KeyboardBinding(Scancode.Right, shift: true)).Repeating();
             Key(EditorActions.SelectAll, "Select all instructions", new KeyboardBinding(Scancode.A, ctrl: true, shift: true));
+            Key(EditorActions.MarkCorner, "Mark a corner", new KeyboardBinding(Scancode.Space, shift: true));
+            Key(EditorActions.ToggleSelect, "Select or unselect the part here", new KeyboardBinding(Scancode.Space, ctrl: true, shift: true));
+            Key(EditorActions.SelectParts, "Select all parts", new KeyboardBinding(Scancode.A, ctrl: true));
+            Key(EditorActions.Jump, "Jump between the board and the tape", new KeyboardBinding(Scancode.Backspace, alt: true));
             Key(EditorActions.Copy, "Copy", new KeyboardBinding(Scancode.C, ctrl: true));
             Key(EditorActions.Cut, "Cut", new KeyboardBinding(Scancode.X, ctrl: true));
             Key(EditorActions.Paste, "Paste", new KeyboardBinding(Scancode.V, ctrl: true));

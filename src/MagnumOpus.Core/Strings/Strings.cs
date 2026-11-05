@@ -313,6 +313,25 @@ namespace MagnumOpus.Core.Strings
             // Instructions in the tape's selection: {0} = how many.
             D("editor.selected", "{0} selected"),
             D("editor.selection_cleared", "selection cleared"),
+            // The board's selection. {0} = coordinates.
+            D("editor.corner", "corner {0}"),
+            // A marked rectangle: {0} = top-left, {1} = bottom-right.
+            D("editor.range", "{0} to {1}"),
+            // The rectangle's selection: {0} = the range, {1} = the parts (or "no parts").
+            D("editor.marked", "{0}: {1}"),
+            D("editor.no_parts", "no parts"),
+            // {0} = a part ("arm 2", "Glyph of Bonding") or a count of parts.
+            D("editor.part_selected", "selected {0}"),
+            D("editor.part_unselected", "unselected {0}"),
+            // More than three parts, by count.
+            D("editor.part_count", "{0} parts"),
+            // A hex holding a selected part, said before its coordinates.
+            D("editor.hex_selected", "selected"),
+            // A group copied by Ctrl+Enter: {0} = the copies; what the game will not copy moves along.
+            D("editor.carrying_copies", "carrying copies of {0}"),
+            D("editor.also_moving", "moving {0}"),
+            // A group part that cannot go where it is: {0} = the part, {1} = the game's reason.
+            D("editor.part_error", "{0}: {1}"),
             D("editor.copied", "copied {0}"),
             D("editor.cut", "cut {0}"),
             D("editor.pasted", "pasted {0}"),
@@ -359,7 +378,10 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.step", "Step one cycle"),
             D("bind.ed.fast", "Fast forward"),
             D("bind.ed.instr", "Place instruction, Shift inserts"),
-            D("bind.ed.program_arm", "Program the arm here"),
+            D("bind.ed.jump", "Jump between the board and the tape"),
+            D("bind.ed.mark", "Mark a corner"),
+            D("bind.ed.toggle_select", "Select or unselect the part here"),
+            D("bind.ed.select_parts", "Select all parts"),
             D("bind.ed.delete", "Delete"),
             D("bind.ed.cancel", "Cancel"),
             D("bind.ed.clone", "Pick up a copy"),
@@ -628,6 +650,17 @@ namespace MagnumOpus.Core.Strings
         public static string EditorInstructionCount(int n) => F("editor.instruction_count", n);
         public static string EditorSelected(int n) => F("editor.selected", n);
         public static string EditorSelectionCleared => Get("editor.selection_cleared");
+        public static string EditorCorner(string coords) => F("editor.corner", coords);
+        public static string EditorRange(string from, string to) => F("editor.range", from, to);
+        public static string EditorMarked(string range, string parts) => F("editor.marked", range, parts);
+        public static string EditorNoParts => Get("editor.no_parts");
+        public static string EditorPartSelected(string what) => F("editor.part_selected", what);
+        public static string EditorPartUnselected(string what) => F("editor.part_unselected", what);
+        public static string EditorPartCount(int n) => F("editor.part_count", n);
+        public static string EditorHexSelected => Get("editor.hex_selected");
+        public static string EditorCarryingCopies(string what) => F("editor.carrying_copies", what);
+        public static string EditorAlsoMoving(string what) => F("editor.also_moving", what);
+        public static string EditorPartError(string part, string error) => F("editor.part_error", part, error);
         public static string EditorCopied(string what) => F("editor.copied", what);
         public static string EditorCut(string what) => F("editor.cut", what);
         public static string EditorPasted(string what) => F("editor.pasted", what);

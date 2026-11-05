@@ -22,8 +22,14 @@ namespace MagnumOpus.Module.Screens.Editor
     /// Editing (stopped engine): Enter picks the part under the cursor up (<see cref="CarryMode"/>)
     /// and puts it down; Ctrl+Enter picks up a copy; Shift+A / Shift+D rotate, Shift+W / Shift+S
     /// lengthen and shorten an arm (the game's own drag letters); Delete removes the part;
-    /// Shift+Enter on a track extends it (<see cref="TrackDrawMode"/>); Ctrl with an instruction key
-    /// programs the arm under the cursor at the program cursor's cycle and steps that cursor on.
+    /// Shift+Enter on a track extends it (<see cref="TrackDrawMode"/>). Alt+Backspace jumps to the
+    /// tape on the arm under the cursor (and back, <see cref="ProgramSection"/>).
+    /// Selection (user design 2026-11-04; the game's own partSelection, so the game draws it too):
+    /// Shift+Space marks one corner, the next the opposite one and selects every part touching that
+    /// rectangle of x, y (the game's box-select rule), a third starts over; Ctrl+Shift+Space adds or
+    /// removes the part under the cursor (the game's Shift+click); Ctrl+A selects every part; Escape
+    /// clears. With the cursor on a selected part, Enter / Ctrl+Enter / Delete / Shift+A / Shift+D /
+    /// Ctrl+C / Ctrl+X take the whole group; Ctrl+V carries the clipboard at the cursor.
     /// While carrying or drawing, the hex keys move the part or the track's end and Escape cancels.
     /// </summary>
     internal sealed class BoardSection : ScreenSection
@@ -93,7 +99,7 @@ namespace MagnumOpus.Module.Screens.Editor
             {
                 yield return new ElementAction(EditorActions.TapePrev, Strings.Get("bind.ed.tape.prev"), _ => TapeFromBoard(-1));
                 yield return new ElementAction(EditorActions.TapeNext, Strings.Get("bind.ed.tape.next"), _ => TapeFromBoard(1));
-                yield return new ElementAction(EditorActions.Instruction, Strings.Get("bind.ed.program_arm"), _ => ProgramArm());
+                yield return new ElementAction(EditorActions.Jump, Strings.Get("bind.ed.jump"), _ => JumpToTape());
             }
             for (int n = 1; n <= Math.Min(9, arms); n++)
             {
@@ -108,6 +114,16 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.Info, Strings.Get("bind.ed.details"), _ => SayDetails());
             yield return new ElementAction(EditorActions.Molecule, Strings.Get("bind.ed.molecule"), _ => EditorContext.Say(Board.MoleculeAround(_ctx.Ed, _ctx.Cursor)));
             yield return new ElementAction(EditorActions.Neighbours, Strings.Get("bind.ed.neighbours"), _ => EditorContext.Say(NeighboursText()));
+
+            // Selecting and the clipboard.
+            yield return new ElementAction(EditorActions.MarkCorner, Strings.Get("bind.ed.mark"), _ => MarkCorner());
+            yield return new ElementAction(EditorActions.ToggleSelect, Strings.Get("bind.ed.toggle_select"), _ => ToggleSelect());
+            yield return new ElementAction(EditorActions.SelectParts, Strings.Get("bind.ed.select_parts"), _ => SelectAllParts());
+            if (_ctx.PartsSelected)
+                yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ed.unselect"), _ => ClearSelection());
+            yield return new ElementAction(EditorActions.Copy, Strings.Get("bind.ed.copy"), _ => CopyParts(cut: false));
+            yield return new ElementAction(EditorActions.Cut, Strings.Get("bind.ed.cut"), _ => CopyParts(cut: true));
+            yield return new ElementAction(EditorActions.Paste, Strings.Get("bind.ed.paste"), _ => PasteParts());
 
             // Editing the part under the cursor.
             if (_ctx.PartAt(_ctx.Cursor) == null) yield break;
@@ -253,12 +269,29 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             if (_ctx.Carry.Active) { _ctx.Carry.Drop(); return; }
             if (_ctx.Draw.Active) { _ctx.Draw.Finish(); return; }
+            var group = Group();
+            if (group != null)
+            {
+                if (group.Count == 0) return;
+                _ctx.Carry.StartMany(group.Select(p => new CarryMode.Entry(p, false, false)).ToList(), Strings.EditorCarrying(_ctx.Names(group)));
+                return;
+            }
             var part = Editable();
             if (part != null) _ctx.Carry.Start(part, isNew: false, isClone: false);
         }
 
+        // The selected group when the cursor is on one of its parts and editing is allowed now.
+        private List<Part> Group()
+        {
+            var group = _ctx.GroupAtCursor();
+            if (group == null || group.Count == 0) return null;
+            return _ctx.CanEdit() ? group : new List<Part>();
+        }
+
         private void Rotate(bool counterclockwise)
         {
+            var group = Group();
+            if (group != null) { if (group.Count > 0) RotateGroup(group, counterclockwise); return; }
             var part = Editable();
             if (part == null) return;
             var ed = _ctx.Ed;
@@ -299,6 +332,8 @@ namespace MagnumOpus.Module.Screens.Editor
 
         private void Delete()
         {
+            var group = Group();
+            if (group != null) { if (group.Count > 0) DeleteParts(group); return; }
             var part = Editable();
             if (part == null || part.GetType().isConduit) return;
             var ed = _ctx.Ed;
@@ -313,6 +348,8 @@ namespace MagnumOpus.Module.Screens.Editor
         // puzzle that limits part counts); a copied program loses its period override.
         private void Clone()
         {
+            var group = Group();
+            if (group != null) { if (group.Count > 0) CloneGroup(group); return; }
             var part = Editable();
             if (part == null) return;
             var ed = _ctx.Ed;
@@ -342,23 +379,277 @@ namespace MagnumOpus.Module.Screens.Editor
             _ctx.Draw.Start(part);
         }
 
-        // Ctrl + an instruction key: the arm under the cursor gets it at the program cursor's cycle.
-        private void ProgramArm()
+        // ---- the tape jump ----
+
+        // Alt+Backspace: the tape on the arm under the cursor, at the program cursor's column; the
+        // same key there comes back to this hex.
+        private void JumpToTape()
         {
-            if (!SdlKeyboard.CtrlHeld || SdlKeyboard.ShiftHeld || SdlKeyboard.AltHeld) return;
-            var type = ProgramEdits.PressedInstruction();
-            if (type == null) return;
             var ed = _ctx.Ed;
             var arm = _ctx.ArmAt(_ctx.Cursor);
             if (arm == null) { EditorContext.Say(Strings.EditorNoArm); return; }
-            if (!_ctx.CanEdit()) return;
-            int row = Board.Arms(ed).IndexOf(arm);
-            if (!ProgramEdits.Allowed(ed, arm, row + 1, type)) return;
-            _ctx.Row = row;
-            int col = _ctx.Col;
-            ProgramEdits.Place(arm, col, type, insert: false);
-            _ctx.Col = Math.Min(EditorContext.MaxColumn, col + 1);
-            EditorContext.Say(Strings.EditorCell(col + 1, Instructions.Label(type)));
+            _ctx.Row = Board.Arms(ed).IndexOf(arm);
+            _ctx.JumpHex = _ctx.Cursor;
+            Navigation.JumpToStop(EditorContext.StopProgram);
+        }
+
+        // ---- selecting ----
+
+        // Shift+Space: the first corner, then the opposite one (the parts touching the rectangle
+        // become the selection), then starting over.
+        private void MarkCorner()
+        {
+            var ed = _ctx.Ed;
+            if (_ctx.Busy() || !_ctx.CanEdit()) return;
+            if (!_ctx.Corner.HasValue)
+            {
+                _ctx.Corner = _ctx.Cursor;
+                EditorContext.Say(Strings.EditorCorner(Hex.Coords(_ctx.Cursor)));
+                return;
+            }
+            var a = _ctx.Corner.Value;
+            var b = _ctx.Cursor;
+            _ctx.Corner = null;
+            var parts = PartsTouching(ed, a, b);
+            ed.ClearPartSelection();
+            foreach (var p in parts) ed.partSelection.Add(p);
+            var selected = parts.Where(p => ed.partSelection.IsSelected(p)).ToList();
+            string range = Strings.EditorRange(Hex.Coords(MinCorner(a, b)), Hex.Coords(MaxCorner(a, b)));
+            EditorContext.Say(Strings.EditorMarked(range, selected.Count == 0 ? Strings.EditorNoParts : _ctx.Names(selected)));
+        }
+
+        // The rectangle in the spoken coordinates: doubled x (2Q + R, so half steps stay whole) and y.
+        private static int X2(HexIndex h) => 2 * h.Q + h.R;
+
+        private static HexIndex FromX2(int x2, int r) => new HexIndex((x2 - r) / 2, r);
+
+        // Top-left and bottom-right as hexes for speech (a corner off the hex lattice rounds west).
+        private static HexIndex MinCorner(HexIndex a, HexIndex b)
+        {
+            int r = Math.Max(a.R, b.R), x2 = Math.Min(X2(a), X2(b));
+            if (((x2 - r) & 1) != 0) x2++;
+            return FromX2(x2, r);
+        }
+
+        private static HexIndex MaxCorner(HexIndex a, HexIndex b)
+        {
+            int r = Math.Min(a.R, b.R), x2 = Math.Max(X2(a), X2(b));
+            if (((x2 - r) & 1) != 0) x2--;
+            return FromX2(x2, r);
+        }
+
+        // The game's box-select: a part is in if any of its hexes, a gripper or an attached atom
+        // lies inside.
+        private static List<Part> PartsTouching(SolutionEditorScreen ed, HexIndex a, HexIndex b)
+        {
+            int x0 = Math.Min(X2(a), X2(b)), x1 = Math.Max(X2(a), X2(b));
+            int r0 = Math.Min(a.R, b.R), r1 = Math.Max(a.R, b.R);
+            bool Inside(HexIndex h) => X2(h) >= x0 && X2(h) <= x1 && h.R >= r0 && h.R <= r1;
+            var solution = ed.GetSolution();
+            var result = new List<Part>();
+            foreach (var part in solution.parts)
+            {
+                bool hit = part.GetHexFootprint(solution).Any(Inside)
+                    || Board.Grippers(ed, part).Any(g => Inside(g.Key))
+                    || part.GetType().attachedAtoms.Keys.Any(k => Inside(part.GetHexPos() + k));
+                if (hit) result.Add(part);
+            }
+            return result;
+        }
+
+        // Ctrl+Shift+Space: the part under the cursor in or out (the game's Shift+click).
+        private void ToggleSelect()
+        {
+            var ed = _ctx.Ed;
+            var part = _ctx.PartAt(_ctx.Cursor);
+            if (part == null || _ctx.Busy() || !_ctx.CanEdit()) return;
+            var root = part.GetRootPart();
+            if (root.GetIsFixed()) { EditorContext.Say(Strings.EditorFixed(_ctx.Label(root))); return; }
+            if (ed.partSelection.IsSelected(root))
+            {
+                ed.partSelection.Remove(root);
+                EditorContext.Say(Strings.EditorPartUnselected(_ctx.Label(root)));
+            }
+            else
+            {
+                ed.partSelection.Add(root);
+                EditorContext.Say(Strings.EditorPartSelected(_ctx.Label(root)));
+            }
+        }
+
+        // Ctrl+A: every part (the game's; fixed parts stay out).
+        private void SelectAllParts()
+        {
+            var ed = _ctx.Ed;
+            if (_ctx.Busy() || !_ctx.CanEdit()) return;
+            _ctx.Corner = null;
+            ed.ClearPartSelection();
+            foreach (var p in ed.GetSolution().parts) ed.partSelection.Add(p);
+            int n = ed.partSelection.GetCount();
+            EditorContext.Say(n == 0 ? Strings.EditorNoParts : Strings.EditorPartSelected(Strings.EditorPartCount(n)));
+        }
+
+        private void ClearSelection()
+        {
+            _ctx.Corner = null;
+            _ctx.Ed?.ClearPartSelection();
+            EditorContext.Say(Strings.EditorSelectionCleared);
+        }
+
+        // ---- group edits ----
+
+        // Turned in place round the cursor hex: every part must fit where it lands, else nothing moves.
+        private void RotateGroup(List<Part> group, bool counterclockwise)
+        {
+            var ed = _ctx.Ed;
+            var solution = ed.GetSolution();
+            var rot = counterclockwise ? HexRotation.Counterclockwise : HexRotation.Clockwise;
+            var before = group.Select(p => new { Part = p, Pos = p.GetHexPos(), Rot = p.GetRotation() }).ToList();
+            foreach (var p in group) solution.RemovePart(p);
+            foreach (var p in group)
+            {
+                p.SetHexPosAndUpdate(p.GetHexPos().RotatedAround(_ctx.Cursor, rot));
+                p.RotateBy(solution, rot);
+            }
+            string error = null;
+            foreach (var b in before)
+            {
+                string message;
+                if (solution.IsAllowedPlacement(b.Part, b.Pos, b.Part.GetHexPos(), b.Part.GetRotation(), out message)) continue;
+                error = Strings.EditorPartError(Board.PartName(ed, b.Part), EditorContext.Error(message));
+                break;
+            }
+            if (error != null)
+            {
+                foreach (var b in before)
+                {
+                    b.Part.SetRotation(solution, b.Rot);
+                    solution.RepositionPart(b.Part, b.Pos);
+                }
+                EditorContext.Say(error);
+                return;
+            }
+            foreach (var p in group) solution.RepositionPart(p, p.GetHexPos());
+            ed.MarkNeedsNewSnapshot();
+            Assets.sounds.piece_rotate.PlaySound(1f);
+            EditorContext.Say(Strings.EditorRotated);
+        }
+
+        // Removed together (conduits stay: the game never deletes them).
+        private void DeleteParts(List<Part> parts)
+        {
+            var ed = _ctx.Ed;
+            var gone = parts.Where(p => !p.GetType().isConduit && !p.GetIsFixed()).ToList();
+            if (gone.Count == 0) return;
+            string names = _ctx.Names(gone);
+            foreach (var p in gone)
+            {
+                ed.partSelection.Remove(p);
+                ed.GetSolution().RemovePart(p);
+            }
+            ed.MarkNeedsNewSnapshot();
+            Assets.sounds.piece_remove.PlaySound(1f);
+            EditorContext.Say(Strings.EditorDeleted(names));
+        }
+
+        // The game's drag-copy of a selection: what it may copy is copied, the rest moves along.
+        private void CloneGroup(List<Part> group)
+        {
+            var ed = _ctx.Ed;
+            var solution = ed.GetSolution();
+            var copies = group.Where(_ctx.Copyable).ToList();
+            if (copies.Count == 0) { EditorContext.Say(Strings.EditorCannotCopy(_ctx.Names(group))); return; }
+            var moved = group.Where(p => !_ctx.Copyable(p)).ToList();
+            var entries = new List<CarryMode.Entry>();
+            foreach (var p in copies)
+            {
+                var copy = p.Clone(solution, MaybeHelper.empty);
+                copy.program.RemoveOverride();
+                entries.Add(new CarryMode.Entry(copy, true, true));
+            }
+            foreach (var p in moved) entries.Add(new CarryMode.Entry(p, false, false));
+            string text = Strings.EditorCarryingCopies(_ctx.Names(copies));
+            if (moved.Count > 0) text += ", " + Strings.EditorAlsoMoving(_ctx.Names(moved));
+            _ctx.Carry.StartMany(entries, text);
+        }
+
+        // ---- the parts clipboard ----
+
+        // Ctrl+C / Ctrl+X: the group under the cursor, else the part there, remembered at its offset
+        // from the cursor. Copy keeps what the game may copy; cut takes the parts off the board.
+        private void CopyParts(bool cut)
+        {
+            var ed = _ctx.Ed;
+            if (ed == null || _ctx.Busy() || !_ctx.CanEdit()) return;
+            var parts = _ctx.GroupAtCursor();
+            if (parts == null)
+            {
+                var here = _ctx.PartAt(_ctx.Cursor);
+                if (here == null) return;
+                parts = new List<Part> { here.GetRootPart() };
+            }
+            parts = parts.Where(p => !p.GetIsFixed() && !p.GetType().isConduit).ToList();
+            if (parts.Count == 0) return;
+            var solution = ed.GetSolution();
+            var copyable = parts.Where(_ctx.Copyable).ToList();
+            if (!cut && copyable.Count == 0) { EditorContext.Say(Strings.EditorCannotCopy(_ctx.Names(parts))); return; }
+            string names = _ctx.Names(cut ? parts : copyable);
+            _ctx.PartClipboard.Clear();
+            _ctx.CutParts.Clear();
+            foreach (var p in copyable)
+            {
+                var template = p.Clone(solution, MaybeHelper.empty);
+                template.program.RemoveOverride();
+                _ctx.PartClipboard.Add(new KeyValuePair<Part, HexIndex>(template, p.GetHexPos() - _ctx.Cursor));
+            }
+            if (cut)
+            {
+                foreach (var p in parts)
+                {
+                    _ctx.CutParts.Add(new KeyValuePair<Part, HexIndex>(p, p.GetHexPos() - _ctx.Cursor));
+                    ed.partSelection.Remove(p);
+                    solution.RemovePart(p);
+                }
+                ed.MarkNeedsNewSnapshot();
+                Assets.sounds.piece_remove.PlaySound(1f);
+                EditorContext.Say(Strings.EditorCut(names));
+                return;
+            }
+            if (parts.Count > copyable.Count)
+                names += ", " + Strings.EditorCannotCopy(_ctx.Names(parts.Where(p => !_ctx.Copyable(p)).ToList()));
+            EditorContext.Say(Strings.EditorCopied(names));
+        }
+
+        // Ctrl+V: the clipboard carried at the cursor, put down with Enter. The first paste after a
+        // cut places the cut parts themselves; every other paste places fresh copies.
+        private void PasteParts()
+        {
+            var ed = _ctx.Ed;
+            if (ed == null || _ctx.Busy() || !_ctx.CanEdit()) return;
+            var solution = ed.GetSolution();
+            var entries = new List<CarryMode.Entry>();
+            bool moving = _ctx.CutParts.Count > 0;
+            if (moving)
+            {
+                foreach (var kv in _ctx.CutParts)
+                {
+                    kv.Key.SetHexPosAndUpdate(_ctx.Cursor + kv.Value);
+                    entries.Add(new CarryMode.Entry(kv.Key, true, false));
+                }
+            }
+            else
+            {
+                foreach (var kv in _ctx.PartClipboard)
+                {
+                    if (!_ctx.Copyable(kv.Key)) continue;
+                    var copy = kv.Key.Clone(solution, MaybeHelper.empty);
+                    copy.SetHexPosAndUpdate(_ctx.Cursor + kv.Value);
+                    entries.Add(new CarryMode.Entry(copy, true, true));
+                }
+            }
+            if (entries.Count == 0) return;
+            var names = _ctx.Names(entries.Select(e => e.Part).ToList());
+            _ctx.Carry.StartMany(entries, Strings.EditorCarrying(names), moving ? (Action)(() => _ctx.CutParts.Clear()) : null);
         }
     }
 }

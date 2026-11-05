@@ -292,13 +292,24 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   overwriting; Shift inserts (`InsertInstruction`, the push stops at the first gap); Delete clears the
   cell or selection, Backspace the previous cell; Shift+arrows select a rectangle, Ctrl+Shift+A all,
   Escape clears; Ctrl+C / X / V. Refusals spoken: engine running, a fixed arm, an instruction the puzzle
-  does not permit. On the board: Ctrl+instruction key programs the arm under the cursor at the program
-  cursor's cycle; Enter picks up / puts down (`CarryMode`: out of the solution while carried, the hex it
+  does not permit. Alt+Backspace jumps from the board to the tape on the arm under the cursor and back
+  to the same hex (board programming by Ctrl+instruction key was dropped 2026-11-04: Ctrl+A / C / X / V
+  are selection and clipboard on the board). On the board: Enter picks up / puts down (`CarryMode`: out of the solution while carried, the hex it
   was taken by stays under the cursor, `Solution.IsAllowedPlacement` decides and its reason is spoken,
   Escape restores it and the cursor, an editor pop restores it too); Ctrl+Enter carries a copy (the
   game's rules: no reagent, product, unique, conduit, or limited-count puzzle); Shift+A / D rotate,
   Shift+W / S arm length; Delete removes; Shift+Enter extends a track (`TrackDrawMode`: hex keys extend
-  the end or back up along it; a new track from the tray starts drawing when put down). Parts stop: the
+  the end or back up along it; a new track from the tray starts drawing when put down). Selection (user
+  design 2026-11-04; the game's own `partSelection`, so it draws it): Shift+Space marks a corner, the next
+  the opposite one and selects every part touching that x, y rectangle (the game's box-select rule:
+  footprint, gripper or attached atom), a third starts over; Ctrl+Shift+Space adds / removes the part
+  under the cursor; Ctrl+A all parts; Escape clears (board focused only); fixed parts never join (so the
+  tutorial lessons, all fixed, select nothing). A hex with a selected part reads "selected" first. With
+  the cursor on a selected part, Enter / Ctrl+Enter (the game's drag-copy: copyable parts copied, the
+  rest move along; copies become the selection) / Delete / Shift+A / D (in place round the cursor) /
+  Ctrl+C / X act on the group; Ctrl+V carries the clipboard at the cursor (after a cut the first paste
+  moves the cut parts, later pastes copy). Copied arms are numbered right after the highest-numbered
+  carried part (the game's rule). NOT yet verified live: anything on non-fixed parts. Parts stop: the
   game's toolbar rules (`SolutionEditorPartsPanel`), Enter carries a new part from the board cursor.
   Undo / redo (Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z): the game's buffer stepped directly (an injected chord
   cannot give the game Ctrl), the change spoken (new states, three at most, else a count).

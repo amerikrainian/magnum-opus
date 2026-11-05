@@ -219,13 +219,35 @@ namespace MagnumOpus.Module.Game
         public static string DescribeArmBase(SolutionEditorScreen ed, Part arm, int number) =>
             Strings.EditorArmBase(number, PartName(ed, arm), Hex.Word(Hex.FromTurns(Turns(ed, arm))), Length(ed, arm));
 
-        /// <summary>The hex's full readout: coordinates, then its contents.</summary>
+        /// <summary>The hex's full readout: "selected" when a selected part is on it, coordinates,
+        /// then its contents.</summary>
         public static string Readout(SolutionEditorScreen ed, HexIndex hex, string extra = null)
         {
-            var parts = new List<string> { Hex.Coords(hex) };
+            var parts = new List<string>();
+            if (HasSelectedPart(ed, hex)) parts.Add(Strings.EditorHexSelected);
+            parts.Add(Hex.Coords(hex));
             if (extra != null) parts.Add(extra);
             parts.AddRange(Contents(ed, hex));
             return string.Join(", ", parts);
+        }
+
+        /// <summary>Whether a part in the game's selection covers the hex (an arm by its base or a
+        /// gripper).</summary>
+        public static bool HasSelectedPart(SolutionEditorScreen ed, HexIndex hex)
+        {
+            var selection = ed.partSelection;
+            var solution = SolutionOf(ed);
+            if (selection == null || solution == null || selection.GetCount() == 0) return false;
+            foreach (var part in solution.parts)
+            {
+                if (!selection.IsSelected(part)) continue;
+                if (part.GetType().isProgrammable)
+                {
+                    if (BaseHex(ed, part) == hex || Grippers(ed, part).Any(g => g.Key == hex)) return true;
+                }
+                else if (part.GetHexFootprint(solution).Contains(hex)) return true;
+            }
+            return false;
         }
 
         /// <summary>The descriptions the game gives for what is on a hex (its tooltips).</summary>

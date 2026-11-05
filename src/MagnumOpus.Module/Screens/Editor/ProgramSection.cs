@@ -22,6 +22,7 @@ namespace MagnumOpus.Module.Screens.Editor
     /// clears the cell (or the selection), Backspace clears the previous cell and steps back onto it.
     /// Shift+arrows select a rectangle of cells, Ctrl+Shift+A every instruction, Escape drops the
     /// selection; Ctrl+C / X / V copy, cut and paste (pasting at the cursor, overwriting).
+    /// Alt+Backspace goes back to the board hex the jump came from (else the row's arm base).
     /// </summary>
     internal sealed class ProgramSection : ScreenSection
     {
@@ -78,6 +79,7 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.Copy, Strings.Get("bind.ed.copy"), _ => Copy(cut: false));
             yield return new ElementAction(EditorActions.Cut, Strings.Get("bind.ed.cut"), _ => Copy(cut: true));
             yield return new ElementAction(EditorActions.Paste, Strings.Get("bind.ed.paste"), _ => Paste());
+            yield return new ElementAction(EditorActions.Jump, Strings.Get("bind.ed.jump"), _ => JumpToBoard());
             if (_ctx.Selecting)
                 yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ed.unselect"), _ => { _ctx.Selecting = false; EditorContext.Say(Strings.EditorSelectionCleared); });
         }
@@ -132,6 +134,17 @@ namespace MagnumOpus.Module.Screens.Editor
                 if (source.HasValue()) return Strings.EditorExpansion(Instructions.Label(type), Instructions.Label(source.GetValue()));
             }
             return Instructions.Label(type);
+        }
+
+        // Alt+Backspace: back to the board hex the jump came from, else the row's arm base.
+        private void JumpToBoard()
+        {
+            var arm = RowArm(_ctx);
+            if (_ctx.JumpHex.HasValue) _ctx.Cursor = _ctx.JumpHex.Value;
+            else if (arm != null) _ctx.Cursor = Board.BaseHex(_ctx.Ed, arm);
+            _ctx.JumpHex = null;
+            _ctx.Selecting = false;
+            Navigation.JumpToStop(EditorContext.StopBoard);
         }
 
         // ---- moving and selecting ----

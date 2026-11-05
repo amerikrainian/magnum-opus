@@ -4,6 +4,7 @@ using System.Linq;
 using MagnumOpus.Core;
 using MagnumOpus.Core.Screens;
 using MagnumOpus.Core.Strings;
+using MagnumOpus.Core.UI;
 using MagnumOpus.Module.Game;
 
 namespace MagnumOpus.Module.Screens.Editor
@@ -45,12 +46,36 @@ namespace MagnumOpus.Module.Screens.Editor
 
         public struct ClipCell { public int Row, Col; public InstructionType Type; }
 
+        // ---- the board's selection (the game's own partSelection) and its clipboard ----
+        /// <summary>The first corner of a rectangle being marked, or null.</summary>
+        public HexIndex? Corner;
+
+        /// <summary>Copied parts: templates kept off the board (each paste places fresh copies), at
+        /// their offsets from the cursor when copied. After a cut, <see cref="CutParts"/> holds the
+        /// parts themselves for the first paste (a move); later pastes copy the templates.</summary>
+        public readonly List<KeyValuePair<Part, HexIndex>> PartClipboard = new List<KeyValuePair<Part, HexIndex>>();
+        public readonly List<KeyValuePair<Part, HexIndex>> CutParts = new List<KeyValuePair<Part, HexIndex>>();
+
+        /// <summary>The board hex Alt+Backspace left for the tape, or null.</summary>
+        public HexIndex? JumpHex;
+
         // ---- modes ----
         public readonly CarryMode Carry;
         public readonly TrackDrawMode Draw;
 
         /// <summary>A mode Escape ends (so the game does not get it).</summary>
-        public bool InMode => Carry.Active || Draw.Active || Selecting;
+        public bool InMode => Carry.Active || Draw.Active || Selecting
+            || (PartsSelected && Equals(Navigation.FocusedStopKey, StopBoard));
+
+        /// <summary>A board selection exists (or a rectangle is half marked).</summary>
+        public bool PartsSelected
+        {
+            get
+            {
+                var ed = Ed;
+                return Corner.HasValue || (ed != null && ed.partSelection != null && ed.partSelection.GetCount() > 0);
+            }
+        }
 
         public void Reset()
         {
@@ -58,6 +83,11 @@ namespace MagnumOpus.Module.Screens.Editor
             Row = 0;
             Col = 0;
             Selecting = false;
+            Corner = null;
+            JumpHex = null;
+            // Parts copied in another puzzle may not belong in this one.
+            PartClipboard.Clear();
+            CutParts.Clear();
         }
 
         public override void OnPop()
@@ -139,61 +169,135 @@ namespace MagnumOpus.Module.Screens.Editor
         }
 
         public static string Error(string message) => GameText.Clean(message ?? "");
+
+        /// <summary>A part as a list names it: an arm on the board by its number, anything else by
+        /// its name.</summary>
+        public string Label(Part part)
+        {
+            var ed = Ed;
+            int n = part.GetType().isProgrammable ? Board.ArmNumber(ed, part) : 0;
+            return n > 0 ? Strings.EditorArm(n) : Board.PartName(ed, part);
+        }
+
+        /// <summary>Up to three parts by name, more by count.</summary>
+        public string Names(IList<Part> parts)
+        {
+            if (parts.Count > 3) return Strings.EditorPartCount(parts.Count);
+            return string.Join(", ", parts.Select(Label));
+        }
+
+        /// <summary>The selected parts when the part under the cursor is one of them (an action
+        /// there takes the whole group, the game's drag), else null.</summary>
+        public List<Part> GroupAtCursor()
+        {
+            var ed = Ed;
+            if (ed == null || ed.partSelection == null || ed.partSelection.GetCount() == 0) return null;
+            var here = PartAt(Cursor);
+            if (here == null || !ed.partSelection.IsSelected(here)) return null;
+            var solution = ed.GetSolution();
+            return ed.partSelection.Enumerable().Where(p => solution.parts.Contains(p)).ToList();
+        }
+
+        /// <summary>Whether the game would copy a part (not a reagent, product, unique part or
+        /// conduit, nor in a puzzle that limits part counts).</summary>
+        public bool Copyable(Part part)
+        {
+            var type = part.GetType();
+            return !type.isInput && !type.IsOutput() && !type.isUnique && !type.isConduit
+                && Ed.GetSolution().GetPuzzle().limitedPartAmounts.Count == 0;
+        }
     }
 
     /// <summary>
-    /// A part picked up on the board (the game's drag, by keyboard): out of the solution while
-    /// carried, moved with the hex keys (the hex it was taken by stays under the cursor), rotated
-    /// round the cursor, put down with Enter where the game's own placement check allows (its reason
-    /// spoken where it does not), cancelled with Escape (back where it was, or discarded when new).
+    /// Parts picked up on the board (the game's drag, by keyboard): one part, or a group (the game's
+    /// selection dragged together). Out of the solution while carried (new parts and copies were
+    /// never in it), moved with the hex keys keeping their places relative to the cursor, rotated
+    /// round the cursor, put down with Enter where the game's own placement check allows every one
+    /// (its reason spoken, with the part's name in a group, where it does not), cancelled with Escape
+    /// (the placed ones back where they were, the new ones discarded).
     /// </summary>
     internal sealed class CarryMode
     {
+        public struct Entry
+        {
+            public Part Part;
+            public bool IsNew, IsClone;
+            public Entry(Part part, bool isNew, bool isClone) { Part = part; IsNew = isNew; IsClone = isClone; }
+        }
+
+        private sealed class Carried
+        {
+            public Part Part;
+            public bool IsNew, IsClone;
+            public HexIndex OrigPos;
+            public HexRotation OrigRot;
+            public int OrigLen;
+            public List<HexIndex> OrigTrack;
+            public HexIndex Offset; // part position minus cursor
+        }
+
         private readonly EditorContext _ctx;
-        private Part _part;
-        private Solution _solution; // held for the carry: the part must go back even if the editor closes
-        private bool _isNew, _isClone;
-        private HexIndex _origPos;
-        private HexRotation _origRot;
-        private int _origLen;
-        private List<HexIndex> _origTrack;
-        private HexIndex _offset;     // part position minus cursor
+        private readonly List<Carried> _items = new List<Carried>();
+        private Solution _solution;   // held for the carry: the parts must go back even if the editor closes
         private HexIndex _origCursor; // where it was picked up: a cancel puts the cursor back
+        private Action _onPlaced;
 
         public CarryMode(EditorContext ctx) { _ctx = ctx; }
 
-        public bool Active => _part != null;
-        public Part Part => _part;
+        public bool Active => _items.Count > 0;
+        public bool IsGroup => _items.Count > 1;
 
+        /// <summary>One part: a new or copied one is placed with its base at the cursor.</summary>
         public void Start(Part part, bool isNew, bool isClone)
         {
-            var ed = _ctx.Ed;
-            if (ed == null || part == null) return;
-            var solution = ed.GetSolution();
-            _isNew = isNew;
-            _isClone = isClone;
-            _origPos = part.GetHexPos();
-            _origRot = part.GetRotation();
-            _origLen = part.GetArmLength();
-            _origTrack = part.GetType().isTrack ? new List<HexIndex>(part.GetTrack()) : null;
+            if (part == null) return;
             if (isNew) part.SetHexPosAndUpdate(_ctx.Cursor);
-            else solution.RemovePart(part);
-            _offset = part.GetHexPos() - _ctx.Cursor;
+            StartMany(new[] { new Entry(part, isNew, isClone) }, null);
+        }
+
+        /// <summary>Parts where they stand (new ones positioned by the caller). A null announcement
+        /// says "carrying" and the part's name; <paramref name="onPlaced"/> runs when they land.</summary>
+        public void StartMany(IList<Entry> entries, string announcement, Action onPlaced = null)
+        {
+            var ed = _ctx.Ed;
+            if (ed == null || entries == null || entries.Count == 0) return;
+            var solution = ed.GetSolution();
+            _items.Clear();
+            foreach (var e in entries)
+            {
+                var part = e.Part;
+                _items.Add(new Carried
+                {
+                    Part = part,
+                    IsNew = e.IsNew,
+                    IsClone = e.IsClone,
+                    OrigPos = part.GetHexPos(),
+                    OrigRot = part.GetRotation(),
+                    OrigLen = part.GetArmLength(),
+                    OrigTrack = part.GetType().isTrack ? new List<HexIndex>(part.GetTrack()) : null,
+                    Offset = part.GetHexPos() - _ctx.Cursor,
+                });
+                if (!e.IsNew) solution.RemovePart(part);
+            }
             _origCursor = _ctx.Cursor;
-            _part = part;
             _solution = solution;
+            _onPlaced = onPlaced;
             Assets.sounds.piece_pickup.PlaySound(1f);
-            EditorContext.Say(Strings.EditorCarrying(Board.PartName(ed, part)), interrupt: !isNew);
+            if (announcement != null) EditorContext.Say(announcement);
+            else EditorContext.Say(Strings.EditorCarrying(Board.PartName(ed, entries[0].Part)), interrupt: !entries[0].IsNew);
         }
 
         private string PlacementError()
         {
-            var ed = _ctx.Ed;
-            var solution = ed.GetSolution();
-            string message;
-            var alt = _isNew ? _part.GetHexPos() : _origPos;
-            if (!solution.IsAllowedPlacement(_part, alt, _part.GetHexPos(), _part.GetRotation(), out message))
-                return EditorContext.Error(message);
+            var solution = _ctx.Ed.GetSolution();
+            foreach (var c in _items)
+            {
+                string message;
+                var alt = c.IsNew ? c.Part.GetHexPos() : c.OrigPos;
+                if (solution.IsAllowedPlacement(c.Part, alt, c.Part.GetHexPos(), c.Part.GetRotation(), out message)) continue;
+                string error = EditorContext.Error(message);
+                return IsGroup ? Strings.EditorPartError(Board.PartName(_ctx.Ed, c.Part), error) : error;
+            }
             return null;
         }
 
@@ -202,7 +306,7 @@ namespace MagnumOpus.Module.Screens.Editor
             var ed = _ctx.Ed;
             if (ed == null) return;
             _ctx.Cursor = Hex.Step(_ctx.Cursor, dir);
-            _part.SetHexPosAndUpdate(_ctx.Cursor + _offset);
+            foreach (var c in _items) c.Part.SetHexPosAndUpdate(_ctx.Cursor + c.Offset);
             string readout = Board.Readout(ed, _ctx.Cursor);
             string error = PlacementError();
             EditorContext.Say(error == null ? readout : readout + ", " + error);
@@ -212,26 +316,33 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             var ed = _ctx.Ed;
             var solution = ed.GetSolution();
-            if (!_part.IsRotatable(solution)) return;
+            // One part turns only if it can; a group turns as a whole round the cursor (the game's).
+            if (!IsGroup && !_items[0].Part.IsRotatable(solution)) return;
             var rot = counterclockwise ? HexRotation.Counterclockwise : HexRotation.Clockwise;
-            _part.SetHexPosAndUpdate(_part.GetHexPos().RotatedAround(_ctx.Cursor, rot));
-            _part.RotateBy(solution, rot);
-            _offset = _part.GetHexPos() - _ctx.Cursor;
+            foreach (var c in _items)
+            {
+                c.Part.SetHexPosAndUpdate(c.Part.GetHexPos().RotatedAround(_ctx.Cursor, rot));
+                c.Part.RotateBy(solution, rot);
+                c.Offset = c.Part.GetHexPos() - _ctx.Cursor;
+            }
             Assets.sounds.piece_rotate.PlaySound(1f);
-            EditorContext.Say(_ctx.Facing(_part));
+            EditorContext.Say(IsGroup ? Strings.EditorRotated : _ctx.Facing(_items[0].Part));
         }
 
         public void Length(int delta)
         {
-            if (!_part.HasArms()) return;
-            int before = _part.GetArmLength();
-            _part.SetAllowedLength(before + delta);
-            if (_part.GetArmLength() == before) return;
+            // The game changes the length of a lone part only.
+            if (IsGroup) return;
+            var part = _items[0].Part;
+            if (!part.HasArms()) return;
+            int before = part.GetArmLength();
+            part.SetAllowedLength(before + delta);
+            if (part.GetArmLength() == before) return;
             Assets.sounds.piece_modify.PlaySound(1f);
-            EditorContext.Say(Strings.EditorLength(_part.GetArmLength()));
+            EditorContext.Say(Strings.EditorLength(part.GetArmLength()));
         }
 
-        /// <summary>Put the part down; false (the reason spoken) where the game would not.</summary>
+        /// <summary>Put the parts down; false (the reason spoken) where the game would not.</summary>
         public bool Drop()
         {
             var ed = _ctx.Ed;
@@ -239,62 +350,78 @@ namespace MagnumOpus.Module.Screens.Editor
             var solution = ed.GetSolution();
             string error = PlacementError();
             if (error != null) { EditorContext.Say(error); return false; }
-            var part = _part;
-            solution.RepositionPart(part, part.GetHexPos());
-            if (_isClone && part.GetType().isProgrammable)
+            var items = new List<Carried>(_items);
+            bool group = IsGroup;
+            _items.Clear();
+            foreach (var c in items) solution.RepositionPart(c.Part, c.Part.GetHexPos());
+            // Copied arms are numbered right after the highest-numbered part carried, in order (the
+            // game's drag-copy).
+            var clones = items.Where(c => c.IsClone && c.Part.GetType().isProgrammable).OrderBy(c => c.Part.programIndex).ToList();
+            if (clones.Count > 0)
             {
-                // The game numbers a clone after every other arm.
-                int next = solution.parts.Where(p => p.GetType().isProgrammable && p != part).Select(p => p.programIndex).DefaultIfEmpty(-1).Max() + 1;
-                solution.SetProgramIndex(part, next);
+                int next = items.Max(c => c.Part.programIndex) + 1;
+                foreach (var c in clones) solution.SetProgramIndex(c.Part, next++);
+            }
+            // A group's copies become the selection (the game's).
+            if (group && items.Any(c => c.IsClone))
+            {
+                ed.ClearPartSelection();
+                foreach (var c in items) ed.partSelection.Add(c.Part);
             }
             ed.MarkNeedsNewSnapshot();
-            bool newTrack = _isNew && part.GetType().isTrack;
-            _part = null;
             Assets.sounds.piece_place.PlaySound(1f);
-            EditorContext.Say(Strings.EditorPlaced(Board.PartName(ed, part)));
+            EditorContext.Say(Strings.EditorPlaced(_ctx.Names(items.Select(c => c.Part).ToList())));
+            var onPlaced = _onPlaced;
+            _onPlaced = null;
+            onPlaced?.Invoke();
             // A new track is drawn hex by hex from where it was put down.
-            if (newTrack) _ctx.Draw.Start(part);
+            if (!group && items[0].IsNew && items[0].Part.GetType().isTrack) _ctx.Draw.Start(items[0].Part);
             return true;
         }
 
-        /// <summary>Discard the carried part (Delete while carrying): a placed one is removed from
-        /// the solution, a new one never existed.</summary>
+        /// <summary>Discard the carried parts (Delete while carrying): placed ones are removed from
+        /// the solution, new ones never existed.</summary>
         public void Delete()
         {
             var ed = _ctx.Ed;
-            if (ed == null || _part == null) return;
-            string name = Board.PartName(ed, _part);
-            bool wasPlaced = !_isNew;
-            _part = null;
-            if (wasPlaced) ed.MarkNeedsNewSnapshot();
+            if (ed == null || _items.Count == 0) return;
+            string names = _ctx.Names(_items.Select(c => c.Part).ToList());
+            bool anyPlaced = _items.Any(c => !c.IsNew);
+            foreach (var c in _items) ed.partSelection.Remove(c.Part);
+            _items.Clear();
+            _onPlaced = null;
+            if (anyPlaced) ed.MarkNeedsNewSnapshot();
             Assets.sounds.piece_remove.PlaySound(1f);
-            EditorContext.Say(Strings.EditorDeleted(name));
+            EditorContext.Say(Strings.EditorDeleted(names));
         }
 
         public void Cancel(bool speak = true)
         {
-            if (_part == null) return;
-            var part = _part;
-            _part = null;
-            try
+            if (_items.Count == 0) return;
+            var items = new List<Carried>(_items);
+            _items.Clear();
+            _onPlaced = null;
+            var solution = _solution;
+            foreach (var c in items)
             {
-                if (!_isNew)
+                if (c.IsNew) continue;
+                try
                 {
-                    var solution = _solution;
-                    if (_origTrack != null)
+                    var part = c.Part;
+                    if (c.OrigTrack != null)
                     {
                         while (part.GetTrack().Count > 0) part.RemoveTrackBack();
-                        foreach (var h in _origTrack) part.AddTrackBack(h);
+                        foreach (var h in c.OrigTrack) part.AddTrackBack(h);
                     }
-                    else if (solution != null) part.SetRotation(solution, _origRot);
-                    part.SetAllowedLength(_origLen);
-                    part.SetHexPosAndUpdate(_origPos);
-                    if (solution != null) solution.RepositionPart(part, _origPos);
+                    else if (solution != null) part.SetRotation(solution, c.OrigRot);
+                    part.SetAllowedLength(c.OrigLen);
+                    part.SetHexPosAndUpdate(c.OrigPos);
+                    if (solution != null) solution.RepositionPart(part, c.OrigPos);
                     else CoreLog.Error("[editor] carry cancelled with no solution: " + part.GetType().id + " not restored");
                 }
-                _ctx.Cursor = _origCursor;
+                catch (Exception e) { CoreLog.Error("[editor] restoring a carried part failed: " + e); }
             }
-            catch (Exception e) { CoreLog.Error("[editor] restoring a carried part failed: " + e); }
+            _ctx.Cursor = _origCursor;
             if (speak) EditorContext.Say(Strings.EditorCancelled);
         }
     }
