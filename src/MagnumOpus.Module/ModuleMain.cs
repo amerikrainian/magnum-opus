@@ -120,6 +120,7 @@ namespace MagnumOpus.Module
             ScreenManager.Register(new MessageBoxGameScreen());
             ScreenManager.Register(new PuzzleInfoGameScreen());
             ScreenManager.Register(new CompletionGameScreen());
+            ScreenManager.Register(new PuzzleTipGameScreen());
             ScreenManager.Register(new CinematicGameScreen());
             ScreenManager.Register(new UploadGameScreen());
             ScreenManager.Register(new SolutionEditorGameScreen());

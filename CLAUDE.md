@@ -343,6 +343,9 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   Editing / Record GIF (disabled in tutorials, as the game has them) / Return to Menu via ButtonPress;
   Escape is the game's (continues editing outside tutorials). Verified live on a tutorial; the scores
   are NOT yet verified (need a non-tutorial completion); the histogram curves are not read yet.
+- **Puzzle tips** (`PuzzleTipGameScreen`, 2026-11-04): the tip's name, its text as the game draws it
+  (the dragging tip filled with the layout's drag letters), Close (the game's Escape). The animated
+  demonstration is not described. Verified live.
 - **Fallback** (`FallbackScreen`): the screen's human type name ("Journal Submission"), the text it draws
   top to bottom (`TextCapture`, only while the fallback is up) and its labeled buttons (ButtonPress).
   Covers the journal (readable, not yet operable) and the rest.
