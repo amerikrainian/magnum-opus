@@ -287,6 +287,14 @@ namespace MagnumOpus.Core.Strings
             D("editor.instruction_tray", "Instructions"),
             // A multi-armed assembly (the game names them all alike): {0} = name, {1} = grippers.
             D("editor.with_grippers", "{0} ({1} grippers)"),
+            // A histogram bar: {0} / {1} = its score range, {2} = its share of players (and a tag).
+            D("histogram.bin", "{0} to {1}: {2}"),
+            D("histogram.bin_one", "{0}: {1}"),
+            D("histogram.percent", "{0}%"),
+            // A drawn bar whose share rounds to 0.
+            D("histogram.tiny", "under 1%"),
+            // The bar the game's marker line stands over (this solution's score).
+            D("histogram.now", "now"),
             // A tray instruction the puzzle does not permit / one the solution may hold only once.
             D("editor.not_available", "not available"),
             D("editor.limit_reached", "limit reached"),
@@ -642,6 +650,11 @@ namespace MagnumOpus.Core.Strings
         public static string EditorTray => Get("editor.tray");
         public static string EditorInstructionTray => Get("editor.instruction_tray");
         public static string EditorWithGrippers(string name, int n) => F("editor.with_grippers", name, n);
+        public static string HistogramBin(string low, string high, string share) => F("histogram.bin", low, high, share);
+        public static string HistogramBinOne(string score, string share) => F("histogram.bin_one", score, share);
+        public static string HistogramPercent(int n) => F("histogram.percent", n);
+        public static string HistogramTiny => Get("histogram.tiny");
+        public static string HistogramNow => Get("histogram.now");
         public static string EditorNotAvailable => Get("editor.not_available");
         public static string EditorLimitReached => Get("editor.limit_reached");
         public static string EditorPlaced(string part) => F("editor.placed", part);

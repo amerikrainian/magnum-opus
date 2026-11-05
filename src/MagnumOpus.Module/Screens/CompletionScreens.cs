@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using MagnumOpus.Core;
 using MagnumOpus.Core.Graph;
 using MagnumOpus.Core.Strings;
+using MagnumOpus.Core.Text;
 using MagnumOpus.Core.UI;
 using MagnumOpus.Module.Game;
 using MagnumOpus.Module.Patches;
@@ -14,9 +15,10 @@ namespace MagnumOpus.Module.Screens
     /// game draws it:
     ///  1. its message ("Your machine has successfully created the desired products.");
     ///  2. the scores: in a tutorial or custom puzzle, or in hermit mode, the game's notice instead;
-    ///     otherwise cost, cycles and area (instructions in a production puzzle), each with the
-    ///     figures the game prints under its histogram (now, best, previous; the top percentile when
-    ///     global records are shown). The histogram curves themselves are not read yet;
+    ///     otherwise a table of cost, cycles and area (instructions in a production puzzle): each
+    ///     column the figures the game prints under its histogram (now, best, previous; the top
+    ///     percentile when global records are shown), then its bars ("60g to 72g: 31%", the share of
+    ///     players; the marker's bar tagged "now"; HistogramBins);
     ///  3. Continue Editing, Record GIF (both disabled in a tutorial, as the game has them) and Return
     ///     to Menu, the game's own buttons through ButtonPress.
     /// All in one stop, in that order. Escape passes to the game: outside a tutorial it continues
@@ -35,39 +37,86 @@ namespace MagnumOpus.Module.Screens
             var puzzle = Puzzle;
             if (puzzle == null) return;
 
-            // One stop: Up / Down walk the message, the scores and the buttons.
+            // One stop: the message, then the scores (the notice, or a table of the three metrics),
+            // then the buttons.
             b.BeginStop("completion");
-            b.AddItem(ControlId.Structural("completion:message"), Nodes.Text(Message));
+            var message = ControlId.Structural("completion:message");
+            b.AddItem(message, Nodes.Text(Message));
 
+            var tops = new List<ControlId>();
+            var bottoms = new List<ControlId>();
             string notice = Notice(puzzle);
             if (notice != null)
                 b.AddItem(ControlId.Structural("completion:notice"), Nodes.Text(() => notice));
             else
             {
+                // A table, as SpeechChem's: a column per metric (its name spoken on crossing), the
+                // figures first, then one row per drawn histogram bar; Up / Down walk a column,
+                // Left / Right keep the row.
                 var third = puzzle.productionInfo.HasValue() ? ScoreMetric.Instructions : ScoreMetric.Footprint;
                 foreach (var metric in new[] { ScoreMetric.Cost, ScoreMetric.Cycles, third })
                 {
                     var m = metric;
-                    b.AddItem(ControlId.Structural("completion:score:" + m), new NodeVtable
+                    var rows = HistogramRows(m);
+                    b.PushContext(MetricName(m), null, positions: false);
+                    b.StartColumn();
+                    var top = ControlId.Structural("completion:score:" + m);
+                    b.AddItem(top, Nodes.Text(() => Figures(m)));
+                    var last = top;
+                    for (int i = 0; i < rows.Count; i++)
                     {
-                        ControlType = ControlTypes.Text,
-                        Announcements = new List<NodeAnnouncement>
-                        {
-                            Nodes.LabelPart(() => MetricName(m)),
-                            Nodes.ValuePart(() => Figures(m)),
-                        },
-                        SearchText = () => MetricName(m),
-                    });
+                        string row = rows[i];
+                        last = ControlId.Structural("completion:bar:" + m + ":" + i);
+                        b.AddItem(last, Nodes.Text(() => row));
+                    }
+                    b.EndColumn();
+                    b.PopContext();
+                    tops.Add(top);
+                    bottoms.Add(last);
                 }
             }
 
             bool tutorial = puzzle.isTutorial;
+            ControlId firstButton = null;
             foreach (var english in new[] { "Continue Editing", "Record GIF", "Return to Menu" })
             {
                 string label = english;
-                b.AddItem(ControlId.Structural("completion:" + label), Nodes.Button(() => GameText.Translate(label), () => Press(label),
+                var id = ControlId.Structural("completion:" + label);
+                firstButton = firstButton ?? id;
+                b.AddItem(id, Nodes.Button(() => GameText.Translate(label), () => Press(label),
                     enabled: () => label == "Return to Menu" || !tutorial));
             }
+
+            // The table's columns are raw: wire them to the message above and the buttons below.
+            if (tops.Count > 0)
+            {
+                b.Connect(message, GraphDir.Down, tops[0]);
+                foreach (var t in tops) b.Connect(t, GraphDir.Up, message);
+                foreach (var bottom in bottoms) b.Connect(bottom, GraphDir.Down, firstButton);
+                b.Connect(firstButton, GraphDir.Up, bottoms[0]);
+            }
+        }
+
+        // The histogram's bars as rows, read the way SpeechChem reads its charts: each drawn bar's
+        // score range and its share of the players ("60g to 72g: 31%"), the bar under the game's
+        // marker tagged "now". Nothing when the game has no data (it then draws an empty frame).
+        private List<string> HistogramRows(ScoreMetric m)
+        {
+            var rows = new List<string>();
+            var g = Game;
+            if (g == null || g.scoreData == null || !g.scoreData.TryGetValue(m, out var data) || data == null) return rows;
+            if (!data.histogramData.HasValue()) return rows;
+            var h = data.histogramData.GetValue();
+            int? now = data.current.HasValue() ? data.current.GetValue() : (int?)null;
+            foreach (var bin in HistogramBins.Bins(h.buckets, h.maxScore, now))
+            {
+                string pct = bin.Percent == 0 && bin.Drawn ? Strings.HistogramTiny : Strings.HistogramPercent(bin.Percent);
+                string tag = bin.Marked ? ", " + Strings.HistogramNow : "";
+                rows.Add(bin.Low == bin.High
+                    ? Strings.HistogramBinOne(Value(m, bin.Low), pct + tag)
+                    : Strings.HistogramBin(Value(m, bin.Low), Value(m, bin.High), pct + tag));
+            }
+            return rows;
         }
 
         private string Message()

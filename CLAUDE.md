@@ -343,12 +343,16 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   builder escapes ButtonPress). Verified live 2026-11-04.
   NOT yet verified live: track drawing, reagents / products from the tray, placing a
   copy, Alt+Space (the game reads Alt itself), the numpad.
-- **Completion** (`CompletionGameScreen`, 2026-11-04): the puzzle's name, the game's message, then its
-  notice (tutorial, custom, hermit mode) or cost / cycles / area-or-instructions with the figures the game
-  prints under each histogram (Now, Best, Prev; Top Percentile with global records), then Continue
-  Editing / Record GIF (disabled in tutorials, as the game has them) / Return to Menu via ButtonPress;
-  Escape is the game's (continues editing outside tutorials). Verified live on a tutorial; the scores
-  are NOT yet verified (need a non-tutorial completion); the histogram curves are not read yet.
+- **Completion** (`CompletionGameScreen`, 2026-11-04): one stop: the game's message, then its notice
+  (tutorial, custom, hermit mode) or a TABLE (graph columns, SpeechChem's layout): a column per metric
+  (cost / cycles / area or instructions; its name the column's context, spoken on crossing), first the
+  figures the game prints under the histogram (Now, Best, Prev; Top Percentile with global records),
+  then one row per drawn bar, "51g to 63g: 55%, now": the bar's SHARE OF PLAYERS (the game stores
+  counts divided by the largest, equal-width bars from zero, so share = height / total height; never
+  "% of the tallest bar", SpeechChem's rule), "under 1%" for a drawn bar rounding to 0, the bar under
+  the game's marker tagged (bucket = clamp((score - 1) * n / max), `Core/Text/HistogramBins`,
+  unit-tested). Then Continue Editing / Record GIF (disabled in tutorials) / Return to Menu via
+  ButtonPress. Verified live on Stabilized Water. Puzzle info's histograms are not read yet.
 - **Puzzle tips** (`PuzzleTipGameScreen`, 2026-11-04): the tip's name, its text as the game draws it
   (the dragging tip filled with the layout's drag letters), Close (the game's Escape). The animated
   demonstration is not described. Verified live.
@@ -379,7 +383,7 @@ Game terms are the game's own (`GameText.Translate`, `LocString`s).
 - Phase 6: the solution editor. DONE: reading, narration and editing (section 12). Left: the items
   section 12 lists as not verified; reading the game's instruction errors (the red cells behind
   "Instruction errors must be fixed."); dropping a new arm from the tray onto an arm to swap it (the
-  game's drag does); a "step to next event" key; the completion screen's histogram curves. Read part, atom and puzzle names from the game's registries, never hardcoded
+  game's drag does); a "step to next event" key; puzzle info's histograms (`HistogramBins` is ready). Read part, atom and puzzle names from the game's registries, never hardcoded
   (content mods).
 - Phase 7: the journal (operable), the puzzle editor, the solution browser, the GIF recorder, Workshop and
   leaderboards; histograms on puzzle info.
