@@ -206,8 +206,6 @@ namespace MagnumOpus.Core.Strings
             D("editor.cat.glyphs", "Glyphs"),
             D("editor.cat.tracks", "Tracks"),
             D("editor.cat.atoms", "Atoms"),
-            // The molecule key's summary: {0} = atom count, {1} = what they are ("2 Fire, Salt").
-            D("editor.molecule_atoms", "{0} atoms: {1}"),
             // One kind of atom in that summary: {0} = how many, {1} = the atom.
             D("editor.atom_count", "{0} {1}"),
             D("editor.molecule_bond_one", "1 bond"),
@@ -635,7 +633,6 @@ namespace MagnumOpus.Core.Strings
         public static string EditorCycle(int n) => F("editor.cycle", n);
         public static string EditorCategory(string name, int count) => F("editor.category", name, count);
         public static string EditorCategoryName(string key) => Get("editor.cat." + key);
-        public static string EditorMoleculeAtoms(int count, string composition) => F("editor.molecule_atoms", count, composition);
         public static string EditorAtomCount(int count, string atom) => F("editor.atom_count", count, atom);
         public static string EditorMoleculeBonds(int n) => n == 1 ? Get("editor.molecule_bond_one") : F("editor.molecule_bonds", n);
         public static string EditorMoleculeTriplex(int n) => n == 1 ? Get("editor.molecule_triplex_one") : F("editor.molecule_triplex", n);

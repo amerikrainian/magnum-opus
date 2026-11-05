@@ -130,7 +130,6 @@ editor.cat.arms=Arms
 editor.cat.glyphs=Glyphs
 editor.cat.tracks=Tracks
 editor.cat.atoms=Atoms
-editor.molecule_atoms={0} atoms: {1}
 editor.atom_count={0} {1}
 editor.molecule_bond_one=1 bond
 editor.molecule_bonds={0} bonds

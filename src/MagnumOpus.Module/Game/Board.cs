@@ -310,7 +310,7 @@ namespace MagnumOpus.Module.Game
         }
 
         /// <summary>The molecule touching a hex (in play, else a reagent's or product's) in brief: its
-        /// size, what it is made of and its bonds, then who holds it ("3 atoms: 2 Fire, Salt; 2 bonds;
+        /// size, what it is made of and its bonds, then who holds it ("2 Fire, Salt; 2 bonds;
         /// held by arm 2"). A product or reagent leads with its name. The layout is read hex by hex.</summary>
         public static string MoleculeAround(SolutionEditorScreen ed, HexIndex hex)
         {
@@ -339,7 +339,7 @@ namespace MagnumOpus.Module.Game
 
         // Size and composition (most common atom first, then the molecule's own order), then the
         // bond counts. A single atom is just its name.
-        /// <summary>A molecule in brief: "2 atoms: Salt, Water; 1 bond" (a single atom: its name).</summary>
+        /// <summary>A molecule in brief: "Salt, Water; 1 bond" (a single atom: its name).</summary>
         public static string MoleculeSummaryText(Molecule molecule) => string.Join("; ", MoleculeSummary(molecule));
 
         private static List<string> MoleculeSummary(Molecule molecule)
@@ -347,7 +347,8 @@ namespace MagnumOpus.Module.Game
             var atoms = molecule.GetAtoms().Values.Select(a => AtomName(a.atomType)).ToList();
             var groups = atoms.GroupBy(n => n).OrderByDescending(g => g.Count()).ThenBy(g => atoms.IndexOf(g.Key));
             string composition = string.Join(", ", groups.Select(g => g.Count() == 1 ? g.Key : Strings.EditorAtomCount(g.Count(), g.Key)));
-            var parts = new List<string> { atoms.Count == 1 ? composition : Strings.EditorMoleculeAtoms(atoms.Count, composition) };
+            // The atoms themselves, no total (user rule 2026-11-04): "2 Fire, Salt".
+            var parts = new List<string> { composition };
             int plain = 0, triplex = 0;
             foreach (var bond in molecule.GetBonds())
             {
