@@ -134,6 +134,7 @@ editor.molecule_atom={0} {1}
 editor.neighbour={0}: {1}
 editor.score_item={0} {1}
 editor.gold_mark=g
+editor.close_armed=close?
 editor.expansion={0}, from {1}
 editor.log_entry={0}: {1}
 run.running=running

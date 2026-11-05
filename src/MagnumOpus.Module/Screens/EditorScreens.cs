@@ -16,7 +16,7 @@ namespace MagnumOpus.Module.Screens
     /// editor is up (<see cref="ClaimsKey"/>): its own instruction hotkeys act on the mouse position
     /// and Z deletes the selection. Escape passes to the game (it stops a run, and a stopped editor
     /// closes on a second press) except while a mode wants it: a carried part, a track being drawn, a
-    /// selection on the tape.
+    /// selection on the tape. The first press is spoken (<see cref="RunSection"/>).
     /// </summary>
     public sealed class SolutionEditorGameScreen : GameScreen<SolutionEditorScreen>
     {

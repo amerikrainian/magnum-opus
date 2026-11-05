@@ -214,6 +214,8 @@ namespace MagnumOpus.Core.Strings
             D("editor.score_item", "{0} {1}"),
             // The gold mark after a cost (the game draws it as a small G).
             D("editor.gold_mark", "g"),
+            // The editor's close button out after a first Escape (a second one closes the editor).
+            D("editor.close_armed", "close?"),
             // A tape cell filled by a Reset or Repeat: {0} = what runs there, {1} = the source.
             D("editor.expansion", "{0}, from {1}"),
             // A run log line: {0} = cycle, {1} = the event.
@@ -593,6 +595,7 @@ namespace MagnumOpus.Core.Strings
         public static string EditorNeighbour(string direction, string what) => F("editor.neighbour", direction, what);
         public static string EditorScoreItem(string label, string value) => F("editor.score_item", label, value);
         public static string EditorGoldMark => Get("editor.gold_mark");
+        public static string EditorCloseArmed => Get("editor.close_armed");
         public static string EditorTray => Get("editor.tray");
         public static string EditorCarrying(string part) => F("editor.carrying", part);
         public static string EditorPlaced(string part) => F("editor.placed", part);

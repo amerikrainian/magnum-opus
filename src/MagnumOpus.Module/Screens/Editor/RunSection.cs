@@ -26,6 +26,7 @@ namespace MagnumOpus.Module.Screens.Editor
         private SimPlayState _lastState = SimPlayState.Stopped;
         private bool _lastFast, _wasPlaying;
         private SimError _spokenError;
+        private bool _closeArmed;
 
         public RunSection(EditorContext ctx) { _ctx = ctx; }
 
@@ -36,6 +37,7 @@ namespace MagnumOpus.Module.Screens.Editor
             _lastFast = ed != null && ed.isFastForward;
             _wasPlaying = false;
             _spokenError = null;
+            _closeArmed = false;
         }
 
         public override IEnumerable<ElementAction> GetActions()
@@ -53,7 +55,7 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             var ed = _ctx.Ed;
             if (ed == null) return;
-            try { WatchRunState(ed); WatchError(ed); }
+            try { WatchRunState(ed); WatchError(ed); WatchClose(ed); }
             catch (Exception e) { CoreLog.Warning("[editor] update: " + e.Message); }
         }
 
@@ -83,6 +85,17 @@ namespace MagnumOpus.Module.Screens.Editor
             if (!Sim.ConstructSimulation(ed).HasValue())
                 return GameText.Translate("Instruction errors must be fixed.");
             return null;
+        }
+
+        // The game closes a stopped editor on a SECOND Escape: the first slides its close button out
+        // for two seconds (closeEditorMeter, also set while the mouse rests on the button) and only
+        // sounds it. Infinity marks the editor closing.
+        private void WatchClose(SolutionEditorScreen ed)
+        {
+            float meter = ed.closeEditorMeter;
+            bool armed = meter > 0f && !float.IsInfinity(meter);
+            if (armed && !_closeArmed) Speech.Say(Strings.EditorCloseArmed);
+            _closeArmed = armed;
         }
 
         private void WatchRunState(SolutionEditorScreen ed)
