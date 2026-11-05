@@ -1,36 +1,18 @@
 using System;
 using System.Collections.Generic;
 using MagnumOpus.Core;
-using MagnumOpus.Core.Graph;
 using MagnumOpus.Module.Game;
-using MagnumOpus.Module.UI;
 
 namespace MagnumOpus.Module.Screens
 {
     /// <summary>
     /// The story panel (the game's StoryPanel, on the options and puzzle info screens) as lines, the
-    /// way it draws them: without a vignette, the periodic table quote and its author; with a
+    /// way it draws them (both screens speak them on opening, no stop): without a vignette, the periodic table quote and its author; with a
     /// single-event vignette, its three texts; otherwise the vignette's dialogue lines the player has
     /// reached so far (the save's vignette progress), each "Speaker: line".
     /// </summary>
     public static class StoryPanelNodes
     {
-        public static void Build(GraphBuilder b, string idPrefix, Func<StoryPanel> panel)
-        {
-            var lines = Lines(panel());
-            b.PushContext(null, null);
-            for (int i = 0; i < lines.Count; i++)
-            {
-                int index = i;
-                b.AddItem(ControlId.Structural(idPrefix + ":" + i), Nodes.Text(() =>
-                {
-                    var now = Lines(panel());
-                    return index < now.Count ? now[index] : "";
-                }));
-            }
-            b.PopContext();
-        }
-
         public static List<string> Lines(StoryPanel panel)
         {
             var lines = new List<string>();

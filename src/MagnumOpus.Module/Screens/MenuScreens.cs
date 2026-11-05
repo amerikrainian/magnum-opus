@@ -137,9 +137,19 @@ namespace MagnumOpus.Module.Screens
             }));
             b.AddItem(ControlId.Structural("opt:close"), Nodes.Button(() => Strings.ModClose, () =>
                 GameLogic.instance.PopScreen(Transitions.sink, MaybeHelper.empty)));
+        }
 
-            b.BeginStop("story");
-            StoryPanelNodes.Build(b, "opt:story", () => Game?.storyPanel);
+        // The story panel's lines are spoken on opening, after the name, one message each, not a
+        // stop of their own (user rule 2026-11-04).
+        public override void OnFocus()
+        {
+            base.OnFocus();
+            try
+            {
+                foreach (var line in StoryPanelNodes.Lines(Game?.storyPanel))
+                    if (!string.IsNullOrWhiteSpace(line)) MagnumOpus.Core.Speech.Say(line, interrupt: false);
+            }
+            catch (System.Exception e) { MagnumOpus.Core.CoreLog.Warning("[options] story lines: " + e.Message); }
         }
 
         private static readonly KeyboardLayout[] Layouts =
