@@ -170,6 +170,16 @@ namespace MagnumOpus.Module.Screens.Editor
 
         public static string Error(string message) => GameText.Clean(message ?? "");
 
+        /// <summary>Copied arms numbered right after the highest-numbered part that landed with them,
+        /// in their order (the game's drag-copy).</summary>
+        public static void NumberCopies(Solution solution, IList<Part> landed, IEnumerable<Part> copies)
+        {
+            var arms = copies.Where(p => p.GetType().isProgrammable).OrderBy(p => p.programIndex).ToList();
+            if (arms.Count == 0) return;
+            int next = landed.Max(p => p.programIndex) + 1;
+            foreach (var p in arms) solution.SetProgramIndex(p, next++);
+        }
+
         /// <summary>A part as a list names it: an arm on the board by its number, anything else by
         /// its name.</summary>
         public string Label(Part part)
@@ -356,12 +366,7 @@ namespace MagnumOpus.Module.Screens.Editor
             foreach (var c in items) solution.RepositionPart(c.Part, c.Part.GetHexPos());
             // Copied arms are numbered right after the highest-numbered part carried, in order (the
             // game's drag-copy).
-            var clones = items.Where(c => c.IsClone && c.Part.GetType().isProgrammable).OrderBy(c => c.Part.programIndex).ToList();
-            if (clones.Count > 0)
-            {
-                int next = items.Max(c => c.Part.programIndex) + 1;
-                foreach (var c in clones) solution.SetProgramIndex(c.Part, next++);
-            }
+            EditorContext.NumberCopies(solution, items.Select(c => c.Part).ToList(), items.Where(c => c.IsClone).Select(c => c.Part));
             // A group's copies become the selection (the game's).
             if (group && items.Any(c => c.IsClone))
             {

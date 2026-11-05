@@ -31,7 +31,7 @@ namespace MagnumOpus.Module.Screens.Editor
     /// rectangle of x, y (the game's box-select rule), a third starts over; Ctrl+Shift+Space adds or
     /// removes the part under the cursor (the game's Shift+click); Ctrl+A selects every part; Escape
     /// clears. With the cursor on a selected part, Enter / Ctrl+Enter / Delete / Shift+A / Shift+D /
-    /// Ctrl+C / Ctrl+X take the whole group; Ctrl+V carries the clipboard at the cursor.
+    /// Ctrl+C / Ctrl+X take the whole group; Ctrl+V places the clipboard at the cursor.
     /// While carrying or drawing, the hex keys move the part or the track's end and Escape cancels.
     /// </summary>
     internal sealed class BoardSection : ScreenSection
@@ -667,8 +667,9 @@ namespace MagnumOpus.Module.Screens.Editor
             return null;
         }
 
-        // Ctrl+V: the clipboard carried at the cursor, put down with Enter. The first paste after a
-        // cut places the cut parts themselves; every other paste places fresh copies.
+        // Ctrl+V: the clipboard placed at the cursor at once (user decision 2026-11-04), one undo
+        // step; where anything does not fit, the reason is spoken and nothing lands. The first paste
+        // after a cut places the cut parts themselves; every other paste places fresh copies.
         private void PasteParts()
         {
             var ed = _ctx.Ed;
@@ -695,10 +696,30 @@ namespace MagnumOpus.Module.Screens.Editor
                 }
             }
             if (entries.Count == 0) return;
-            string refusal = TrayRefusal(entries.Select(e => e.Part).ToList());
+            var parts = entries.Select(e => e.Part).ToList();
+            string refusal = TrayRefusal(parts);
             if (refusal != null) { EditorContext.Say(refusal); return; }
-            var names = _ctx.Names(entries.Select(e => e.Part).ToList());
-            _ctx.Carry.StartMany(entries, Strings.EditorCarrying(names), moving ? (Action)(() => _ctx.CutParts.Clear()) : null);
+            // All or nothing: every part must fit where it lands (the game's placement check).
+            foreach (var p in parts)
+            {
+                string message;
+                if (solution.IsAllowedPlacement(p, p.GetHexPos(), p.GetHexPos(), p.GetRotation(), out message)) continue;
+                string error = EditorContext.Error(message);
+                EditorContext.Say(parts.Count > 1 ? Strings.EditorPartError(Board.PartName(ed, p), error) : error);
+                return;
+            }
+            foreach (var p in parts) solution.RepositionPart(p, p.GetHexPos());
+            EditorContext.NumberCopies(solution, parts, entries.Where(e => e.IsClone).Select(e => e.Part));
+            if (moving) _ctx.CutParts.Clear();
+            // Several parts land selected, so Enter on one of them moves them all.
+            if (parts.Count > 1)
+            {
+                ed.ClearPartSelection();
+                foreach (var p in parts) ed.partSelection.Add(p);
+            }
+            ed.MarkNeedsNewSnapshot();
+            Assets.sounds.piece_place.PlaySound(1f);
+            EditorContext.Say(Strings.EditorPasted(_ctx.Names(parts)));
         }
     }
 }
