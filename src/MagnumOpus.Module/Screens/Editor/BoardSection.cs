@@ -637,6 +637,36 @@ namespace MagnumOpus.Module.Screens.Editor
             EditorContext.Say(Strings.EditorCopied(names));
         }
 
+        // What the parts tray would refuse for parts coming onto the board: a reagent or product
+        // already placed, a unique part already there, a puzzle's part limit (the game enforces these
+        // only in the tray, so a cut part pasted back must face them too). Null when all may land.
+        private string TrayRefusal(List<Part> parts)
+        {
+            var ed = _ctx.Ed;
+            var solution = ed.GetSolution();
+            var puzzle = solution.GetPuzzle();
+            var placed = solution.CollectPartsAndSubparts().ToList();
+            foreach (var group in parts.GroupBy(p => p.GetType()))
+            {
+                var type = group.Key;
+                string name = Board.PartName(ed, group.First());
+                if (type.isInput || type.IsOutput())
+                {
+                    foreach (var p in group)
+                    {
+                        int index = p.GetInputOutputIndex();
+                        if (solution.parts.Any(q => q.GetType().isInput == type.isInput && q.GetType().IsOutput() == type.IsOutput() && q.GetInputOutputIndex() == index))
+                            return Strings.EditorPartError(Board.PartName(ed, p), Strings.EditorLimitReached);
+                    }
+                    continue;
+                }
+                int limit = type.isUnique ? 1 : (puzzle.limitedPartAmounts.TryGetValue(type, out int l) ? l : int.MaxValue);
+                if (limit != int.MaxValue && placed.Count(q => q.GetType() == type) + group.Count() > limit)
+                    return Strings.EditorPartError(name, Strings.EditorLimitReached);
+            }
+            return null;
+        }
+
         // Ctrl+V: the clipboard carried at the cursor, put down with Enter. The first paste after a
         // cut places the cut parts themselves; every other paste places fresh copies.
         private void PasteParts()
@@ -665,6 +695,8 @@ namespace MagnumOpus.Module.Screens.Editor
                 }
             }
             if (entries.Count == 0) return;
+            string refusal = TrayRefusal(entries.Select(e => e.Part).ToList());
+            if (refusal != null) { EditorContext.Say(refusal); return; }
             var names = _ctx.Names(entries.Select(e => e.Part).ToList());
             _ctx.Carry.StartMany(entries, Strings.EditorCarrying(names), moving ? (Action)(() => _ctx.CutParts.Clear()) : null);
         }
