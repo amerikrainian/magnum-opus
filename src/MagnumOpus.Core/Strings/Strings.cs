@@ -285,6 +285,11 @@ namespace MagnumOpus.Core.Strings
 
             // Editing the solution.
             D("editor.tray", "Parts"),
+            // The instruction tray beside the tape.
+            D("editor.instruction_tray", "Instructions"),
+            // A tray instruction the puzzle does not permit / one the solution may hold only once.
+            D("editor.not_available", "not available"),
+            D("editor.limit_reached", "limit reached"),
             // A part picked up on the board: {0} = its name.
             D("editor.carrying", "carrying {0}"),
             D("editor.placed", "placed {0}"),
@@ -631,6 +636,9 @@ namespace MagnumOpus.Core.Strings
         public static string EditorGoldMark => Get("editor.gold_mark");
         public static string EditorCloseArmed => Get("editor.close_armed");
         public static string EditorTray => Get("editor.tray");
+        public static string EditorInstructionTray => Get("editor.instruction_tray");
+        public static string EditorNotAvailable => Get("editor.not_available");
+        public static string EditorLimitReached => Get("editor.limit_reached");
         public static string EditorCarrying(string part) => F("editor.carrying", part);
         public static string EditorPlaced(string part) => F("editor.placed", part);
         public static string EditorCancelled => Get("editor.cancelled");

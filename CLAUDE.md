@@ -272,7 +272,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
 - **Solution editor** (`SolutionEditorGameScreen`, verified live 2026-11-04 on the first two lessons): a
   composite (`GameScreen` derives from `CompositeScreen`) of sections sharing one `Screens/Editor/
   EditorContext` (cursors, tape selection, clipboard, `CarryMode`, `TrackDrawMode`; Guildrun's pattern,
-  no partial classes): stops Board / Program / Parts / Run log, plus `RunSection` and `UndoSection`
+  no partial classes): stops Board / Program / Instructions / Parts / Run log, plus `RunSection` and `UndoSection`
   answering from anywhere. Board: hex cursor (`Game/Hex`: axial Q east, R up the screen, pointy-top, turn
   k = direction k counter-clockwise from east; spoken as Civ's half-step x, y, x = Q + R/2, origin the
   game's (0, 0)). Keys Q NW, E NE, A W, D E, Z SW, C SE (scancodes; numpad 7 9 4 6 1 3; never the
@@ -311,6 +311,10 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   moves the cut parts, later pastes copy). Copied arms are numbered right after the highest-numbered
   carried part (the game's rule). NOT yet verified live: anything on non-fixed parts. Parts stop: the
   game's toolbar rules (`SolutionEditorPartsPanel`), Enter carries a new part from the board cursor.
+  Instructions stop (`InstructionTraySection`): the game's tray as five key columns (Q/A, W/S/X, E/D/C,
+  R/F/V, T/G/B; its Delete tile left out), each tile "grab, F" (no role word, user rule), "not available"
+  where the puzzle forbids it, "limit reached" for a second period override; Enter places at the program
+  cursor ("arm 1, 4, grab"), S or / the game's description.
   Undo / redo (Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z): the game's buffer stepped directly (an injected chord
   cannot give the game Ctrl), the change spoken (new states, three at most, else a count).
   Narration (`Patches/SimNarration`): arm moves from the sim states' deltas after `Sim.BeginCycle`, glyph

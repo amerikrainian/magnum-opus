@@ -240,12 +240,21 @@ namespace MagnumOpus.Module.Screens.Editor
             if (SdlKeyboard.CtrlHeld || SdlKeyboard.AltHeld) return; // Ctrl+letters are the clipboard here
             var type = ProgramEdits.PressedInstruction();
             if (type == null || !_ctx.CanEdit()) return;
-            var arm = RowArm(_ctx);
-            if (arm == null || !ProgramEdits.Allowed(_ctx.Ed, arm, _ctx.Row + 1, type)) return;
-            _ctx.Selecting = false;
-            ProgramEdits.Place(arm, _ctx.Col, type, insert: SdlKeyboard.ShiftHeld);
-            _ctx.Col = Math.Min(EditorContext.MaxColumn, _ctx.Col + 1);
-            EditorContext.Say(Instructions.Label(type));
+            PlaceAtCursor(_ctx, type, insert: SdlKeyboard.ShiftHeld, withPlace: false);
+        }
+
+        /// <summary>An instruction at the program cursor (inserting or overwriting), the cursor stepped
+        /// on; said as the instruction, or with the arm and cycle when asked (from away from the tape).</summary>
+        public static void PlaceAtCursor(EditorContext ctx, InstructionType type, bool insert, bool withPlace)
+        {
+            var arm = RowArm(ctx);
+            if (arm == null || !ProgramEdits.Allowed(ctx.Ed, arm, ctx.Row + 1, type)) return;
+            ctx.Selecting = false;
+            int col = ctx.Col;
+            ProgramEdits.Place(arm, col, type, insert);
+            ctx.Col = Math.Min(EditorContext.MaxColumn, col + 1);
+            string label = Instructions.Label(type);
+            EditorContext.Say(withPlace ? Strings.EditorArm(ctx.Row + 1) + ", " + Strings.EditorCell(col + 1, label) : label);
         }
 
         private void Delete()
