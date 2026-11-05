@@ -132,15 +132,18 @@ namespace MagnumOpus.Module.Screens.Editor
             return null;
         }
 
-        /// <summary>The part an edit on a hex acts on: an arm (base, then gripper), else what covers
-        /// the hex, a track last (it lies under everything).</summary>
+        /// <summary>The part an edit on a hex acts on: an arm whose base is there, else what covers the
+        /// hex, else an arm whose gripper is there, a track last (it lies under everything). The game
+        /// picks by pixel (an arm's drawing wins, a gripper is smaller than its hex, so the part
+        /// around it is still clickable); by whole hexes, a gripper over a reagent must not hide it,
+        /// and an arm is always reachable from its base (user report 2026-11-04).</summary>
         public Part PartAt(HexIndex hex)
         {
-            var arm = ArmAt(hex);
-            if (arm != null) return arm;
             var ed = Ed;
             var solution = ed?.GetSolution();
             if (solution == null) return null;
+            var arms = Board.Arms(ed);
+            foreach (var arm in arms) if (Board.BaseHex(ed, arm) == hex) return arm;
             Part track = null;
             foreach (var part in solution.parts)
             {
@@ -148,6 +151,7 @@ namespace MagnumOpus.Module.Screens.Editor
                 if (part.GetType().isTrack) { track = track ?? part; continue; }
                 return part;
             }
+            foreach (var arm in arms) if (Board.Grippers(ed, arm).Any(g => g.Key == hex)) return arm;
             return track;
         }
 
