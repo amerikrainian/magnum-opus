@@ -293,8 +293,8 @@ namespace MagnumOpus.Module.Screens.Editor
             StartMany(new[] { new Entry(part, isNew, isClone) }, null);
         }
 
-        /// <summary>Parts where they stand (new ones positioned by the caller). A null announcement
-        /// says "carrying" and the part's name; <paramref name="onPlaced"/> runs when they land.</summary>
+        /// <summary>Parts where they stand (new ones positioned by the caller). An announcement is
+        /// spoken if given (none by default); <paramref name="onPlaced"/> runs when they land.</summary>
         public void StartMany(IList<Entry> entries, string announcement, Action onPlaced = null)
         {
             var ed = _ctx.Ed;
@@ -321,11 +321,14 @@ namespace MagnumOpus.Module.Screens.Editor
             _solution = solution;
             _onPlaced = onPlaced;
             Assets.sounds.piece_pickup.PlaySound(1f);
+            // No "carrying" line (user rule 2026-11-04): the pickup sound and the hex readout, which
+            // carries the placement error, say it.
             if (announcement != null) EditorContext.Say(announcement);
-            else EditorContext.Say(Strings.EditorCarrying(Board.PartName(ed, entries[0].Part)), interrupt: !entries[0].IsNew);
         }
 
-        private string PlacementError()
+        /// <summary>The game's reason the carried parts cannot go where they are now (with the part's
+        /// name in a group), or null; also part of the board's readout while carrying.</summary>
+        public string PlacementError()
         {
             var solution = _ctx.Ed.GetSolution();
             foreach (var c in _items)

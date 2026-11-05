@@ -57,10 +57,21 @@ namespace MagnumOpus.Module.Screens.Editor
             b.AddItem(ControlId.Structural("editor:board"), new NodeVtable
             {
                 ControlType = ControlTypes.Text,
-                Announcements = new[] { Nodes.LabelPart(() => _ctx.Ed == null ? "" : Board.Readout(_ctx.Ed, _ctx.Cursor)) },
+                Announcements = new[] { Nodes.LabelPart(HexReadout) },
                 OnActivate = Enter,
             });
             b.PopContext();
+        }
+
+        // The cursor hex, and while carrying the game's reason the parts cannot go there (the same
+        // line a move speaks), so landing on the board says it too.
+        private string HexReadout()
+        {
+            var ed = _ctx.Ed;
+            if (ed == null) return "";
+            string readout = Board.Readout(ed, _ctx.Cursor);
+            string error = _ctx.Carry.Active ? _ctx.Carry.PlacementError() : null;
+            return error == null ? readout : readout + ", " + error;
         }
 
         private bool Focused => Equals(Navigation.FocusedStopKey, EditorContext.StopBoard);
@@ -283,7 +294,7 @@ namespace MagnumOpus.Module.Screens.Editor
             if (group != null)
             {
                 if (group.Count == 0) return;
-                _ctx.Carry.StartMany(group.Select(p => new CarryMode.Entry(p, false, false)).ToList(), Strings.EditorCarrying(_ctx.Names(group)));
+                _ctx.Carry.StartMany(group.Select(p => new CarryMode.Entry(p, false, false)).ToList(), null);
                 return;
             }
             var part = Editable();
@@ -592,9 +603,8 @@ namespace MagnumOpus.Module.Screens.Editor
                 entries.Add(new CarryMode.Entry(copy, true, true));
             }
             foreach (var p in moved) entries.Add(new CarryMode.Entry(p, false, false));
-            string text = Strings.EditorCarryingCopies(_ctx.Names(copies));
-            if (moved.Count > 0) text += ", " + Strings.EditorAlsoMoving(_ctx.Names(moved));
-            _ctx.Carry.StartMany(entries, text);
+            // Only what the game will not copy needs saying: it moves along instead.
+            _ctx.Carry.StartMany(entries, moved.Count > 0 ? Strings.EditorAlsoMoving(_ctx.Names(moved)) : null);
         }
 
         // ---- the parts clipboard ----

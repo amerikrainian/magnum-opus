@@ -194,8 +194,9 @@ namespace MagnumOpus.Module.Screens.Editor
             if (ed == null || !it.Available || _ctx.Busy() || !_ctx.CanEdit()) return;
             var part = new Part(it.Type, false);
             part.SetupInputOutputFromSolution(ed.GetSolution(), it.Index);
-            Navigation.JumpToStop(EditorContext.StopBoard);
+            // Carry first, then land: the board's readout then includes the placement error.
             _ctx.Carry.Start(part, isNew: true, isClone: false);
+            Navigation.JumpToStop(EditorContext.StopBoard);
         }
     }
 }

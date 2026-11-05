@@ -290,8 +290,6 @@ namespace MagnumOpus.Core.Strings
             // A tray instruction the puzzle does not permit / one the solution may hold only once.
             D("editor.not_available", "not available"),
             D("editor.limit_reached", "limit reached"),
-            // A part picked up on the board: {0} = its name.
-            D("editor.carrying", "carrying {0}"),
             D("editor.placed", "placed {0}"),
             D("editor.cancelled", "cancelled"),
             // {0} = what went: a part's name, or instructions.
@@ -335,8 +333,7 @@ namespace MagnumOpus.Core.Strings
             D("editor.part_count", "{0} parts"),
             // A hex holding a selected part, said before its coordinates.
             D("editor.hex_selected", "selected"),
-            // A group copied by Ctrl+Enter: {0} = the copies; what the game will not copy moves along.
-            D("editor.carrying_copies", "carrying copies of {0}"),
+            // A group copied by Ctrl+Enter: what the game will not copy moves along: {0} = those parts.
             D("editor.also_moving", "moving {0}"),
             // A group part that cannot go where it is: {0} = the part, {1} = the game's reason.
             D("editor.part_error", "{0}: {1}"),
@@ -647,7 +644,6 @@ namespace MagnumOpus.Core.Strings
         public static string EditorWithGrippers(string name, int n) => F("editor.with_grippers", name, n);
         public static string EditorNotAvailable => Get("editor.not_available");
         public static string EditorLimitReached => Get("editor.limit_reached");
-        public static string EditorCarrying(string part) => F("editor.carrying", part);
         public static string EditorPlaced(string part) => F("editor.placed", part);
         public static string EditorCancelled => Get("editor.cancelled");
         public static string EditorDeleted(string what) => F("editor.deleted", what);
@@ -676,7 +672,6 @@ namespace MagnumOpus.Core.Strings
         public static string EditorPartUnselected(string what) => F("editor.part_unselected", what);
         public static string EditorPartCount(int n) => F("editor.part_count", n);
         public static string EditorHexSelected => Get("editor.hex_selected");
-        public static string EditorCarryingCopies(string what) => F("editor.carrying_copies", what);
         public static string EditorAlsoMoving(string what) => F("editor.also_moving", what);
         public static string EditorPartError(string part, string error) => F("editor.part_error", part, error);
         public static string EditorCopied(string what) => F("editor.copied", what);
