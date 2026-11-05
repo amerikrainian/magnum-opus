@@ -419,9 +419,10 @@ namespace MagnumOpus.Core.UI
                 case UiActions.Prev: return Tab(-1);
                 case UiActions.Home: return JumpEdge(first: true) || ScreenAnswers(action.Key);
                 case UiActions.End: return JumpEdge(first: false) || ScreenAnswers(action.Key);
-                // Region jumps consume only when the focused node is IN a region; elsewhere Ctrl+arrows bubble.
-                case UiActions.RegionPrev: return _graph?.CurrentNode?.RegionKey != null && RegionJump(-1);
-                case UiActions.RegionNext: return _graph?.CurrentNode?.RegionKey != null && RegionJump(1);
+                // Region jumps consume only when the focused node is IN a region; elsewhere the focused
+                // screen may answer them by key (the editor's board cycles the parts on a hex), else they bubble.
+                case UiActions.RegionPrev: return (_graph?.CurrentNode?.RegionKey != null && RegionJump(-1)) || ScreenAnswers(action.Key);
+                case UiActions.RegionNext: return (_graph?.CurrentNode?.RegionKey != null && RegionJump(1)) || ScreenAnswers(action.Key);
                 case UiActions.Activate:
                 {
                     if (_graph?.CurrentNode == null) return false;
@@ -491,7 +492,7 @@ namespace MagnumOpus.Core.UI
                 case UiActions.Home:
                 case UiActions.End: return SiblingCount(node) > 1 || ScreenOffers(action.Key);
                 case UiActions.RegionPrev:
-                case UiActions.RegionNext: return node != null && node.RegionKey != null;
+                case UiActions.RegionNext: return (node != null && node.RegionKey != null) || ScreenOffers(action.Key);
                 case UiActions.Activate: return node != null && node.Vtable.OnActivate != null;
                 case UiActions.Secondary: return node != null && node.Vtable.OnSecondary != null;
                 case UiActions.Back: return ScreenOffers(ActionIds.Back);

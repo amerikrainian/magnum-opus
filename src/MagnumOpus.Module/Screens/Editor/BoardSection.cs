@@ -17,7 +17,9 @@ namespace MagnumOpus.Module.Screens.Editor
     /// are not board keys (user rule 2026-11-04); Alt with them skips to the next hex that reads
     /// differently; Alt+Shift on the letters, Alt on the numpad). A hex
     /// reads its half-step coordinates, then what is on it (<see cref="Board"/>).
-    /// Home goes to the origin, 0, 0. Reading: [ ] categories, , . items, S details, W the molecule, X neighbours, ; and ' the
+    /// Home goes to the origin, 0, 0. Where a hex holds several parts, edits take the first of
+    /// arm base, other part, track, gripper; Alt+Up / Alt+Down choose another (until the cursor
+    /// moves). Reading: [ ] categories, , . items, S details, W the molecule, X neighbours, ; and ' the
     /// program cursor a cycle back and forward on the arm under the cursor, digits jump to an arm.
     /// Editing (stopped engine): Enter picks the part under the cursor up (<see cref="CarryMode"/>)
     /// and puts it down; Ctrl+Enter picks up a copy; Shift+A / Shift+D rotate, Shift+W / Shift+S
@@ -129,8 +131,10 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.Cut, Strings.Get("bind.ed.cut"), _ => CopyParts(cut: true));
             yield return new ElementAction(EditorActions.Paste, Strings.Get("bind.ed.paste"), _ => PasteParts());
 
-            // Editing the part under the cursor.
+            // Editing the part under the cursor (Alt+Up / Alt+Down choose which, when several).
             if (_ctx.PartAt(_ctx.Cursor) == null) yield break;
+            yield return new ElementAction(UiActions.RegionPrev, Strings.Get("bind.ed.part_prev"), _ => _ctx.CyclePart(-1));
+            yield return new ElementAction(UiActions.RegionNext, Strings.Get("bind.ed.part_next"), _ => _ctx.CyclePart(1));
             yield return new ElementAction(EditorActions.RotateCcw, Strings.Get("bind.ed.rot.ccw"), _ => Rotate(true));
             yield return new ElementAction(EditorActions.RotateCw, Strings.Get("bind.ed.rot.cw"), _ => Rotate(false));
             yield return new ElementAction(EditorActions.Longer, Strings.Get("bind.ed.len.up"), _ => Length(1));
@@ -236,6 +240,7 @@ namespace MagnumOpus.Module.Screens.Editor
             var cats = Categories(_ctx.Ed);
             if (cats.Count == 0) return;
             int at = cats.FindIndex(c => c.Key == _category);
+            if (at >= 0 && cats.Count < 2) return; // the only category, already on it: nothing (like Tab)
             at = at < 0 ? (step > 0 ? 0 : cats.Count - 1) : ((at + step) % cats.Count + cats.Count) % cats.Count;
             _category = cats[at].Key;
             _item = -1;
@@ -249,6 +254,7 @@ namespace MagnumOpus.Module.Screens.Editor
             int at = cats.FindIndex(c => c.Key == _category);
             if (at < 0) { at = 0; _category = cats[0].Key; _item = -1; }
             var items = cats[at].Value;
+            if (_item >= 0 && items.Count < 2 && _ctx.Cursor == items[0]) return; // the only item, on it: nothing
             _item = _item < 0 ? (step > 0 ? 0 : items.Count - 1) : ((_item + step) % items.Count + items.Count) % items.Count;
             _ctx.Cursor = items[_item];
             SayHex();

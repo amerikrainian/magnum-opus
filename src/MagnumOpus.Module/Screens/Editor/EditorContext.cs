@@ -36,7 +36,15 @@ namespace MagnumOpus.Module.Screens.Editor
         public SolutionEditorScreen Ed => _editor();
 
         // ---- cursors ----
-        public HexIndex Cursor;
+        /// <summary>The board cursor. Moving it drops a part chosen with Alt+Up / Alt+Down (the
+        /// hex's default comes back).</summary>
+        public HexIndex Cursor
+        {
+            get => _cursor;
+            set { if (value != _cursor) _pick = 0; _cursor = value; }
+        }
+        private HexIndex _cursor;
+        private int _pick; // which of the cursor hex's parts an edit takes (0 = the default)
         public int Row, Col;
 
         // ---- the tape's selection (a rectangle between the anchor and the cursor) and clipboard ----
@@ -132,27 +140,52 @@ namespace MagnumOpus.Module.Screens.Editor
             return null;
         }
 
-        /// <summary>The part an edit on a hex acts on: an arm whose base is there, else what covers the
-        /// hex, else an arm whose gripper is there, a track last (it lies under everything). The game
-        /// picks by pixel (an arm's drawing wins, a gripper is smaller than its hex, so the part
-        /// around it is still clickable); by whole hexes, a gripper over a reagent must not hide it,
-        /// and an arm is always reachable from its base (user report 2026-11-04).</summary>
-        public Part PartAt(HexIndex hex)
+        /// <summary>Every part an edit on a hex could take, in the default order: an arm whose base is
+        /// there, what covers the hex, a track, then an arm whose gripper is there (user decision
+        /// 2026-11-04). The game picks by pixel (an arm's drawing wins, but a gripper is smaller than
+        /// its hex, so the part around it stays clickable); by whole hexes the order decides, and
+        /// Alt+Up / Alt+Down choose another (<see cref="CyclePart"/>). Read live every time.</summary>
+        public List<Part> PartsAt(HexIndex hex)
         {
+            var result = new List<Part>();
             var ed = Ed;
             var solution = ed?.GetSolution();
-            if (solution == null) return null;
+            if (solution == null) return result;
             var arms = Board.Arms(ed);
-            foreach (var arm in arms) if (Board.BaseHex(ed, arm) == hex) return arm;
-            Part track = null;
+            foreach (var arm in arms) if (Board.BaseHex(ed, arm) == hex) result.Add(arm);
+            var tracks = new List<Part>();
             foreach (var part in solution.parts)
             {
                 if (part.GetType().isProgrammable || !part.GetHexFootprint(solution).Contains(hex)) continue;
-                if (part.GetType().isTrack) { track = track ?? part; continue; }
-                return part;
+                if (part.GetType().isTrack) tracks.Add(part);
+                else result.Add(part);
             }
-            foreach (var arm in arms) if (Board.Grippers(ed, arm).Any(g => g.Key == hex)) return arm;
-            return track;
+            result.AddRange(tracks);
+            foreach (var arm in arms)
+                if (!result.Contains(arm) && Board.Grippers(ed, arm).Any(g => g.Key == hex)) result.Add(arm);
+            return result;
+        }
+
+        /// <summary>The part an edit on a hex acts on: on the cursor hex the one chosen with
+        /// Alt+Up / Alt+Down, else (and anywhere else) the first in <see cref="PartsAt"/>.</summary>
+        public Part PartAt(HexIndex hex)
+        {
+            var parts = PartsAt(hex);
+            if (parts.Count == 0) return null;
+            int i = hex == _cursor && _pick < parts.Count ? _pick : 0;
+            return parts[i];
+        }
+
+        /// <summary>Alt+Up / Alt+Down: the previous or next part on the cursor hex becomes the one
+        /// edits take, said by name; wraps. Like Tab: with one part or none it does nothing and says
+        /// nothing (user rule 2026-11-04).</summary>
+        public void CyclePart(int step)
+        {
+            var parts = PartsAt(_cursor);
+            if (parts.Count < 2) return;
+            int current = _pick < parts.Count ? _pick : 0;
+            _pick = ((current + step) % parts.Count + parts.Count) % parts.Count;
+            Say(Label(parts[_pick]));
         }
 
         /// <summary>What a turn says (Shift+A / Shift+D): just the new direction (user rule
