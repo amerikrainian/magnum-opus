@@ -59,8 +59,11 @@ namespace MagnumOpus.Module.Screens
                 string pressed = raw;
                 b.AddItem(ControlId.Structural("fallback:" + label + "#" + n), Nodes.Button(() => label, () => ButtonPress.Press(pressed)));
             }
+            // Nothing drawn yet (the first frame: capture starts when this screen does) or nothing at
+            // all: a silent stand-in holds focus. Reading the name here said it twice, since entry
+            // already speaks it.
             if (seen.Count == 0 && lines.Count == 0)
-                b.AddItem(ControlId.Structural("fallback:name"), Nodes.Text(() => ScreenName));
+                b.AddItem(ControlId.Structural("fallback:name"), Nodes.Text(() => ""));
             b.PopContext();
         }
 
