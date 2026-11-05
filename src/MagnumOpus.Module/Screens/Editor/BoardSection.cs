@@ -206,7 +206,8 @@ namespace MagnumOpus.Module.Screens.Editor
             int col = Math.Max(0, Math.Min(EditorContext.MaxColumn, _ctx.Col + step));
             if (col == _ctx.Col && arm == null) return;
             _ctx.Col = col;
-            EditorContext.Say(ProgramSection.CellText(_ctx, withArm: true));
+            // The cell only ("2, counter"): the arm is the one under the cursor (user rule 2026-11-04).
+            EditorContext.Say(ProgramSection.CellText(_ctx, withArm: false));
         }
 
         // ---- reading ----
