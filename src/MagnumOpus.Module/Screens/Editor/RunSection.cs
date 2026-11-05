@@ -163,8 +163,7 @@ namespace MagnumOpus.Module.Screens.Editor
                 }
                 parts.Add(Strings.EditorScoreItem(GameText.Translate("Products"), done + "/" + total));
             }
-            // The game's font draws '$' as its gold mark.
-            string cost = GameText.Clean(UIUtils.FormatMetricScore(ScoreMetric.Cost, solution.GetTotalCost())).Replace("$", Strings.EditorGoldMark);
+            string cost = GameText.Cost(solution.GetTotalCost());
             parts.Add(Strings.EditorScoreItem(GameText.Translate("Cost"), cost));
             if (running)
             {

@@ -88,7 +88,7 @@ namespace MagnumOpus.Module.Screens
             if (solution.scores.ContainsKey(ScoreMetric.Cost) && solution.scores.ContainsKey(ScoreMetric.Cycles) && solution.scores.ContainsKey(key))
             {
                 string third = GameText.Translate(g.puzzle.productionInfo.HasValue() ? "Instrs" : "Area");
-                return UIUtils.FormatMetricScore(ScoreMetric.Cost, solution.scores[ScoreMetric.Cost]) + " " + GameText.Translate("Cost") + ", "
+                return GameText.Cost(solution.scores[ScoreMetric.Cost]) + " " + GameText.Translate("Cost") + ", "
                     + solution.scores[ScoreMetric.Cycles] + " " + GameText.Translate("Cycles") + ", "
                     + solution.scores[key] + " " + third;
             }

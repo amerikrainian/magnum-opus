@@ -24,6 +24,11 @@ namespace MagnumOpus.Module.Game
             return sb.ToString();
         }
 
+        /// <summary>A cost as the game shows it (UIUtils.FormatMetricScore: "90$"), with the '$' its font
+        /// draws as the gold mark spoken as the mod's word for it.</summary>
+        public static string Cost(int cost) =>
+            Clean(UIUtils.FormatMetricScore(ScoreMetric.Cost, cost)).Replace("$", MagnumOpus.Core.Strings.Strings.EditorGoldMark);
+
         /// <summary>A LocString in the game's current language, cleaned; empty for null.</summary>
         public static string Of(LocString s) => s == null ? "" : Clean(s.GetTranslated());
 

@@ -127,7 +127,7 @@ namespace MagnumOpus.Module.Screens.Editor
         private static string Cost(TrayItem it)
         {
             if (it.Type.isInput || it.Type.IsOutput()) return null;
-            return GameText.Clean(UIUtils.FormatMetricScore(ScoreMetric.Cost, it.Type.cost)).Replace("$", Strings.EditorGoldMark);
+            return GameText.Cost(it.Type.cost);
         }
 
         // A new part at the board cursor, carried there: the board takes focus.
