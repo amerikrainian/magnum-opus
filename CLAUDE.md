@@ -257,8 +257,11 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   campaign switch (store notice without the DLC) / Options. Enter runs the game's click code. The unlock
   sequence is spoken as the game plays it (it only sounds it).
 - **Letters** (`DocumentGameScreen`): sections as lines, Close (the game's Escape: marks seen, pops).
-- **Cutscenes** (`CinematicGameScreen`): each line spoken as it appears ("Speaker: line"); Enter advances
-  (as Space). NOT yet verified live (no cutscene unlocked on the test profile).
+- **Cutscenes** (`CinematicGameScreen`): each line spoken as it appears ("Speaker: line"; the first by the
+  landing only). ONE PRESS = THE NEXT LINE (Echopunks' CutsceneAdvance rule, 2026-11-04): the game types
+  a line out (0.005 s a character) and takes an advance only once it shows in full plus 0.1 s and no
+  portrait is sliding; Enter or Space finishes its clocks (timeSinceEvent, cinematicsEventTime) and
+  forces Space, so the game's own advance runs. Escape passes (skips a seen cutscene).
 - **Puzzle info** (`PuzzleInfoGameScreen`): solutions (focus selects, Enter opens), New / Open / Rename /
   Copy / Delete via ButtonPress, the leaderboard notice, the story panel (`StoryPanelNodes`, shared with
   Options). Histograms: `ScoreTable` in comparing mode.
