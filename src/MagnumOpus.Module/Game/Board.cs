@@ -339,6 +339,9 @@ namespace MagnumOpus.Module.Game
 
         // Size and composition (most common atom first, then the molecule's own order), then the
         // bond counts. A single atom is just its name.
+        /// <summary>A molecule in brief: "2 atoms: Salt, Water; 1 bond" (a single atom: its name).</summary>
+        public static string MoleculeSummaryText(Molecule molecule) => string.Join("; ", MoleculeSummary(molecule));
+
         private static List<string> MoleculeSummary(Molecule molecule)
         {
             var atoms = molecule.GetAtoms().Values.Select(a => AtomName(a.atomType)).ToList();

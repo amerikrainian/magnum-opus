@@ -16,8 +16,10 @@ namespace MagnumOpus.Module.Screens.Editor
     /// until it is placed, a mechanism or glyph the puzzle permits, unavailable at its limit (a
     /// unique part, a puzzle's part count). Each reads its name (the game's tooltip name; a
     /// multi-armed assembly with its gripper count, which the game shows in its picture) and cost; S
-    /// or / reads the game's tooltip description, as hovering does. Enter creates the part at the
-    /// board cursor and carries it there (<see cref="CarryMode"/>).
+    /// or / reads the game's tooltip description, as hovering does. A reagent or product reads its
+    /// molecule in brief (the tile draws it), and W opens it in <see cref="MoleculeViewerScreen"/> to
+    /// walk its atoms and bonds before placing. Enter creates the part at the board cursor and
+    /// carries it there (<see cref="CarryMode"/>).
     /// </summary>
     internal sealed class TraySection : ScreenSection
     {
@@ -105,7 +107,7 @@ namespace MagnumOpus.Module.Screens.Editor
                         Announcements = new List<NodeAnnouncement>
                         {
                             Nodes.LabelPart(() => Name(it)),
-                            Nodes.ValuePart(() => Cost(it)),
+                            Nodes.ValuePart(() => Cost(it) ?? Summary(it)),
                             Nodes.DisabledPart(() => it.Available),
                         },
                         SearchText = () => Name(it),
@@ -126,13 +128,43 @@ namespace MagnumOpus.Module.Screens.Editor
             if (!Focused || _ctx.Ed == null) yield break;
             yield return new ElementAction(EditorActions.Details, Strings.Get("bind.ed.details"), _ => SayDetails());
             yield return new ElementAction(EditorActions.Info, Strings.Get("bind.ed.details"), _ => SayDetails());
+            var focused = FocusedItem();
+            if (focused.HasValue && (focused.Value.Type.isInput || focused.Value.Type.IsOutput()))
+            {
+                var it = focused.Value;
+                yield return new ElementAction(EditorActions.Molecule, Strings.Get("bind.ed.molecule"), _ =>
+                    MoleculeViewerScreen.Open(Name(it), () => Molecule(it)));
+            }
+        }
+
+        private TrayItem? FocusedItem()
+        {
+            var key = Navigation.FocusedNode?.Id?.StructuralKey as string;
+            return key != null && _byId.TryGetValue(key, out var it) ? it : (TrayItem?)null;
+        }
+
+        // A reagent's or product's molecule as the puzzle defines it (the tile's picture).
+        private Molecule Molecule(TrayItem it)
+        {
+            var puzzle = _ctx.Ed?.GetSolution()?.GetPuzzle();
+            if (puzzle == null) return null;
+            return it.Type.isInput ? puzzle.GetInputMolecule(it.Index).molecule : puzzle.GetOutputMolecule(it.Index).molecule;
+        }
+
+        // What the tile draws for a reagent or product, in brief.
+        private string Summary(TrayItem it)
+        {
+            if (!it.Type.isInput && !it.Type.IsOutput()) return null;
+            var m = Molecule(it);
+            return m == null ? null : Board.MoleculeSummaryText(m);
         }
 
         // S or /: the game's tooltip for the focused part (its name and description).
         private void SayDetails()
         {
-            var key = Navigation.FocusedNode?.Id?.StructuralKey as string;
-            if (key == null || !_byId.TryGetValue(key, out var it)) return;
+            var focused = FocusedItem();
+            if (!focused.HasValue) return;
+            var it = focused.Value;
             string d = GameText.Of(it.Type.description);
             EditorContext.Say(d.Length > 0 ? Name(it) + ". " + d : Name(it));
         }

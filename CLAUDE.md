@@ -318,6 +318,10 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   after a cut the first paste moves the cut parts, later pastes copy). Copied arms are numbered right after the highest-numbered
   carried part (the game's rule). NOT yet verified live: anything on non-fixed parts. Parts stop: the
   game's toolbar rules (`SolutionEditorPartsPanel`), Enter carries a new part from the board cursor.
+  Parts tray: a reagent or product reads its molecule in brief ("2 atoms: Salt, Water; 1 bond"; the
+  game draws the whole molecule on the tile), W opens `MoleculeViewerScreen` (a child screen: hex keys
+  walk the molecule in its own frame, each hex its atom and bond directions; W summary; Escape). S or /
+  reads a tray part's tooltip description; multi-armed assemblies read "(N grippers)".
   Instructions stop (`InstructionTraySection`): the game's tray as five key columns (Q/A, W/S/X, E/D/C,
   R/F/V, T/G/B; its Delete tile left out), each tile "grab, F" (no role word, user rule), "not available"
   where the puzzle forbids it, "limit reached" for a second period override; Enter places at the program
