@@ -17,17 +17,22 @@ namespace MagnumOpus.Module.Screens.Editor
     /// are not board keys (user rule 2026-11-04); Alt with them skips to the next hex that reads
     /// differently; Alt+Shift on the letters, Alt on the numpad). A hex
     /// reads its half-step coordinates, then what is on it (<see cref="Board"/>).
-    /// Home goes to the origin, 0, 0. Where a hex holds several parts, edits take the first of
+    /// Ctrl+Home goes to the origin, 0, 0. Where a hex holds several parts, edits take the first of
     /// arm base, other part, track, gripper; Ctrl+Up / Ctrl+Down choose another (until the cursor
-    /// moves). Reading: [ ] categories, , . items, S details, W the molecule, X neighbours, ; and ' the
-    /// program cursor a cycle back and forward on the arm under the cursor, digits jump to an arm.
+    /// moves). Reading: [ ] categories, , . items, S details, W the molecule, X neighbours.
+    /// The program cursor's arm is chosen here, never by where the board cursor is (user decision
+    /// 2026-11-05), with the tape's own keys (a grid of arms by cycles): Up / Down cycle the arms
+    /// (wrapping; one arm: nothing) and put the program cursor on the cell after the arm's last
+    /// instruction ("arm 2, 5"); Left / Right move it a cycle back and forward, Home / End to the
+    /// arm's first and last instruction; digits jump the board cursor to an arm's base and make it
+    /// the program's arm.
     /// Editing (stopped engine): Enter picks the part under the cursor up (<see cref="CarryMode"/>)
     /// and puts it down; Ctrl+Enter picks up a copy; Shift+A / Shift+D rotate, Shift+W / Shift+S
     /// lengthen and shorten an arm (the game's own drag letters); Delete removes the part;
     /// Shift+Enter on a track extends it (<see cref="TrackDrawMode"/>). Alt with an instruction key
-    /// programs the arm under the cursor at the program cursor's cycle and steps that cursor on
-    /// (user decision 2026-11-04: Ctrl is the clipboard). Alt+Backspace jumps to the tape on the arm
-    /// under the cursor (and back, <see cref="ProgramSection"/>).
+    /// programs the program cursor's arm at its cycle, wherever the board cursor is, and steps that
+    /// cursor on (user decision 2026-11-04: Ctrl is the clipboard). Alt+Backspace jumps to the tape
+    /// on the arm under the cursor, else the program cursor's arm (and back, <see cref="ProgramSection"/>).
     /// Selection (user design 2026-11-04; the game's own partSelection, so the game draws it too):
     /// Shift+Space marks one corner, the next the opposite one and selects every part touching that
     /// rectangle of x, y (the game's box-select rule), a third starts over; Ctrl+Shift+Space adds or
@@ -104,7 +109,7 @@ namespace MagnumOpus.Module.Screens.Editor
                 yield break;
             }
 
-            yield return new ElementAction(UiActions.Home, Strings.Get("bind.ed.origin"), _ => { _ctx.Cursor = new HexIndex(0, 0); SayHex(); });
+            yield return new ElementAction(EditorActions.Origin, Strings.Get("bind.ed.origin"), _ => { _ctx.Cursor = new HexIndex(0, 0); SayHex(); });
             yield return new ElementAction(EditorActions.SkipNW, Strings.Get("bind.ed.skip.nw"), _ => Skip(HexDir.NorthWest));
             yield return new ElementAction(EditorActions.SkipNE, Strings.Get("bind.ed.skip.ne"), _ => Skip(HexDir.NorthEast));
             yield return new ElementAction(EditorActions.SkipW, Strings.Get("bind.ed.skip.w"), _ => Skip(HexDir.West));
@@ -113,8 +118,12 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.SkipSE, Strings.Get("bind.ed.skip.se"), _ => Skip(HexDir.SouthEast));
             if (arms > 0)
             {
-                yield return new ElementAction(EditorActions.TapePrev, Strings.Get("bind.ed.tape.prev"), _ => TapeFromBoard(-1));
-                yield return new ElementAction(EditorActions.TapeNext, Strings.Get("bind.ed.tape.next"), _ => TapeFromBoard(1));
+                yield return new ElementAction(UiActions.Up, Strings.Get("bind.ed.arm.prev"), _ => CycleArm(-1));
+                yield return new ElementAction(UiActions.Down, Strings.Get("bind.ed.arm.next"), _ => CycleArm(1));
+                yield return new ElementAction(UiActions.Left, Strings.Get("bind.ed.tape.prev"), _ => TapeTo(_ctx.Col - 1));
+                yield return new ElementAction(UiActions.Right, Strings.Get("bind.ed.tape.next"), _ => TapeTo(_ctx.Col + 1));
+                yield return new ElementAction(UiActions.Home, Strings.Get("bind.ed.tape.first"), _ => TapeEdge(first: true));
+                yield return new ElementAction(UiActions.End, Strings.Get("bind.ed.tape.last"), _ => TapeEdge(first: false));
                 yield return new ElementAction(EditorActions.Jump, Strings.Get("bind.ed.jump"), _ => JumpToTape());
                 yield return new ElementAction(EditorActions.Instruction, Strings.Get("bind.ed.program_arm"), _ => ProgramArm());
             }
@@ -198,16 +207,38 @@ namespace MagnumOpus.Module.Screens.Editor
             SayHex();
         }
 
-        private void TapeFromBoard(int step)
+        // Up / Down: the previous or next arm becomes the program cursor's, the cursor on the cell
+        // after its last instruction (cycle 1 on an empty tape; a Reset's filled cells included,
+        // user decision 2026-11-05); "arm 2, 5". Wraps; with one arm it
+        // does nothing and says nothing (the Tab rule, user rule 2026-11-04).
+        private void CycleArm(int step)
         {
-            var ed = _ctx.Ed;
-            var arm = _ctx.ArmAt(_ctx.Cursor);
-            if (arm != null) _ctx.Row = Board.Arms(ed).IndexOf(arm);
-            int col = Math.Max(0, Math.Min(EditorContext.MaxColumn, _ctx.Col + step));
-            if (col == _ctx.Col && arm == null) return;
+            var arms = Board.Arms(_ctx.Ed);
+            if (arms.Count < 2) return;
+            int row = Math.Max(0, Math.Min(arms.Count - 1, _ctx.Row));
+            _ctx.Row = ((row + step) % arms.Count + arms.Count) % arms.Count;
+            _ctx.Selecting = false;
+            var program = arms[_ctx.Row].program;
+            _ctx.Col = program.Count() == 0 ? 0 : Math.Min(EditorContext.MaxColumn, program.LastInstructionIndex() + 1);
+            EditorContext.Say(ProgramSection.CellText(_ctx, withArm: true));
+        }
+
+        // Left / Right / Home / End: the program cursor on its own arm (the board cursor's position
+        // plays no part, user decision 2026-11-05). The cell only ("2, counter"), the arm being the
+        // one Up / Down chose (user rule 2026-11-04); where it already is, nothing (as on the tape).
+        private void TapeTo(int col)
+        {
+            col = Math.Max(0, Math.Min(EditorContext.MaxColumn, col));
+            if (col == _ctx.Col) return;
+            _ctx.Selecting = false;
             _ctx.Col = col;
-            // The cell only ("2, counter"): the arm is the one under the cursor (user rule 2026-11-04).
             EditorContext.Say(ProgramSection.CellText(_ctx, withArm: false));
+        }
+
+        private void TapeEdge(bool first)
+        {
+            var arm = ProgramSection.RowArm(_ctx);
+            if (arm != null) TapeTo(ProgramSection.EdgeColumn(arm, first));
         }
 
         // ---- reading ----
@@ -401,30 +432,25 @@ namespace MagnumOpus.Module.Screens.Editor
             _ctx.Draw.Start(part);
         }
 
-        // Alt + an instruction key: the arm under the cursor gets it at the program cursor's cycle,
-        // and that cursor steps on.
+        // Alt + an instruction key: the program cursor's arm gets it at that cursor's cycle, wherever
+        // the board cursor is (user decision 2026-11-05), and the cursor steps on.
         private void ProgramArm()
         {
             if (!SdlKeyboard.AltHeld || SdlKeyboard.CtrlHeld || SdlKeyboard.ShiftHeld) return;
             var type = ProgramEdits.PressedInstruction();
-            if (type == null) return;
-            var arm = _ctx.ArmAt(_ctx.Cursor);
-            if (arm == null) { EditorContext.Say(Strings.EditorNoArm); return; }
-            if (!_ctx.CanEdit()) return;
-            _ctx.Row = Board.Arms(_ctx.Ed).IndexOf(arm);
+            if (type == null || !_ctx.CanEdit()) return;
             ProgramSection.PlaceAtCursor(_ctx, type, insert: false, withPlace: true);
         }
 
         // ---- the tape jump ----
 
-        // Alt+Backspace: the tape on the arm under the cursor, at the program cursor's column; the
-        // same key there comes back to this hex.
+        // Alt+Backspace: the tape on the arm under the cursor (else the program cursor's own arm), at
+        // the program cursor's column; the same key there comes back to this hex.
         private void JumpToTape()
         {
             var ed = _ctx.Ed;
             var arm = _ctx.ArmAt(_ctx.Cursor);
-            if (arm == null) { EditorContext.Say(Strings.EditorNoArm); return; }
-            _ctx.Row = Board.Arms(ed).IndexOf(arm);
+            if (arm != null) _ctx.Row = Board.Arms(ed).IndexOf(arm);
             _ctx.JumpHex = _ctx.Cursor;
             Navigation.JumpToStop(EditorContext.StopProgram);
         }

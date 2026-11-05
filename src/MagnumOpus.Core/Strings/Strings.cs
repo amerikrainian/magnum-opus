@@ -320,7 +320,6 @@ namespace MagnumOpus.Core.Strings
             // {0} = a part's name or "arm 2".
             D("editor.fixed", "{0} cannot be changed"),
             D("editor.cannot_copy", "{0} cannot be copied"),
-            D("editor.no_arm", "no arm here"),
             // An instruction this puzzle does not allow: {0} = its name.
             D("editor.unavailable", "{0} not available"),
             // More than three instructions, by count.
@@ -380,7 +379,11 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.skip.se", "Skip southeast"),
             D("bind.ed.tape.prev", "Program cursor back a cycle"),
             D("bind.ed.tape.next", "Program cursor forward a cycle"),
+            D("bind.ed.tape.first", "Program cursor to the first instruction"),
+            D("bind.ed.tape.last", "Program cursor to the last instruction"),
             D("bind.ed.arm", "Jump to arm"),
+            D("bind.ed.arm.prev", "Previous arm to program"),
+            D("bind.ed.arm.next", "Next arm to program"),
             D("bind.ed.cat.prev", "Previous category"),
             D("bind.ed.cat.next", "Next category"),
             D("bind.ed.item.prev", "Previous item"),
@@ -395,7 +398,7 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.step", "Step one cycle"),
             D("bind.ed.fast", "Fast forward"),
             D("bind.ed.instr", "Place instruction, Shift inserts"),
-            D("bind.ed.program_arm", "Program the arm here"),
+            D("bind.ed.program_arm", "Program the chosen arm"),
             D("bind.ed.jump", "Jump between the board and the tape"),
             D("bind.ed.origin", "Cursor to the origin"),
             D("bind.cinematic.next", "Next line"),
@@ -677,7 +680,6 @@ namespace MagnumOpus.Core.Strings
         public static string EditorCannotCopy(string what) => F("editor.cannot_copy", what);
         public static string EditorTrackPlus(string dir) => F("editor.track_plus", dir);
         public static string EditorTrackMinus(string dir) => F("editor.track_minus", dir);
-        public static string EditorNoArm => Get("editor.no_arm");
         public static string EditorUnavailable(string what) => F("editor.unavailable", what);
         public static string EditorInstructionCount(int n) => F("editor.instruction_count", n);
         public static string EditorSelected(int n) => F("editor.selected", n);

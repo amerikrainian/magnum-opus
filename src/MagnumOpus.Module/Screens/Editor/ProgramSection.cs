@@ -188,9 +188,14 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             var arm = RowArm(_ctx);
             if (arm == null) return;
+            MoveColumn(EdgeColumn(arm, first), select: false);
+        }
+
+        /// <summary>An arm's first or last instruction (cycle 1 on an empty tape).</summary>
+        public static int EdgeColumn(Part arm, bool first)
+        {
             var program = arm.program;
-            int col = program.Count() == 0 ? 0 : (first ? program.FirstInstructionIndex() : program.LastInstructionIndex());
-            MoveColumn(col, select: false);
+            return program.Count() == 0 ? 0 : (first ? program.FirstInstructionIndex() : program.LastInstructionIndex());
         }
 
         private void JumpToRow(int row)

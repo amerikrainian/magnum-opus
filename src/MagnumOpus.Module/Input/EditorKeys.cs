@@ -10,7 +10,7 @@ namespace MagnumOpus.Module.Input
     {
         public const string HexNW = "ed.hex.nw", HexNE = "ed.hex.ne", HexW = "ed.hex.w", HexE = "ed.hex.e", HexSW = "ed.hex.sw", HexSE = "ed.hex.se";
         public const string SkipNW = "ed.skip.nw", SkipNE = "ed.skip.ne", SkipW = "ed.skip.w", SkipE = "ed.skip.e", SkipSW = "ed.skip.sw", SkipSE = "ed.skip.se";
-        public const string TapePrev = "ed.tape.prev", TapeNext = "ed.tape.next";
+        public const string Origin = "ed.origin";
         public const string ArmPrefix = "ed.arm.";
         public const string CatPrev = "ed.cat.prev", CatNext = "ed.cat.next", ItemPrev = "ed.item.prev", ItemNext = "ed.item.next";
         // S reads details on the board only (on the tape S is an instruction); / everywhere.
@@ -68,8 +68,8 @@ namespace MagnumOpus.Module.Input
             Skip(EditorActions.SkipSW, "Skip southwest", Scancode.Z, Scancode.Kp1);
             Skip(EditorActions.SkipSE, "Skip southeast", Scancode.C, Scancode.Kp3);
 
-            Key(EditorActions.TapePrev, "Program cursor back a cycle", new KeyboardBinding(Scancode.Semicolon)).Repeating();
-            Key(EditorActions.TapeNext, "Program cursor forward a cycle", new KeyboardBinding(Scancode.Apostrophe)).Repeating();
+            // Home / End on the board are the program cursor's first and last instruction.
+            Key(EditorActions.Origin, "Cursor to the origin", new KeyboardBinding(Scancode.Home, ctrl: true));
             var digits = new[] { Scancode.Num1, Scancode.Num2, Scancode.Num3, Scancode.Num4, Scancode.Num5, Scancode.Num6, Scancode.Num7, Scancode.Num8, Scancode.Num9 };
             for (int i = 0; i < digits.Length; i++)
                 Key(EditorActions.ArmPrefix + (i + 1), "Jump to arm " + (i + 1), new KeyboardBinding(digits[i]));

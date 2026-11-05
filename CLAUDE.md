@@ -280,8 +280,8 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   answering from anywhere. Board: hex cursor (`Game/Hex`: axial Q east, R up the screen, pointy-top, turn
   k = direction k counter-clockwise from east; spoken as Civ's half-step x, y, x = Q + R/2, origin the
   game's (0, 0)). Keys Q NW, E NE, A W, D E, Z SW, C SE (scancodes; numpad 7 9 4 6 1 3; never the
-  arrows, user rule 2026-11-04), Alt+Shift+them skip (Alt+numpad), Home the origin, Ctrl+Up / Ctrl+Down the part on the hex edits
-  take (default order arm base, other part, track, gripper; reset when the cursor moves), ; and ' move the program cursor on the arm under the board cursor, [ ] categories,
+  arrows, user rule 2026-11-04), Alt+Shift+them skip (Alt+numpad), Ctrl+Home the origin, Ctrl+Up / Ctrl+Down the part on the hex edits
+  take (default order arm base, other part, track, gripper; reset when the cursor moves), Up / Down choose the program cursor's arm (wrapping, silent with one; the cursor lands after the arm's last instruction, a Reset's filled cells included, "arm 2, 5"; user decision 2026-11-05: the board cursor's position never chooses it), Left / Right move the program cursor a cycle on that arm and Home / End to its first / last instruction (the tape's keys), [ ] categories,
   , . items, S or / details, W molecule (size, composition, bonds, holder; the layout is read hex by hex), X neighbours. A hex reads coordinates, then the atom in play, arm
   bases ("arm 1, Piston Arm, northeast, length 1"), grippers, other parts (`Game/Board`; a track hex
   reads its joins marked with the move that goes there, "Track, +northeast, -southeast": the game
@@ -301,11 +301,11 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   overwriting; Shift inserts (`InsertInstruction`, the push stops at the first gap); Delete clears the
   cell or selection, Backspace the previous cell; Shift+arrows select a rectangle, Ctrl+Shift+A all,
   Escape clears; Ctrl+C / X / V. Refusals spoken: engine running, a fixed arm, an instruction the puzzle
-  does not permit. Alt+instruction key on the board programs the arm under the cursor at the program
-  cursor's cycle ("4, grab"; user decision 2026-11-04: Ctrl is selection and clipboard
+  does not permit. Alt+instruction key on the board programs the program cursor's arm at its cycle,
+  wherever the board cursor is ("4, grab"; user decision 2026-11-04: Ctrl is selection and clipboard
   everywhere, so skips moved to Alt+Shift and score / tips to Ctrl+Shift+S / T); Alt+letters on the
   tape type as plain ones. Alt+Backspace jumps from the board to the tape on the arm under the cursor
-  and back to the same hex. On the board: Enter picks up / puts down (`CarryMode`: out of the solution while carried, the hex it
+  (else the program cursor's arm) and back to the same hex. On the board: Enter picks up / puts down (`CarryMode`: out of the solution while carried, the hex it
   was taken by stays under the cursor, `Solution.IsAllowedPlacement` decides and its reason is spoken,
   Escape restores it and the cursor, an editor pop restores it too); Ctrl+Enter carries a copy (the
   game's rules: no reagent, product, unique, conduit, or limited-count puzzle); Shift+A / D rotate,
