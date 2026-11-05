@@ -19,7 +19,7 @@ namespace MagnumOpus.Module.Screens
     ///  3. the histograms (ScoreTable, comparing: the selected solution's score as "this" and the
     ///     best, each tagged on its bar), or the game's notice when it draws none (tutorial, custom,
     ///     hermit mode, unsolved);
-    ///  4. the story panel.
+    ///  4. the story panel, spoken on opening after the name (no stop).
     /// The game's own keys keep working where they are not ours: Delete asks to delete, F2 renames.
     /// Escape passes to the game, which closes the screen.
     /// </summary>
@@ -70,9 +70,19 @@ namespace MagnumOpus.Module.Screens
                 ScoreTable.Build(b, "info", () => Game?.scoreData, ScoreTable.Metrics(g.puzzle), comparing: true);
             else
                 b.AddItem(ControlId.Structural("info:leaderboard"), Nodes.Text(LeaderboardNotice));
+        }
 
-            b.BeginStop("story");
-            StoryPanelNodes.Build(b, "info:story", () => Game?.storyPanel);
+        // The story panel's lines are spoken on opening, after the puzzle's name, one message each,
+        // not a stop of their own (user rule 2026-11-04).
+        public override void OnFocus()
+        {
+            base.OnFocus();
+            try
+            {
+                foreach (var line in StoryPanelNodes.Lines(Game?.storyPanel))
+                    if (!string.IsNullOrWhiteSpace(line)) Speech.Say(line, interrupt: false);
+            }
+            catch (System.Exception e) { CoreLog.Warning("[puzzle info] story lines: " + e.Message); }
         }
 
         private static bool IsSelected(PuzzleInfoScreen g, Solution s) => g.selectedSolution.HasValue() && g.selectedSolution.GetValue() == s;

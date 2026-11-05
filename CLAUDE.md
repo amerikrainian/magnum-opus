@@ -263,8 +263,8 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   portrait is sliding; Enter or Space finishes its clocks (timeSinceEvent, cinematicsEventTime) and
   forces Space, so the game's own advance runs. Escape passes (skips a seen cutscene).
 - **Puzzle info** (`PuzzleInfoGameScreen`): solutions (focus selects, Enter opens), New / Open / Rename /
-  Copy / Delete via ButtonPress, the leaderboard notice, the story panel (`StoryPanelNodes`, shared with
-  Options). Histograms: `ScoreTable` in comparing mode.
+  Copy / Delete via ButtonPress, the leaderboard notice; the story panel's lines (`StoryPanelNodes`,
+  shared with Options, where they stay a stop) are spoken on opening, no stop (user rule 2026-11-04). Histograms: `ScoreTable` in comparing mode.
 - **Message boxes** (`MessageBoxGameScreen`): notice / confirm / text box; the game keeps typed
   characters and Backspace in a text box (type-ahead stands down), each change echoed. The typing echo is
   NOT verified live (needs OS input).
