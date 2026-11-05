@@ -203,7 +203,14 @@ namespace MagnumOpus.Module.Game
                 if (!part.GetHexFootprint(solution).Contains(hex)) continue;
                 string name = PartName(ed, part);
                 var io = IoAtom(ed, part, hex);
-                if (io.HasValue && !Running(ed)) name += ", " + DescribeAtom(ed, io.Value);
+                if (io.HasValue)
+                {
+                    // While stopped the part's atom is the one on the hex. While running, the atoms in
+                    // play are read first and a product's outline (the game draws it throughout) reads
+                    // as what it wants, so it cannot pass for an atom.
+                    if (!Running(ed)) name += ", " + DescribeAtom(ed, io.Value);
+                    else if (type.IsOutput()) name += ", " + Strings.EditorProductWants(DescribeAtom(ed, io.Value));
+                }
                 result.Add(name);
             }
             return result;
@@ -241,7 +248,8 @@ namespace MagnumOpus.Module.Game
         }
 
         /// <summary>The molecule touching a hex (in play, else a reagent's or product's), with each
-        /// atom's offset from that hex: "fire here, fire 1 east".</summary>
+        /// atom's offset from that hex and its bonds: "Fire here, bonds northeast. Fire 1 northeast,
+        /// bonds southwest, east".</summary>
         public static string MoleculeAround(SolutionEditorScreen ed, HexIndex hex)
         {
             var world = WorldAtoms(ed);
@@ -249,8 +257,8 @@ namespace MagnumOpus.Module.Game
             {
                 var parts = new List<string>();
                 foreach (var kv in at.Molecule.GetAtoms().OrderBy(k => Hex.Distance(hex, k.Key)))
-                    parts.Add(Strings.EditorMoleculeAtom(AtomName(kv.Value.atomType), Hex.Describe(hex, kv.Key)));
-                return string.Join(", ", parts);
+                    parts.Add(MoleculeAtom(new AtomAt { Atom = kv.Value, Molecule = at.Molecule, Hex = kv.Key }, Hex.Describe(hex, kv.Key)));
+                return string.Join(". ", parts);
             }
             var solution = SolutionOf(ed);
             if (solution == null) return null;
@@ -264,11 +272,19 @@ namespace MagnumOpus.Module.Game
                 foreach (var kv in io.Value.Molecule.GetAtoms())
                 {
                     var abs = kv.Key.Rotated(new HexRotation(turns)) + origin;
-                    parts.Add(Strings.EditorMoleculeAtom(AtomName(kv.Value.atomType), Hex.Describe(hex, abs)));
+                    parts.Add(MoleculeAtom(new AtomAt { Atom = kv.Value, Molecule = io.Value.Molecule, Hex = kv.Key, IoPart = part }, Hex.Describe(hex, abs)));
                 }
-                return string.Join(", ", parts);
+                return string.Join(". ", parts);
             }
             return null;
+        }
+
+        // One atom of a molecule readout: name and where it lies, then its bonds.
+        private static string MoleculeAtom(AtomAt at, string where)
+        {
+            string text = Strings.EditorMoleculeAtom(AtomName(at.Atom.atomType), where);
+            string bonds = Bonds(at);
+            return bonds.Length > 0 ? text + ", " + bonds : text;
         }
     }
 }

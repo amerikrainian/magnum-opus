@@ -131,6 +131,7 @@ editor.cat.glyphs=Glyphs
 editor.cat.tracks=Tracks
 editor.cat.atoms=Atoms
 editor.molecule_atom={0} {1}
+editor.product_wants=wants {0}
 editor.neighbour={0}: {1}
 editor.score_item={0} {1}
 editor.gold_mark=g

@@ -277,7 +277,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   k = direction k counter-clockwise from east; spoken as Civ's half-step x, y, x = Q + R/2, origin the
   game's (0, 0)). Keys Q NW, E NE, A W, D E, Z SW, C SE (scancodes; numpad 7 9 4 6 1 3; never the
   arrows, user rule 2026-11-04), Alt+them skip, ; and ' move the program cursor on the arm under the board cursor, [ ] categories,
-  , . items, S or / details, W molecule, X neighbours. A hex reads coordinates, then the atom in play, arm
+  , . items, S or / details, W molecule (each atom's offset and bonds), X neighbours. A hex reads coordinates, then the atom in play, arm
   bases ("arm 1, Piston Arm, northeast, length 1"), grippers, other parts (`Game/Board`); empty =
   coordinates only. Arms are numbered by program index (the game's own order; its cached list lags a
   pickup or drop until it saves). Program: rows = arms, columns = cycles (1-based); Reset / Repeat cells

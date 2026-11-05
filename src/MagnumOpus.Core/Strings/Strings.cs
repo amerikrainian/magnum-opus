@@ -208,6 +208,8 @@ namespace MagnumOpus.Core.Strings
             D("editor.cat.atoms", "Atoms"),
             // A molecule's atom and where it lies from the cursor ("Fire 1 east").
             D("editor.molecule_atom", "{0} {1}"),
+            // A product's outline on a hex while the engine runs: {0} = the atom it wants, with bonds.
+            D("editor.product_wants", "wants {0}"),
             // A neighbour of the cursor: {0} = direction, {1} = what is there.
             D("editor.neighbour", "{0}: {1}"),
             // A score figure: {0} = the game's label, {1} = the value.
@@ -592,6 +594,7 @@ namespace MagnumOpus.Core.Strings
         public static string EditorCategory(string name, int count) => F("editor.category", name, count);
         public static string EditorCategoryName(string key) => Get("editor.cat." + key);
         public static string EditorMoleculeAtom(string atom, string where) => F("editor.molecule_atom", atom, where);
+        public static string EditorProductWants(string atom) => F("editor.product_wants", atom);
         public static string EditorNeighbour(string direction, string what) => F("editor.neighbour", direction, what);
         public static string EditorScoreItem(string label, string value) => F("editor.score_item", label, value);
         public static string EditorGoldMark => Get("editor.gold_mark");
