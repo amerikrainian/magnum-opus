@@ -330,6 +330,12 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   game shows them (message + hexes, the board cursor moved there).
   NOT yet verified live: error narration, track drawing, reagents / products from the tray, placing a
   copy, Alt+Space (the game reads Alt itself), the numpad.
+- **Completion** (`CompletionGameScreen`, 2026-11-04): the puzzle's name, the game's message, then its
+  notice (tutorial, custom, hermit mode) or cost / cycles / area-or-instructions with the figures the game
+  prints under each histogram (Now, Best, Prev; Top Percentile with global records), then Continue
+  Editing / Record GIF (disabled in tutorials, as the game has them) / Return to Menu via ButtonPress;
+  Escape is the game's (continues editing outside tutorials). Verified live on a tutorial; the scores
+  are NOT yet verified (need a non-tutorial completion); the histogram curves are not read yet.
 - **Fallback** (`FallbackScreen`): the screen's human type name ("Journal Submission"), the text it draws
   top to bottom (`TextCapture`, only while the fallback is up) and its labeled buttons (ButtonPress).
   Covers the journal (readable, not yet operable) and the rest.
@@ -357,8 +363,7 @@ Game terms are the game's own (`GameText.Translate`, `LocString`s).
 - Phase 6: the solution editor. DONE: reading, narration and editing (section 12). Left: the items
   section 12 lists as not verified; reading the game's instruction errors (the red cells behind
   "Instruction errors must be fixed."); dropping a new arm from the tray onto an arm to swap it (the
-  game's drag does); a "step to next event" key; then the completion screen (cost / cycles / area,
-  histogram percentiles). Read part, atom and puzzle names from the game's registries, never hardcoded
+  game's drag does); a "step to next event" key; the completion screen's histogram curves. Read part, atom and puzzle names from the game's registries, never hardcoded
   (content mods).
 - Phase 7: the journal (operable), the puzzle editor, the solution browser, the GIF recorder, Workshop and
   leaderboards; histograms on puzzle info.
