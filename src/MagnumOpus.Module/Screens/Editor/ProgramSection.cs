@@ -244,7 +244,8 @@ namespace MagnumOpus.Module.Screens.Editor
         }
 
         /// <summary>An instruction at the program cursor (inserting or overwriting), the cursor stepped
-        /// on; said as the instruction, or with the arm and cycle when asked (from away from the tape).</summary>
+        /// on; said as the instruction, or with its cycle when asked from away from the tape ("4,
+        /// grab"; no arm, user rule 2026-11-04).</summary>
         public static void PlaceAtCursor(EditorContext ctx, InstructionType type, bool insert, bool withPlace)
         {
             var arm = RowArm(ctx);
@@ -254,7 +255,7 @@ namespace MagnumOpus.Module.Screens.Editor
             ProgramEdits.Place(arm, col, type, insert);
             ctx.Col = Math.Min(EditorContext.MaxColumn, col + 1);
             string label = Instructions.Label(type);
-            EditorContext.Say(withPlace ? Strings.EditorArm(ctx.Row + 1) + ", " + Strings.EditorCell(col + 1, label) : label);
+            EditorContext.Say(withPlace ? Strings.EditorCell(col + 1, label) : label);
         }
 
         private void Delete()

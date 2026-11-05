@@ -299,7 +299,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   cell or selection, Backspace the previous cell; Shift+arrows select a rectangle, Ctrl+Shift+A all,
   Escape clears; Ctrl+C / X / V. Refusals spoken: engine running, a fixed arm, an instruction the puzzle
   does not permit. Alt+instruction key on the board programs the arm under the cursor at the program
-  cursor's cycle ("arm 1, 4, grab"; user decision 2026-11-04: Ctrl is selection and clipboard
+  cursor's cycle ("4, grab"; user decision 2026-11-04: Ctrl is selection and clipboard
   everywhere, so skips moved to Alt+Shift and score / tips to Ctrl+Shift+S / T); Alt+letters on the
   tape type as plain ones. Alt+Backspace jumps from the board to the tape on the arm under the cursor
   and back to the same hex. On the board: Enter picks up / puts down (`CarryMode`: out of the solution while carried, the hex it
@@ -327,7 +327,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   Instructions stop (`InstructionTraySection`): the game's tray as five key columns (Q/A, W/S/X, E/D/C,
   R/F/V, T/G/B; its Delete tile left out), each tile "grab, F" (no role word, user rule), "not available"
   where the puzzle forbids it, "limit reached" for a second period override; Enter places at the program
-  cursor ("arm 1, 4, grab"), S or / the game's description.
+  cursor ("4, grab"), S or / the game's description.
   Undo / redo (Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z): the game's buffer stepped directly (an injected chord
   cannot give the game Ctrl), the change spoken (new states, three at most, else a count).
   Narration (`Patches/SimNarration`): arm moves from the sim states' deltas after `Sim.BeginCycle`, glyph
