@@ -247,18 +247,22 @@ namespace MagnumOpus.Module.Game
             return result;
         }
 
-        /// <summary>The molecule touching a hex (in play, else a reagent's or product's), with each
-        /// atom's offset from that hex and its bonds: "Fire here, bonds northeast. Fire 1 northeast,
-        /// bonds southwest, east".</summary>
+        /// <summary>The molecule touching a hex (in play, else a reagent's or product's) in brief: its
+        /// size, what it is made of and its bonds, then who holds it ("3 atoms: 2 Fire, Salt; 2 bonds;
+        /// held by arm 2"). A product or reagent leads with its name. The layout is read hex by hex.</summary>
         public static string MoleculeAround(SolutionEditorScreen ed, HexIndex hex)
         {
             var world = WorldAtoms(ed);
             if (world.TryGetValue(hex, out var at))
             {
-                var parts = new List<string>();
-                foreach (var kv in at.Molecule.GetAtoms().OrderBy(k => Hex.Distance(hex, k.Key)))
-                    parts.Add(MoleculeAtom(new AtomAt { Atom = kv.Value, Molecule = at.Molecule, Hex = kv.Key }, Hex.Describe(hex, kv.Key)));
-                return string.Join(". ", parts);
+                var parts = MoleculeSummary(at.Molecule);
+                var holder = ed.GetHolder(at.Molecule);
+                if (holder.HasValue())
+                {
+                    int n = ArmNumber(ed, holder.GetValue());
+                    if (n > 0) parts.Add(Strings.EditorHeldBy(n));
+                }
+                return string.Join("; ", parts);
             }
             var solution = SolutionOf(ed);
             if (solution == null) return null;
@@ -266,25 +270,28 @@ namespace MagnumOpus.Module.Game
             {
                 var io = IoAtom(ed, part, hex);
                 if (!io.HasValue) continue;
-                var parts = new List<string> { PartName(ed, part) };
-                var origin = part.GetHexPos();
-                int turns = part.GetRotation().GetNumberOfTurns();
-                foreach (var kv in io.Value.Molecule.GetAtoms())
-                {
-                    var abs = kv.Key.Rotated(new HexRotation(turns)) + origin;
-                    parts.Add(MoleculeAtom(new AtomAt { Atom = kv.Value, Molecule = io.Value.Molecule, Hex = kv.Key, IoPart = part }, Hex.Describe(hex, abs)));
-                }
-                return string.Join(". ", parts);
+                return PartName(ed, part) + ", " + string.Join("; ", MoleculeSummary(io.Value.Molecule));
             }
             return null;
         }
 
-        // One atom of a molecule readout: name and where it lies, then its bonds.
-        private static string MoleculeAtom(AtomAt at, string where)
+        // Size and composition (most common atom first, then the molecule's own order), then the
+        // bond counts. A single atom is just its name.
+        private static List<string> MoleculeSummary(Molecule molecule)
         {
-            string text = Strings.EditorMoleculeAtom(AtomName(at.Atom.atomType), where);
-            string bonds = Bonds(at);
-            return bonds.Length > 0 ? text + ", " + bonds : text;
+            var atoms = molecule.GetAtoms().Values.Select(a => AtomName(a.atomType)).ToList();
+            var groups = atoms.GroupBy(n => n).OrderByDescending(g => g.Count()).ThenBy(g => atoms.IndexOf(g.Key));
+            string composition = string.Join(", ", groups.Select(g => g.Count() == 1 ? g.Key : Strings.EditorAtomCount(g.Count(), g.Key)));
+            var parts = new List<string> { atoms.Count == 1 ? composition : Strings.EditorMoleculeAtoms(atoms.Count, composition) };
+            int plain = 0, triplex = 0;
+            foreach (var bond in molecule.GetBonds())
+            {
+                if ((bond.type & BondTypeEnum.Standard) != 0) plain++;
+                else triplex++;
+            }
+            if (plain > 0) parts.Add(Strings.EditorMoleculeBonds(plain));
+            if (triplex > 0) parts.Add(Strings.EditorMoleculeTriplex(triplex));
+            return parts;
         }
     }
 }

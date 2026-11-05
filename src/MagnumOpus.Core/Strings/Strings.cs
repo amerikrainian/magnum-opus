@@ -206,8 +206,14 @@ namespace MagnumOpus.Core.Strings
             D("editor.cat.glyphs", "Glyphs"),
             D("editor.cat.tracks", "Tracks"),
             D("editor.cat.atoms", "Atoms"),
-            // A molecule's atom and where it lies from the cursor ("Fire 1 east").
-            D("editor.molecule_atom", "{0} {1}"),
+            // The molecule key's summary: {0} = atom count, {1} = what they are ("2 Fire, Salt").
+            D("editor.molecule_atoms", "{0} atoms: {1}"),
+            // One kind of atom in that summary: {0} = how many, {1} = the atom.
+            D("editor.atom_count", "{0} {1}"),
+            D("editor.molecule_bond_one", "1 bond"),
+            D("editor.molecule_bonds", "{0} bonds"),
+            D("editor.molecule_triplex_one", "1 triplex bond"),
+            D("editor.molecule_triplex", "{0} triplex bonds"),
             // A product's outline on a hex while the engine runs: {0} = the atom it wants, with bonds.
             D("editor.product_wants", "wants {0}"),
             // A neighbour of the cursor: {0} = direction, {1} = what is there.
@@ -593,7 +599,10 @@ namespace MagnumOpus.Core.Strings
         public static string EditorCycle(int n) => F("editor.cycle", n);
         public static string EditorCategory(string name, int count) => F("editor.category", name, count);
         public static string EditorCategoryName(string key) => Get("editor.cat." + key);
-        public static string EditorMoleculeAtom(string atom, string where) => F("editor.molecule_atom", atom, where);
+        public static string EditorMoleculeAtoms(int count, string composition) => F("editor.molecule_atoms", count, composition);
+        public static string EditorAtomCount(int count, string atom) => F("editor.atom_count", count, atom);
+        public static string EditorMoleculeBonds(int n) => n == 1 ? Get("editor.molecule_bond_one") : F("editor.molecule_bonds", n);
+        public static string EditorMoleculeTriplex(int n) => n == 1 ? Get("editor.molecule_triplex_one") : F("editor.molecule_triplex", n);
         public static string EditorProductWants(string atom) => F("editor.product_wants", atom);
         public static string EditorNeighbour(string direction, string what) => F("editor.neighbour", direction, what);
         public static string EditorScoreItem(string label, string value) => F("editor.score_item", label, value);
