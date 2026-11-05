@@ -292,7 +292,13 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   2026-11-05); a content mod's glyph reads no role); empty =
   coordinates only. Arms are numbered by program index (the game's own order; its cached list lags a
   pickup or drop until it saves). Program: rows = arms, columns = cycles (1-based); Reset / Repeat cells
-  read "clockwise, from reset" (`CompiledProgramGrid`, `isExpansion`). Everywhere: digits 1-9 jump to an
+  read "clockwise, from reset" (each arm's own expansion, `EditableProgram.GetReferenceForPart`, so they
+  read while an error stops the compile). Instruction errors (`Editor/ProgramErrors`, 2026-11-05): a
+  Reset / Repeat whose filled cells hold an instruction (the only compile failure; the game draws its
+  extent line red): "3, reset, overlaps 4" and "4, repeat, overlaps reset at 3" on the tape, said at
+  once when a placement makes one, and on Play / Step as a second message after the game's
+  "Instruction errors must be fixed." ("arm 2, reset at 3 overlaps 4", the program cursor moved onto
+  it; separate announcements, user rule 2026-11-05). Everywhere: digits 1-9 jump to an
   arm, Space play / pause, Ctrl+Space step, Alt+Space fast forward (the game's buttons via
   `GameKeys.Forced`; its refusal text spoken), Ctrl+Shift+S score ('$' in a cost is the game's gold mark), Ctrl+Shift+T
   tips (the puzzle's sticky notes, also spoken on entry), Ctrl+Shift+D the game's Show Diagram, Alt+P each product's count ("Product (X) at 4, 0:
@@ -409,8 +415,7 @@ Game terms are the game's own (`GameText.Translate`, `LocString`s).
 ## 15. Roadmap
 - Phase 5: Sigmar's Garden (`SolitaireScreen`) on the editor's hex model (section 12).
 - Phase 6: the solution editor. DONE: reading, narration and editing (section 12). Left: the items
-  section 12 lists as not verified; reading the game's instruction errors (the red cells behind
-  "Instruction errors must be fixed."); dropping a new arm from the tray onto an arm to swap it (the
+  section 12 lists as not verified; dropping a new arm from the tray onto an arm to swap it (the
   game's drag does); a "step to next event" key. Read part, atom and puzzle names from the game's registries, never hardcoded
   (content mods).
 - Phase 7: the journal (operable), the puzzle editor, the solution browser, the GIF recorder, Workshop and

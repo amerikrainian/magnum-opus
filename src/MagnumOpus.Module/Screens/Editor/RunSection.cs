@@ -75,7 +75,14 @@ namespace MagnumOpus.Module.Screens.Editor
             if (ed.GetSimPlayState() == SimPlayState.Stopped)
             {
                 string reason = StartRefusal(ed);
-                if (reason != null) { EditorContext.Say(reason); return; }
+                if (reason != null)
+                {
+                    // Two messages (user rule 2026-11-05): the game's refusal, then where.
+                    EditorContext.Say(reason);
+                    string where = WhereOverlap(ed);
+                    if (where != null) EditorContext.Say(where, interrupt: false);
+                    return;
+                }
             }
             else if (ed.GetSimulationError().HasValue() && ed.GetCycleTime() >= ed.GetSimulationError().GetValue().errorTime)
             {
@@ -83,6 +90,20 @@ namespace MagnumOpus.Module.Screens.Editor
                 return;
             }
             GameKeys.Forced = gameKey;
+        }
+
+        // After "Instruction errors must be fixed.": where the first one is, the program cursor moved
+        // onto it (as a run error moves the board cursor to its hexes). Null when there is none.
+        private string WhereOverlap(SolutionEditorScreen ed)
+        {
+            var overlaps = ProgramErrors.All(ed);
+            if (overlaps.Count == 0) return null;
+            var o = overlaps[0];
+            _ctx.Selecting = false;
+            _ctx.Row = o.Row;
+            _ctx.Col = o.Col;
+            string more = overlaps.Count > 1 ? ", " + Strings.ProgramMoreErrors(overlaps.Count - 1) : "";
+            return ProgramErrors.Describe(o) + more;
         }
 
         private static string StartRefusal(SolutionEditorScreen ed)

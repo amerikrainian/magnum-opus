@@ -104,7 +104,8 @@ namespace MagnumOpus.Module.Screens.Editor
         }
 
         /// <summary>The cell under the program cursor: "4, grab", "5" when empty; with the arm first
-        /// when asked ("arm 1, 4, grab").</summary>
+        /// when asked ("arm 1, 4, grab"); an instruction error last ("3, reset, overlaps 4",
+        /// <see cref="ProgramErrors"/>).</summary>
         public static string CellText(EditorContext ctx, bool withArm)
         {
             var ed = ctx.Ed;
@@ -113,27 +114,28 @@ namespace MagnumOpus.Module.Screens.Editor
             var ins = Instruction(ctx);
             string label = ins != null ? Instructions.Label(ins) : ExpansionLabel(ed, arm, ctx.Col);
             string cell = label != null ? Strings.EditorCell(ctx.Col + 1, label) : (ctx.Col + 1).ToString();
+            string error = ProgramErrors.AtCell(ed, arm, ctx.Col);
+            if (error != null) cell += ", " + error;
             return withArm ? Strings.EditorArm(ctx.Row + 1) + ", " + cell : cell;
         }
 
-        // A cell a Reset or Repeat fills when the program is compiled (the game draws a line through
-        // them): what runs there, and the instruction it comes from. Null for a plain empty cell.
+        // A cell a Reset or Repeat fills (the game draws a line through them): what runs there, and
+        // the instruction it comes from. Null for a plain empty cell. From the arm's own expansion,
+        // which exists while an instruction error stops the program compiling.
         private static string ExpansionLabel(SolutionEditorScreen ed, Part arm, int col)
         {
-            var grid = CompiledProgramGrid.FromSolution(ed.GetSolution());
-            if (!grid.HasValue()) return null;
-            var compiled = grid.GetValue().GetProgramForPart(arm);
-            if (compiled == null || compiled.instructions == null) return null;
-            int i = col - compiled.startIndex;
-            if (i < 0 || i >= compiled.instructions.Length || !compiled.instructions[i].isExpansion) return null;
-            var type = compiled.instructions[i].type;
-            if (ReferenceEquals(type, null) || type == InstructionTypes.idle || type == InstructionTypes.placeholderIdle) return null;
-            for (int c = col - 1; c >= arm.program.FirstInstructionIndex(); c--)
+            var program = ProgramErrors.Expanded(ed, arm);
+            if (program == null) return null;
+            foreach (var kv in program)
             {
-                var source = arm.program.GetInstruction(c);
-                if (source.HasValue()) return Strings.EditorExpansion(Instructions.Label(type), Instructions.Label(source.GetValue()));
+                if (kv.Key >= col) break;
+                var expansion = kv.Value.expansion;
+                if (expansion == null || col - kv.Key >= expansion.Length) continue;
+                var type = expansion[col - kv.Key];
+                if (ReferenceEquals(type, null) || type == InstructionTypes.idle || type == InstructionTypes.placeholderIdle) return null;
+                return Strings.EditorExpansion(Instructions.Label(type), Instructions.Label(kv.Value.instruction));
             }
-            return Instructions.Label(type);
+            return null;
         }
 
         // Alt+Backspace: back to the board hex the jump came from, else the row's arm base.
@@ -260,7 +262,10 @@ namespace MagnumOpus.Module.Screens.Editor
             ProgramEdits.Place(arm, col, type, insert);
             ctx.Col = Math.Min(EditorContext.MaxColumn, col + 1);
             string label = Instructions.Label(type);
-            EditorContext.Say(withPlace ? Strings.EditorCell(col + 1, label) : label);
+            string text = withPlace ? Strings.EditorCell(col + 1, label) : label;
+            // An overlap this made is said at once (the game marks it red).
+            string error = ProgramErrors.AtCell(ctx.Ed, arm, col);
+            EditorContext.Say(error == null ? text : text + ", " + error);
         }
 
         private void Delete()
