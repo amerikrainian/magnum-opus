@@ -5,6 +5,7 @@ using MagnumOpus.Core.Screens;
 using MagnumOpus.Core.Strings;
 using MagnumOpus.Core.UI;
 using MagnumOpus.Module.Game;
+using MagnumOpus.Module.Input;
 using MagnumOpus.Module.UI;
 
 namespace MagnumOpus.Module.Screens.Editor
@@ -13,8 +14,10 @@ namespace MagnumOpus.Module.Screens.Editor
     /// The parts stop: the game's parts tray, its sections in its order (Products, Reagents,
     /// Mechanisms, Glyphs) with the same rules (SolutionEditorPartsPanel): a reagent or product
     /// until it is placed, a mechanism or glyph the puzzle permits, unavailable at its limit (a
-    /// unique part, a puzzle's part count). Each reads its name (the game's tooltip name) and cost.
-    /// Enter creates the part at the board cursor and carries it there (<see cref="CarryMode"/>).
+    /// unique part, a puzzle's part count). Each reads its name (the game's tooltip name; a
+    /// multi-armed assembly with its gripper count, which the game shows in its picture) and cost; S
+    /// or / reads the game's tooltip description, as hovering does. Enter creates the part at the
+    /// board cursor and carries it there (<see cref="CarryMode"/>).
     /// </summary>
     internal sealed class TraySection : ScreenSection
     {
@@ -94,9 +97,11 @@ namespace MagnumOpus.Module.Screens.Editor
                 {
                     var it = item;
                     string id = "editor:tray:" + it.Type.id + ":" + it.Index;
+                    _byId[id] = it;
                     b.AddItem(ControlId.Structural(id), new NodeVtable
                     {
-                        ControlType = ControlTypes.Item,
+                        // No role word: "Fixed-Length Arm, 20g" (user rule 2026-11-04).
+                        ControlType = ControlTypes.Text,
                         Announcements = new List<NodeAnnouncement>
                         {
                             Nodes.LabelPart(() => Name(it)),
@@ -112,10 +117,30 @@ namespace MagnumOpus.Module.Screens.Editor
             b.PopContext();
         }
 
+        private readonly Dictionary<string, TrayItem> _byId = new Dictionary<string, TrayItem>();
+
+        private bool Focused => Equals(Navigation.FocusedStopKey, EditorContext.StopTray);
+
+        public override IEnumerable<ElementAction> GetActions()
+        {
+            if (!Focused || _ctx.Ed == null) yield break;
+            yield return new ElementAction(EditorActions.Details, Strings.Get("bind.ed.details"), _ => SayDetails());
+            yield return new ElementAction(EditorActions.Info, Strings.Get("bind.ed.details"), _ => SayDetails());
+        }
+
+        // S or /: the game's tooltip for the focused part (its name and description).
+        private void SayDetails()
+        {
+            var key = Navigation.FocusedNode?.Id?.StructuralKey as string;
+            if (key == null || !_byId.TryGetValue(key, out var it)) return;
+            string d = GameText.Of(it.Type.description);
+            EditorContext.Say(d.Length > 0 ? Name(it) + ". " + d : Name(it));
+        }
+
         private string Name(TrayItem it)
         {
             var ed = _ctx.Ed;
-            string name = GameText.Of(it.Type.name);
+            string name = Board.TypeName(it.Type);
             if (ed == null || (!it.Type.isInput && !it.Type.IsOutput())) return name;
             var puzzle = ed.GetSolution().GetPuzzle();
             var molecule = it.Type.isInput ? puzzle.GetInputMolecule(it.Index).molecule : puzzle.GetOutputMolecule(it.Index).molecule;

@@ -287,6 +287,8 @@ namespace MagnumOpus.Core.Strings
             D("editor.tray", "Parts"),
             // The instruction tray beside the tape.
             D("editor.instruction_tray", "Instructions"),
+            // A multi-armed assembly (the game names them all alike): {0} = name, {1} = grippers.
+            D("editor.with_grippers", "{0} ({1} grippers)"),
             // A tray instruction the puzzle does not permit / one the solution may hold only once.
             D("editor.not_available", "not available"),
             D("editor.limit_reached", "limit reached"),
@@ -644,6 +646,7 @@ namespace MagnumOpus.Core.Strings
         public static string EditorCloseArmed => Get("editor.close_armed");
         public static string EditorTray => Get("editor.tray");
         public static string EditorInstructionTray => Get("editor.instruction_tray");
+        public static string EditorWithGrippers(string name, int n) => F("editor.with_grippers", name, n);
         public static string EditorNotAvailable => Get("editor.not_available");
         public static string EditorLimitReached => Get("editor.limit_reached");
         public static string EditorCarrying(string part) => F("editor.carrying", part);

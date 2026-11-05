@@ -41,11 +41,11 @@ namespace MagnumOpus.Module.Game
         }
 
         /// <summary>The part's name as the game's tooltip gives it ("Reagent: Water" when the
-        /// molecule has a name).</summary>
+        /// molecule has a name; "Fixed-Length Arm (2 grippers)", see <see cref="TypeName"/>).</summary>
         public static string PartName(SolutionEditorScreen ed, Part part)
         {
             var type = part.GetType();
-            string name = GameText.Of(type.name);
+            string name = TypeName(type);
             if (type.isInput || type.IsOutput())
             {
                 var molecule = part.GetMoleculeForInputOutput(SolutionOf(ed));
@@ -53,6 +53,16 @@ namespace MagnumOpus.Module.Game
                     name = GameText.Clean(string.Format(UIConsts.inputOutputNameFormat, name, molecule.displayName.GetValue().GetTranslated()));
             }
             return name;
+        }
+
+        /// <summary>A part type's name. The game calls the one-, two-, three- and six-armed assemblies
+        /// all "Fixed-Length Arm" and tells them apart by their picture, so a multi-armed one carries
+        /// its gripper count: "Fixed-Length Arm (2 grippers)".</summary>
+        public static string TypeName(PartType type)
+        {
+            string name = GameText.Of(type.name);
+            int arms = type.armRotations?.Length ?? 0;
+            return arms > 1 ? Strings.EditorWithGrippers(name, arms) : name;
         }
 
         public static string AtomName(AtomType type) => ReferenceEquals(type, null) ? "" : GameText.Of(type.name);
