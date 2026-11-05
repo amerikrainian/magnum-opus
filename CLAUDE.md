@@ -284,7 +284,8 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   read "clockwise, from reset" (`CompiledProgramGrid`, `isExpansion`). Everywhere: digits 1-9 jump to an
   arm, Space play / pause, Ctrl+Space step, Alt+Space fast forward (the game's buttons via
   `GameKeys.Forced`; its refusal text spoken), Ctrl+Shift+S score ('$' in a cost is the game's gold mark), Ctrl+Shift+T
-  tips (the puzzle's sticky notes, also spoken on entry).
+  tips (the puzzle's sticky notes, also spoken on entry), Alt+P each product's count ("Product (X) at 4, 0:
+  6 of 6"; Alt+P is never an instruction).
   Editing (user decisions 2026-11-04, "the most fluid, quick ways to program"; every edit through the
   game's own operations, so its snapshot and save follow at frame end): on the tape the game's
   instruction keys (the key's character on the player's layout matched to the game's hotkeys, which
@@ -309,8 +310,9 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   tutorial lessons, all fixed, select nothing). A hex with a selected part reads "selected" first. With
   the cursor on a selected part, Enter / Ctrl+Enter (the game's drag-copy: copyable parts copied, the
   rest move along; copies become the selection) / Delete / Shift+A / D (in place round the cursor) /
-  Ctrl+C / X act on the group; Ctrl+V carries the clipboard at the cursor (after a cut the first paste
-  moves the cut parts, later pastes copy). Copied arms are numbered right after the highest-numbered
+  Ctrl+C / X act on the group; Ctrl+V places the clipboard at the cursor at once, all or nothing, the
+  game's reason spoken when it does not fit (user decision 2026-11-04; several parts land selected;
+  after a cut the first paste moves the cut parts, later pastes copy). Copied arms are numbered right after the highest-numbered
   carried part (the game's rule). NOT yet verified live: anything on non-fixed parts. Parts stop: the
   game's toolbar rules (`SolutionEditorPartsPanel`), Enter carries a new part from the board cursor.
   Instructions stop (`InstructionTraySection`): the game's tray as five key columns (Q/A, W/S/X, E/D/C,
@@ -323,7 +325,8 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   work as the atom / bond difference across each `RunCycleGlyphs` (content-mod glyphs included; one
   sentence per part, not per name), products from `outputDone`; ONE MESSAGE PER EVENT (user rule
   2026-11-04, SpeechChem's way): a step says "cycle N" then each actor's sentence queued; at play each
-  cycle's first message interrupts the last cycle's; fast forward speaks products only; errors when the
+  cycle's first message interrupts the last cycle's; fast forward says nothing (user rule 2026-11-04;
+  a product is announced only up to its required count: the game keeps counting past it); errors when the
   game shows them (message + hexes, the board cursor moved there).
   NOT yet verified live: error narration, track drawing, reagents / products from the tray, placing a
   copy, Alt+Space (the game reads Alt itself), the numpad.

@@ -18,7 +18,8 @@ namespace MagnumOpus.Module.Screens.Editor
     /// cycle, Alt+Space toggles fast forward (the game's own buttons through their own keys, so its
     /// exact path runs; where it would refuse, its reason is spoken). The engine's state changes are
     /// spoken, and an error when the game shows it (message and hexes; the board cursor goes there).
-    /// Ctrl+Shift+S reads the score line, Ctrl+Shift+T the puzzle's tips (also spoken on entry).
+    /// Ctrl+Shift+S reads the score line, Ctrl+Shift+T the puzzle's tips (also spoken on entry), Alt+P
+    /// each product's count. Fast forward says nothing; the run log keeps every event.
     /// </summary>
     internal sealed class RunSection : ScreenSection
     {
@@ -47,6 +48,7 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.Step, Strings.Get("bind.ed.step"), _ => RunKey(GameKeys.Tab));
             yield return new ElementAction(EditorActions.Fast, Strings.Get("bind.ed.fast"), _ => RunKey(GameKeys.Space));
             yield return new ElementAction(EditorActions.Score, Strings.Get("bind.ed.score"), _ => EditorContext.Say(ScoreText()));
+            yield return new ElementAction(EditorActions.Products, Strings.Get("bind.ed.products"), _ => EditorContext.Say(ProductsText()));
             if (TipsText() != null)
                 yield return new ElementAction(EditorActions.Tips, Strings.Get("bind.ed.tips"), _ => EditorContext.Say(TipsText()));
         }
@@ -157,6 +159,22 @@ namespace MagnumOpus.Module.Screens.Editor
             string where = Hex.Coords(hexes[0]);
             for (int i = 1; i < hexes.Count; i++) where = Strings.RunErrorPlaces(where, Hex.Coords(hexes[i]));
             return Strings.RunError(message, where);
+        }
+
+        // Each product with where it is (two can share a name) and how many of the puzzle's count
+        // are done ("Product (Elemental Salt) at 4, 0: 6 of 6"); before a run every count is 0.
+        private string ProductsText()
+        {
+            var ed = _ctx.Ed;
+            var solution = ed.GetSolution();
+            var lines = new List<string>();
+            foreach (var p in solution.parts.Where(p => p.GetType().IsOutput()).OrderBy(p => p.GetInputOutputIndex()))
+            {
+                int done = Board.Running(ed) ? Math.Min(ed.GetSimulation().GetSimState(p).outputDone, p.GetOutputCount()) : 0;
+                string name = Strings.EditorPartAt(Board.PartName(ed, p), Hex.Coords(p.GetHexPos()));
+                lines.Add(Strings.EventProduct(name, done, p.GetOutputCount()));
+            }
+            return lines.Count == 0 ? Strings.EditorNoProducts : string.Join(". ", lines);
         }
 
         // The figures above the program, with the game's labels; dashes (before a run) left out.

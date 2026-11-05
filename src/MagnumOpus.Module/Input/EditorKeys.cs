@@ -15,7 +15,7 @@ namespace MagnumOpus.Module.Input
         public const string CatPrev = "ed.cat.prev", CatNext = "ed.cat.next", ItemPrev = "ed.item.prev", ItemNext = "ed.item.next";
         // S reads details on the board only (on the tape S is an instruction); / everywhere.
         public const string Details = "ed.details", Info = "ed.info", Molecule = "ed.molecule", Neighbours = "ed.neighbours";
-        public const string Score = "ed.score", Tips = "ed.tips";
+        public const string Score = "ed.score", Tips = "ed.tips", Products = "ed.products";
         public const string Play = "ed.play", Step = "ed.step", Fast = "ed.fast";
         // Editing.
         public const string Instruction = "ed.instr";
@@ -83,6 +83,7 @@ namespace MagnumOpus.Module.Input
             // Ctrl+Shift: Alt + a letter is an instruction (S retract, T track minus).
             Key(EditorActions.Score, "Score", new KeyboardBinding(Scancode.S, ctrl: true, shift: true));
             Key(EditorActions.Tips, "Tutorial tips", new KeyboardBinding(Scancode.T, ctrl: true, shift: true));
+            Key(EditorActions.Products, "Products", new KeyboardBinding(Scancode.P, alt: true));
             Key(EditorActions.Play, "Play or pause", new KeyboardBinding(Scancode.Space));
             Key(EditorActions.Step, "Step one cycle", new KeyboardBinding(Scancode.Space, ctrl: true)).Repeating();
             Key(EditorActions.Fast, "Fast forward", new KeyboardBinding(Scancode.Space, alt: true));
@@ -95,7 +96,8 @@ namespace MagnumOpus.Module.Input
                 instr.AddBinding(new KeyboardBinding(k, shift: true));
                 // Alt + the key programs from the board (and types on the tape); the numpad's Alt
                 // chords stay the board's skips.
-                if (k < Scancode.Kp1 || k > Scancode.KpPeriod) instr.AddBinding(new KeyboardBinding(k, alt: true));
+                // (Alt+P is the products readout.)
+                if ((k < Scancode.Kp1 || k > Scancode.KpPeriod) && k != Scancode.P) instr.AddBinding(new KeyboardBinding(k, alt: true));
             }
             Key(EditorActions.Delete, "Delete", new KeyboardBinding(Scancode.Delete));
             Key(EditorActions.Clone, "Pick up a copy", new KeyboardBinding(Scancode.Return, ctrl: true));

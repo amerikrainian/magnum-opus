@@ -297,7 +297,9 @@ namespace MagnumOpus.Module.Patches
                     if (!part.GetType().IsOutput()) continue;
                     int done = ((ISim)__instance).GetSimState(part).outputDone;
                     _outputsBefore.TryGetValue(part, out int before);
-                    if (done > before)
+                    // Up to the count the puzzle asks for: past it the game keeps counting (while other
+                    // products are unfinished), which would repeat "6 of 6".
+                    if (done > before && before < part.GetOutputCount())
                         cycle.Products.Add(Strings.EventProduct(Board.PartName(ed, part), Math.Min(done, part.GetOutputCount()), part.GetOutputCount()));
                 }
                 Flush(ed, cycle);
@@ -316,11 +318,8 @@ namespace MagnumOpus.Module.Patches
 
             var state = ed.GetSimPlayState();
             bool fast = ed.isFastForward;
-            if (state == SimPlayState.Playing && fast)
-            {
-                foreach (var s in cycle.Products) Speech.Say(s);
-                return;
-            }
+            // Fast forward is silent (user rule 2026-11-04); the run log and Alt+P keep the products.
+            if (state == SimPlayState.Playing && fast) return;
             // One message per event, SpeechChem's way ("cycle 3", "arm 1: grabbed Fire", "arm 2: ..."):
             // the first interrupts, the rest queue behind it. A step opens with the cycle's number;
             // at speed each cycle's first message cuts the last cycle's off, so what is said is the
