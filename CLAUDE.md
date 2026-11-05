@@ -356,6 +356,9 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
 - **Puzzle tips** (`PuzzleTipGameScreen`, 2026-11-04): the tip's name, its text as the game draws it
   (the dragging tip filled with the layout's drag letters), Close (the game's Escape). The animated
   demonstration is not described. Verified live.
+- **GIF recorder** (`SolutionRecorderGameScreen`, 2026-11-04): the game's status line (recording, saved
+  to the desktop / the specified folder, or the collision error), spoken again when it changes; Close
+  (the game's Escape; cancels a recording in progress). The animation is not described.
 - **Fallback** (`FallbackScreen`): the screen's human type name ("Journal Submission"), the text it draws
   top to bottom (`TextCapture`, only while the fallback is up) and its labeled buttons (ButtonPress).
   Covers the journal (readable, not yet operable) and the rest.
