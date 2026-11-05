@@ -261,6 +261,7 @@ bind.ed.play=Play or pause
 bind.ed.step=Step one cycle
 bind.ed.fast=Fast forward
 bind.ed.instr=Place instruction, Shift inserts
+bind.ed.program_arm=Program the arm here
 bind.ed.jump=Jump between the board and the tape
 bind.ed.mark=Mark a corner
 bind.ed.toggle_select=Select or unselect the part here

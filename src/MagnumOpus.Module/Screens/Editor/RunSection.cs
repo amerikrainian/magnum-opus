@@ -18,7 +18,7 @@ namespace MagnumOpus.Module.Screens.Editor
     /// cycle, Alt+Space toggles fast forward (the game's own buttons through their own keys, so its
     /// exact path runs; where it would refuse, its reason is spoken). The engine's state changes are
     /// spoken, and an error when the game shows it (message and hexes; the board cursor goes there).
-    /// Alt+S reads the score line, Alt+T the puzzle's tips (also spoken on entry).
+    /// Ctrl+Shift+S reads the score line, Ctrl+Shift+T the puzzle's tips (also spoken on entry).
     /// </summary>
     internal sealed class RunSection : ScreenSection
     {

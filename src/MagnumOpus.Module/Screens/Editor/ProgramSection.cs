@@ -237,7 +237,7 @@ namespace MagnumOpus.Module.Screens.Editor
 
         private void Type()
         {
-            if (SdlKeyboard.CtrlHeld || SdlKeyboard.AltHeld) return; // Ctrl+letters are the clipboard here
+            if (SdlKeyboard.CtrlHeld) return; // Ctrl+letters are the clipboard here; Alt types as plain
             var type = ProgramEdits.PressedInstruction();
             if (type == null || !_ctx.CanEdit()) return;
             PlaceAtCursor(_ctx, type, insert: SdlKeyboard.ShiftHeld, withPlace: false);

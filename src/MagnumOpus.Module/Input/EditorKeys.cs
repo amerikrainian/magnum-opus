@@ -80,8 +80,9 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.Info, "Details", new KeyboardBinding(Scancode.Slash));
             Key(EditorActions.Molecule, "Molecule", new KeyboardBinding(Scancode.W));
             Key(EditorActions.Neighbours, "Neighbours", new KeyboardBinding(Scancode.X));
-            Key(EditorActions.Score, "Score", new KeyboardBinding(Scancode.S, alt: true));
-            Key(EditorActions.Tips, "Tutorial tips", new KeyboardBinding(Scancode.T, alt: true));
+            // Ctrl+Shift: Alt + a letter is an instruction (S retract, T track minus).
+            Key(EditorActions.Score, "Score", new KeyboardBinding(Scancode.S, ctrl: true, shift: true));
+            Key(EditorActions.Tips, "Tutorial tips", new KeyboardBinding(Scancode.T, ctrl: true, shift: true));
             Key(EditorActions.Play, "Play or pause", new KeyboardBinding(Scancode.Space));
             Key(EditorActions.Step, "Step one cycle", new KeyboardBinding(Scancode.Space, ctrl: true)).Repeating();
             Key(EditorActions.Fast, "Fast forward", new KeyboardBinding(Scancode.Space, alt: true));
@@ -92,6 +93,9 @@ namespace MagnumOpus.Module.Input
             {
                 if (k != InstructionKeys[0]) instr.AddBinding(new KeyboardBinding(k));
                 instr.AddBinding(new KeyboardBinding(k, shift: true));
+                // Alt + the key programs from the board (and types on the tape); the numpad's Alt
+                // chords stay the board's skips.
+                if (k < Scancode.Kp1 || k > Scancode.KpPeriod) instr.AddBinding(new KeyboardBinding(k, alt: true));
             }
             Key(EditorActions.Delete, "Delete", new KeyboardBinding(Scancode.Delete));
             Key(EditorActions.Clone, "Pick up a copy", new KeyboardBinding(Scancode.Return, ctrl: true));
@@ -122,7 +126,9 @@ namespace MagnumOpus.Module.Input
         private static void Hex(string key, string label, Scancode letter, Scancode pad) =>
             Key(key, label, new KeyboardBinding(letter)).AddBinding(new KeyboardBinding(pad)).Repeating();
 
+        // Alt+Shift on the letters (Alt alone is an instruction); Alt on the numpad (Shift+numpad
+        // turns into the navigation keys with NumLock on).
         private static void Skip(string key, string label, Scancode letter, Scancode pad) =>
-            Key(key, label, new KeyboardBinding(letter, alt: true)).AddBinding(new KeyboardBinding(pad, alt: true)).Repeating();
+            Key(key, label, new KeyboardBinding(letter, alt: true, shift: true)).AddBinding(new KeyboardBinding(pad, alt: true)).Repeating();
     }
 }

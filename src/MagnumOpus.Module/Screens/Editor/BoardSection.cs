@@ -15,15 +15,17 @@ namespace MagnumOpus.Module.Screens.Editor
     /// The board stop: a hex cursor over the game's unbounded board (Civ V Access's cluster: Q
     /// northwest, E northeast, A west, D east, Z southwest, C southeast; numpad 7 9 4 6 1 3; the arrows
     /// are not board keys (user rule 2026-11-04); Alt with them skips to the next hex that reads
-    /// differently). A hex
+    /// differently; Alt+Shift on the letters, Alt on the numpad). A hex
     /// reads its half-step coordinates, then what is on it (<see cref="Board"/>).
     /// Reading: [ ] categories, , . items, S details, W the molecule, X neighbours, ; and ' the
     /// program cursor a cycle back and forward on the arm under the cursor, digits jump to an arm.
     /// Editing (stopped engine): Enter picks the part under the cursor up (<see cref="CarryMode"/>)
     /// and puts it down; Ctrl+Enter picks up a copy; Shift+A / Shift+D rotate, Shift+W / Shift+S
     /// lengthen and shorten an arm (the game's own drag letters); Delete removes the part;
-    /// Shift+Enter on a track extends it (<see cref="TrackDrawMode"/>). Alt+Backspace jumps to the
-    /// tape on the arm under the cursor (and back, <see cref="ProgramSection"/>).
+    /// Shift+Enter on a track extends it (<see cref="TrackDrawMode"/>). Alt with an instruction key
+    /// programs the arm under the cursor at the program cursor's cycle and steps that cursor on
+    /// (user decision 2026-11-04: Ctrl is the clipboard). Alt+Backspace jumps to the tape on the arm
+    /// under the cursor (and back, <see cref="ProgramSection"/>).
     /// Selection (user design 2026-11-04; the game's own partSelection, so the game draws it too):
     /// Shift+Space marks one corner, the next the opposite one and selects every part touching that
     /// rectangle of x, y (the game's box-select rule), a third starts over; Ctrl+Shift+Space adds or
@@ -100,6 +102,7 @@ namespace MagnumOpus.Module.Screens.Editor
                 yield return new ElementAction(EditorActions.TapePrev, Strings.Get("bind.ed.tape.prev"), _ => TapeFromBoard(-1));
                 yield return new ElementAction(EditorActions.TapeNext, Strings.Get("bind.ed.tape.next"), _ => TapeFromBoard(1));
                 yield return new ElementAction(EditorActions.Jump, Strings.Get("bind.ed.jump"), _ => JumpToTape());
+                yield return new ElementAction(EditorActions.Instruction, Strings.Get("bind.ed.program_arm"), _ => ProgramArm());
             }
             for (int n = 1; n <= Math.Min(9, arms); n++)
             {
@@ -377,6 +380,20 @@ namespace MagnumOpus.Module.Screens.Editor
                 part = track.GetValue();
             }
             _ctx.Draw.Start(part);
+        }
+
+        // Alt + an instruction key: the arm under the cursor gets it at the program cursor's cycle,
+        // and that cursor steps on.
+        private void ProgramArm()
+        {
+            if (!SdlKeyboard.AltHeld || SdlKeyboard.CtrlHeld || SdlKeyboard.ShiftHeld) return;
+            var type = ProgramEdits.PressedInstruction();
+            if (type == null) return;
+            var arm = _ctx.ArmAt(_ctx.Cursor);
+            if (arm == null) { EditorContext.Say(Strings.EditorNoArm); return; }
+            if (!_ctx.CanEdit()) return;
+            _ctx.Row = Board.Arms(_ctx.Ed).IndexOf(arm);
+            ProgramSection.PlaceAtCursor(_ctx, type, insert: false, withPlace: true);
         }
 
         // ---- the tape jump ----
