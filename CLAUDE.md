@@ -399,22 +399,25 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
 - **GIF recorder** (`SolutionRecorderGameScreen`, 2026-11-04): the game's status line (recording, saved
   to the desktop / the specified folder, or the collision error), spoken again when it changes; Close
   (the game's Escape; cancels a recording in progress). The animation is not described.
-- **Sigmar's Garden** (`SolitaireGameScreen`, 2026-11-07; all three variants): Board stop, a hex cursor
+- **Sigmar's Garden** (`SolitaireGameScreen`, 2026-11-07; all three variants): a Story stop first (the
+  reached lines and the game's section dividers, "Win 1 game to continue (Optional)", the last where the
+  wins stop it; Enter on any forces Space: the next line; none in Colvan; user decision: the story its
+  own stop so Enter on the board only picks), then the Board stop, a hex cursor
   over `SolitaireScreen.boardHexes` (the editor's keys and `Game/Hex`, coordinates centred on the game's
   (5, 0); a key that would leave the board does nothing, user rule): "selected" first, coordinates, the
   marble, "locked" where `CanRemove` is false (the game dims it). Enter clicks the marble through
   `MouseClick` at the position the game draws it (`ScreenPosition`, transcribed from `RenderFrame`), then
   diffs the board and selection a frame later: "selected", "unselected", "selected, Mors unselected",
-  "cleared Mors, Vitae"; a dimmed one says "locked" without clicking. With no game in play Enter
-  forces Space instead: the story's next line (user decision). , . previous / next free marble
+  "cleared Mors, Vitae"; a dimmed one says "locked" without clicking. , . previous / next free marble
   (reading order; NO pair suggestions, user rule: the game shows none), X neighbours. Marbles stop: the
   game's counter strip per variant, "Salt, 4", "warning" where it uses its warning colour. New Game
   (ButtonPress), Rules (its icon button's click code: `SolitaireHelpScreen`, still the fallback), Wins,
-  Close. The story panel's reached lines are spoken on opening and each new one as it appears; Space
-  passes to the game (it advances the panel); the first deal waits for the first section (10 lines,
+  Close. Opening lands on the story's latest item with no game in play (before the first deal, after a
+  win: the only times the story waits), else on the board with the story spoken; each new story item is
+  spoken as it appears; Space passes to the game (it advances the panel); the first deal waits for the first section (10 lines,
   `StoryPanel.GetCompletion() >= 10`). "dealt" when a reveal ends, "board cleared" + wins on a win.
   Verified live: the cursor against a screenshot, free-marble order, select / replace / clear / unselect,
-  locked, Rules and back, the story by Space and Enter. NOT verified: a win, the Quintessence and Colvan
+  locked, Rules and back, the story stop (landing, Enter, the divider), Space. NOT verified: a win, the Quintessence and Colvan
   variants (five-marble quintessence picks), New Game.
 - **Fallback** (`FallbackScreen`): the screen's human type name ("Journal Submission"), the text it draws
   top to bottom (`TextCapture`, only while the fallback is up) and its labeled buttons (ButtonPress).

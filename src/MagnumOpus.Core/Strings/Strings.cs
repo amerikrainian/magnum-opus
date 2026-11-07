@@ -355,6 +355,7 @@ namespace MagnumOpus.Core.Strings
             D("diagram.order.left", "right to left"),
             // Sigmar's Garden (the solitaire).
             D("solitaire.board", "Board"),
+            D("solitaire.story", "Story"),
             // The counter strip under the board: how many of each marble are left.
             D("solitaire.counts", "Marbles"),
             D("solitaire.count", "{0}, {1}"),
@@ -764,6 +765,7 @@ namespace MagnumOpus.Core.Strings
         public static string DiagramOrder(Text.Compass.Dir d) => Get("diagram.order." + DirKey(d));
 
         public static string SolitaireBoard => Get("solitaire.board");
+        public static string SolitaireStory => Get("solitaire.story");
         public static string SolitaireCounts => Get("solitaire.counts");
         public static string SolitaireCount(string marble, int count) => F("solitaire.count", marble, count);
         public static string SolitaireWarning => Get("solitaire.warning");

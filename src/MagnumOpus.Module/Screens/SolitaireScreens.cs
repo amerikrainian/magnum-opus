@@ -16,6 +16,11 @@ namespace MagnumOpus.Module.Screens
     /// <summary>
     /// Sigmar's Garden (SolitaireScreen: the campaign's solitaire, its Quintessence variant from the
     /// journal, the House Colvan variant), on the editor's hex model:
+    ///  0. Story (the panel left of the board; none in the Colvan variant): the lines reached so far,
+    ///     with the game's divider after each finished section ("Win 1 game to continue
+    ///     (Optional)"), the last one where the wins stop it. Enter on any of them shows the next
+    ///     line, as Space does (the game's own key, which reaches it everywhere); each new line is
+    ///     spoken as it appears. The game deals the first hand only once the first section is read.
     ///  1. Board: a hex cursor over the game's 91 hexes (Q E A D Z C, numpad 7 9 4 6 1 3; Alt+Shift
     ///     with them skips to the next hex that reads differently; Ctrl+Home the centre; a key that
     ///     would leave the board does nothing, user rule 2026-11-07). Coordinates are the editor's half-step x, y, centred on the
@@ -23,22 +28,23 @@ namespace MagnumOpus.Module.Screens
     ///     selected, then the coordinates, then the marble and "locked" where the game dims it (not
     ///     free: fewer than three contiguous empty neighbours, or a metal with a lower metal left).
     ///     Enter picks the marble the game's way, a left click on it (<see cref="MouseClick"/>), and
-    ///     says what came of it: "selected", "unselected", "cleared Fire, Salt"; with no game in
-    ///     play it gives the story its next line, as Space does. , and . go to the
+    ///     says what came of it: "selected", "unselected", "cleared Fire, Salt". , and . go to the
     ///     previous and next free marble in reading order (the game shows which are free by dimming
     ///     the rest; no pairs are suggested, user rule 2026-11-07). X reads the neighbours.
     ///  2. Marbles: the counter strip under the board, in the game's order for the variant, each
     ///     "Salt, 4", with "warning" where the game draws the count in its warning colour.
     ///  3. New Game (the game's button), Rules (its icon button, the game's click code: it opens
     ///     SolitaireHelpScreen), the wins, Close.
-    /// The story panel's lines are spoken on opening, and each new one as it appears: Space advances
-    /// the conversation (the game's own key, which reaches it), and the game deals the first hand
-    /// only once the first section is read. "dealt" when a deal's reveal finishes, "board cleared"
-    /// and the wins on a win. Escape passes to the game (its close button).
+    /// Opening with a game in play lands on the board and speaks the story so far; with none (before
+    /// the first deal, after a win, the only times the story waits for a press) it lands on the
+    /// story's latest item instead (user decision 2026-11-07: the story its own stop, so Enter on
+    /// the board only ever picks). "dealt" when a deal's reveal finishes, "board cleared" and the
+    /// wins on a win. Escape passes to the game (its close button).
     /// </summary>
     public sealed class SolitaireGameScreen : GameScreen<SolitaireScreen>
     {
         private const string StopBoard = "solitaire.board";
+        private const string StopStory = "solitaire.story";
         private static readonly HexIndex Centre = new HexIndex(5, 0);
         private const int SkipLimit = 10;
 
@@ -68,7 +74,15 @@ namespace MagnumOpus.Module.Screens
 
         public override bool AllowsTypeahead => false;
 
-        public override object InitialFocusStop => StopBoard;
+        public override object InitialFocusStop => LandsOnStory() ? StopStory : StopBoard;
+
+        // No game in play and a story to read: the story waits for the player then, nothing else does.
+        private bool LandsOnStory()
+        {
+            var g = Game;
+            var s = State();
+            return g != null && s != null && !s.IsGameplay() && StoryItems(g).Count > 0;
+        }
 
         // Space advances the story panel in the game (Escape closes the screen).
         public override bool PassKeyToGame(int sdlKeycode) => sdlKeycode == GameKeys.Escape || sdlKeycode == GameKeys.Space;
@@ -108,6 +122,26 @@ namespace MagnumOpus.Module.Screens
         {
             var g = Game;
             if (g == null) return;
+
+            var story = StoryItems(g);
+            if (story.Count > 0)
+            {
+                b.BeginStop(StopStory);
+                b.PushContext(Strings.SolitaireStory, null, positions: false);
+                for (int i = 0; i < story.Count; i++)
+                {
+                    int index = i;
+                    var id = ControlId.Structural("solitaire:story:" + i);
+                    b.AddItem(id, new NodeVtable
+                    {
+                        ControlType = ControlTypes.Text,
+                        Announcements = new[] { Nodes.LabelPart(() => { var items = Game == null ? null : StoryItems(Game); return items != null && index < items.Count ? items[index] : ""; }) },
+                        OnActivate = () => GameKeys.Forced = GameKeys.Space,
+                    });
+                    if (i == story.Count - 1) b.SetStopStart(id);
+                }
+                b.PopContext();
+            }
 
             b.BeginStop(StopBoard);
             b.PushContext(Strings.SolitaireBoard, null, positions: false);
@@ -293,14 +327,11 @@ namespace MagnumOpus.Module.Screens
         // ---- acting ----
 
         // Enter: the game's left click on the marble under the cursor, during play. A marble the
-        // game dims does nothing there: "locked" is said instead. With no game in play (before the
-        // first deal, after a win), the only times the story waits for a press: the next story line,
-        // as Space gives it (user decision 2026-11-07, the cutscenes' Enter).
+        // game dims does nothing there: "locked" is said instead.
         private void Pick()
         {
             var s = State();
-            if (s == null) return;
-            if (!s.IsGameplay()) { GameKeys.Forced = GameKeys.Space; return; }
+            if (s == null || !s.IsGameplay()) return;
             var marbles = s.ToGameplay().gameState;
             if (!marbles.atoms.ContainsKey(_cursor)) return;
             if (!marbles.CanRemove(_cursor)) { Speech.Say(Strings.StateLocked, true); return; }
@@ -367,6 +398,43 @@ namespace MagnumOpus.Module.Screens
             Assets.sounds.click_button.PlaySound(1f);
         }
 
+        // ---- the story ----
+
+        // The story panel as the game draws it here (StoryPanel.RenderVignette with the solitaire's
+        // sections): each reached line "Speaker: line", and after a finished section its divider,
+        // "{0} to continue (Optional)", where the panel stops until the wins reach the section's
+        // count. None without a vignette (the Colvan variant).
+        private static List<string> StoryItems(SolitaireScreen g)
+        {
+            var items = new List<string>();
+            var panel = g?.storyPanel;
+            if (panel == null || !panel.vignette.HasValue()) return items;
+            var localized = panel.vignette.GetValue();
+            var events = localized.GetVignette().events;
+            bool all = PuzzleSelectScreen.unlockAllMode;
+            int progress = all ? int.MaxValue : GameLogic.instance.saveData.GetVignetteProgress(localized);
+            int wins = all ? int.MaxValue : g.solitaireStat;
+            var sections = SolitaireScreen.storyPanelSections;
+            int index = 0;
+            for (int j = 0; j < sections.Length && j < events.Count; j++)
+            {
+                foreach (var e in events[j])
+                {
+                    if (index >= progress) return items;
+                    index++;
+                    if (!e.IsLineEvent()) continue;
+                    var line = e.ToLineEvent();
+                    items.Add(GameText.Of(line.portrait.name) + ": " + GameText.Clean(line.line));
+                }
+                if (j == sections.Length - 1) break;
+                string divider = string.Format(Translations.Translate("{0} to continue").GetTranslated(), sections[j].Item2.GetTranslated())
+                    + " " + Translations.Translate("(Optional)").GetTranslated();
+                items.Add(GameText.Clean(divider));
+                if (wins < sections[j].Item1) break;
+            }
+            return items;
+        }
+
         // ---- lifecycle ----
 
         public override void OnPush()
@@ -383,13 +451,15 @@ namespace MagnumOpus.Module.Screens
             var g = Game;
             if (g == null) return;
             int id = RuntimeHelpers.GetHashCode(g);
-            var lines = StoryPanelNodes.Lines(g.storyPanel);
-            if (id == _opened) { _storySpoken = lines.Count; return; }
+            var lines = StoryItems(g);
+            _storySpoken = lines.Count;
+            if (id == _opened) return;
             _opened = id;
             _cursor = Centre;
+            // Landing on the story reads its latest item; on the board, the story so far is spoken.
+            if (LandsOnStory()) return;
             foreach (var line in lines)
                 if (!string.IsNullOrWhiteSpace(line)) Speech.Say(line, interrupt: false);
-            _storySpoken = lines.Count;
         }
 
         public override void OnUpdate()
@@ -402,7 +472,7 @@ namespace MagnumOpus.Module.Screens
                 if (_before != null && _pickTicks-- <= 0) ResolvePick();
 
                 // A story line the player advanced to (Space), or one the game shows by itself.
-                var lines = StoryPanelNodes.Lines(g.storyPanel);
+                var lines = StoryItems(g);
                 if (lines.Count < _storySpoken) _storySpoken = lines.Count; // the save's progress went back
                 for (int i = _storySpoken; i < lines.Count; i++)
                     if (!string.IsNullOrWhiteSpace(lines[i])) Speech.Say(lines[i], interrupt: false);

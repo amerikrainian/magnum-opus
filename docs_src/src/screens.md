@@ -53,19 +53,22 @@ game's controls.
 
 ## Sigmar's Garden
 
-The solitaire. On opening you hear the conversation so far; Space shows the next line, and the
-game deals the first board once the first part of the conversation is read.
+The solitaire. The game deals the first board once the first part of the conversation beside it
+is read.
 
-1. **Board**: a hex cursor, moved with Q (northwest), E (northeast), A (west), D (east), Z
+1. **Story**: the conversation so far, a line at a time. Enter on any line (or Space anywhere)
+   shows the next one. Where the next part waits for wins, the last line says so ("Win 1 game to
+   continue"). When no game is in play the screen opens here; otherwise it opens on the board.
+2. **Board**: a hex cursor, moved with Q (northwest), E (northeast), A (west), D (east), Z
    (southwest) and C (southeast), or the numpad's 7, 9, 4, 6, 1 and 3. Alt+Shift with them skips
    to the next hex that reads differently; Ctrl+Home returns to the centre, 0, 0. A hex reads its
    coordinates, then its marble, with "locked" where the marble is not free yet, and "selected"
    first when you have picked it. Enter picks the marble under the cursor: "selected", then
    "cleared" with both names when the second one matches. Comma and Period go to the previous
    and next free marble; X reads the neighbours.
-2. **Marbles**: how many of each are left, as the strip under the board shows them, with
+3. **Marbles**: how many of each are left, as the strip under the board shows them, with
    "warning" where the game marks a count that cannot all be paired.
-3. **New Game, Rules, Wins, Close.**
+4. **New Game, Rules, Wins, Close.**
 
 ## Not yet covered
 
