@@ -24,12 +24,14 @@ namespace MagnumOpus.Module.Screens.Editor
     /// selection; Ctrl+C / X / V copy, cut and paste (pasting at the cursor, overwriting).
     /// Alt+Backspace goes back to the board hex the jump came from (else the row's arm base).
     /// Enter runs the solution to the cell (<see cref="RunSection.RunTo"/>).
+    /// The board runs these same edits while Ctrl+Up / Ctrl+Down have the instructions picked
+    /// (<see cref="EditorContext.TapePicked"/>).
     /// </summary>
     internal sealed class ProgramSection : ScreenSection
     {
         private readonly EditorContext _ctx;
 
-        public ProgramSection(EditorContext ctx) { _ctx = ctx; }
+        public ProgramSection(EditorContext ctx) { _ctx = ctx; ctx.Program = this; }
 
         public override void Build(GraphBuilder b)
         {
@@ -174,7 +176,7 @@ namespace MagnumOpus.Module.Screens.Editor
             EditorContext.Say(text);
         }
 
-        private void MoveRow(int step, bool select)
+        internal void MoveRow(int step, bool select)
         {
             int count = Board.Arms(_ctx.Ed).Count;
             int row = Math.Max(0, Math.Min(count - 1, _ctx.Row + step));
@@ -184,7 +186,7 @@ namespace MagnumOpus.Module.Screens.Editor
             Spoken(withArm: true, select: select);
         }
 
-        private void MoveColumn(int col, bool select)
+        internal void MoveColumn(int col, bool select)
         {
             col = Math.Max(0, Math.Min(EditorContext.MaxColumn, col));
             if (col == _ctx.Col) return;
@@ -214,7 +216,7 @@ namespace MagnumOpus.Module.Screens.Editor
             EditorContext.Say(CellText(_ctx, withArm: true));
         }
 
-        private void SelectAll()
+        internal void SelectAll()
         {
             var arms = Board.Arms(_ctx.Ed);
             var used = arms.Where(a => a.program.Count() > 0).ToList();
@@ -275,7 +277,7 @@ namespace MagnumOpus.Module.Screens.Editor
             EditorContext.Say(error == null ? text : text + ", " + error);
         }
 
-        private void Delete()
+        internal void Delete()
         {
             if (!_ctx.CanEdit()) return;
             var removed = new List<InstructionType>();
@@ -293,7 +295,7 @@ namespace MagnumOpus.Module.Screens.Editor
             if (removed.Count > 0) EditorContext.Say(Strings.EditorDeleted(ProgramEdits.Summary(removed)));
         }
 
-        private void Backspace()
+        internal void Backspace()
         {
             if (_ctx.Selecting) { Delete(); return; }
             if (_ctx.Col == 0 || !_ctx.CanEdit()) return;
@@ -309,7 +311,7 @@ namespace MagnumOpus.Module.Screens.Editor
             else EditorContext.Say(CellText(_ctx, withArm: false));
         }
 
-        private void Copy(bool cut)
+        internal void Copy(bool cut)
         {
             if (cut && !_ctx.CanEdit()) return;
             var cells = SelectedCells().Where(c => c.Type != null).ToList();
@@ -325,13 +327,15 @@ namespace MagnumOpus.Module.Screens.Editor
             var types = cells.Select(c => c.Type).ToList();
             if (cut) foreach (var c in cells) ProgramEdits.Clear(c.Arm, c.Col);
             _ctx.Selecting = false;
+            _ctx.PartsOnClipboard = false;
             string summary = ProgramEdits.Summary(types);
             EditorContext.Say(cut ? Strings.EditorCut(summary) : Strings.EditorCopied(summary));
         }
 
-        private void Paste()
+        // Parts copied last have no place on the tape: nothing (silent, user decision 2026-11-07).
+        internal void Paste()
         {
-            if (_ctx.Clipboard.Count == 0 || !_ctx.CanEdit()) return;
+            if (_ctx.PartsOnClipboard || _ctx.Clipboard.Count == 0 || !_ctx.CanEdit()) return;
             var ed = _ctx.Ed;
             var arms = Board.Arms(ed);
             var placed = new List<InstructionType>();

@@ -36,15 +36,22 @@ namespace MagnumOpus.Module.Screens.Editor
         public SolutionEditorScreen Ed => _editor();
 
         // ---- cursors ----
-        /// <summary>The board cursor. Moving it drops a part chosen with Ctrl+Up / Ctrl+Down (the
-        /// hex's default comes back).</summary>
+        /// <summary>The board cursor. Moving it drops a part (or the instructions) chosen with
+        /// Ctrl+Up / Ctrl+Down (the hex's default comes back).</summary>
         public HexIndex Cursor
         {
             get => _cursor;
-            set { if (value != _cursor) _pick = 0; _cursor = value; }
+            set { if (value != _cursor) { _pick = 0; _tape = false; } _cursor = value; }
         }
         private HexIndex _cursor;
-        private int _pick; // which of the cursor hex's parts an edit takes (0 = the default)
+        private int _pick;  // which of the cursor hex's parts an edit takes (0 = the default)
+        private bool _tape; // the board's edits take the program cursor's instructions instead
+
+        /// <summary>The instructions are what edits on the cursor hex take: chosen with Ctrl+Up /
+        /// Ctrl+Down, or the hex holds no part (its only category, user decision 2026-11-07). The
+        /// board's tape keys (Ctrl+C / X, Delete, Backspace, Shift+arrows, Ctrl+Shift+A, Enter) then
+        /// act on the program cursor's cell or the tape's selection.</summary>
+        public bool TapePicked => _tape || PartsAt(_cursor).Count == 0;
         public int Row, Col;
 
         // ---- the tape's selection (a rectangle between the anchor and the cursor) and clipboard ----
@@ -53,6 +60,11 @@ namespace MagnumOpus.Module.Screens.Editor
         public readonly List<ClipCell> Clipboard = new List<ClipCell>();
 
         public struct ClipCell { public int Row, Col; public InstructionType Type; }
+
+        /// <summary>One clipboard as far as the player is concerned (user decision 2026-11-07): what
+        /// was copied or cut last, parts (true) or instructions, is what Ctrl+V pastes, the parts at
+        /// the board cursor, the instructions at the program cursor.</summary>
+        public bool PartsOnClipboard;
 
         // ---- the board's selection (the game's own partSelection) and its clipboard ----
         /// <summary>The first corner of a rectangle being marked, or null.</summary>
@@ -69,6 +81,10 @@ namespace MagnumOpus.Module.Screens.Editor
 
         /// <summary>The run section (run to a tape cell, the engine's refusals), set by it.</summary>
         public RunSection Run;
+
+        /// <summary>The program section (the tape's edits, which the board also runs while the
+        /// instructions are picked), set by it.</summary>
+        public ProgramSection Program;
 
         // ---- modes ----
         public readonly CarryMode Carry;
@@ -91,6 +107,7 @@ namespace MagnumOpus.Module.Screens.Editor
         public void Reset()
         {
             Cursor = new HexIndex(0, 0);
+            _tape = false;
             Row = 0;
             Col = 0;
             Selecting = false;
@@ -99,6 +116,7 @@ namespace MagnumOpus.Module.Screens.Editor
             // Parts copied in another puzzle may not belong in this one.
             PartClipboard.Clear();
             CutParts.Clear();
+            PartsOnClipboard = false;
         }
 
         public override void OnPop()
@@ -170,25 +188,30 @@ namespace MagnumOpus.Module.Screens.Editor
         }
 
         /// <summary>The part an edit on a hex acts on: on the cursor hex the one chosen with
-        /// Ctrl+Up / Ctrl+Down, else (and anywhere else) the first in <see cref="PartsAt"/>.</summary>
+        /// Ctrl+Up / Ctrl+Down (none while the instructions are chosen), else (and anywhere else)
+        /// the first in <see cref="PartsAt"/>.</summary>
         public Part PartAt(HexIndex hex)
         {
+            if (_tape && hex == _cursor) return null;
             var parts = PartsAt(hex);
             if (parts.Count == 0) return null;
             int i = hex == _cursor && _pick < parts.Count ? _pick : 0;
             return parts[i];
         }
 
-        /// <summary>Ctrl+Up / Ctrl+Down: the previous or next part on the cursor hex becomes the one
-        /// edits take, said by name; wraps. Like Tab: with one part or none it does nothing and says
-        /// nothing (user rule 2026-11-04).</summary>
+        /// <summary>Ctrl+Up / Ctrl+Down: the previous or next of what edits on the cursor hex take,
+        /// said by name; wraps. The hex's parts, then always the instructions (user request
+        /// 2026-11-07: the tape's clipboard and selection from the board). An empty hex has only the
+        /// instructions, already chosen: nothing to do (the Tab rule).</summary>
         public void CyclePart(int step)
         {
             var parts = PartsAt(_cursor);
-            if (parts.Count < 2) return;
-            int current = _pick < parts.Count ? _pick : 0;
-            _pick = ((current + step) % parts.Count + parts.Count) % parts.Count;
-            Say(Label(parts[_pick]));
+            if (parts.Count == 0) return;
+            int count = parts.Count + 1;
+            int next = (((_tape ? count - 1 : (_pick < parts.Count ? _pick : 0)) + step) % count + count) % count;
+            _tape = next == count - 1;
+            if (!_tape) _pick = next;
+            Say(_tape ? Strings.EditorPickInstructions : Label(parts[_pick]));
         }
 
         /// <summary>What a turn says (Shift+A / Shift+D): just the new direction (user rule

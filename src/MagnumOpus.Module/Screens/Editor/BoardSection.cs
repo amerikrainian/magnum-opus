@@ -19,7 +19,11 @@ namespace MagnumOpus.Module.Screens.Editor
     /// reads its half-step coordinates, then what is on it (<see cref="Board"/>).
     /// Ctrl+Home goes to the origin, 0, 0. Where a hex holds several parts, edits take the first of
     /// arm base, other part, track, gripper; Ctrl+Up / Ctrl+Down choose another (until the cursor
-    /// moves). Reading: [ ] categories, , . items, S details, W the molecule, X neighbours.
+    /// moves), and after the parts always "instructions" (user request 2026-11-07), an empty hex's
+    /// only category: then the tape's keys act on the program cursor's cell or the tape's selection
+    /// without leaving the board (Ctrl+C / X, Delete, Backspace, Shift+arrows select, Ctrl+Shift+A
+    /// all, Escape clears, Enter runs to the cell), and the part edits find no part. Ctrl+V pastes
+    /// what was copied last, wherever it goes (<see cref="EditorContext.PartsOnClipboard"/>). Reading: [ ] categories, , . items, S details, W the molecule, X neighbours.
     /// The program cursor's arm is chosen here, never by where the board cursor is (user decision
     /// 2026-11-05), with the tape's own keys (a grid of arms by cycles): Up / Down cycle the arms
     /// (wrapping; one arm: nothing) and put the program cursor on the cell after the arm's last
@@ -64,6 +68,8 @@ namespace MagnumOpus.Module.Screens.Editor
                 ControlType = ControlTypes.Text,
                 Announcements = new[] { Nodes.LabelPart(HexReadout) },
                 OnActivate = Enter,
+                // Backspace: the tape's (clears the previous cell) while the instructions are picked.
+                OnSecondary = () => { if (Tape) _ctx.Program?.Backspace(); },
             });
             b.PopContext();
         }
@@ -80,6 +86,10 @@ namespace MagnumOpus.Module.Screens.Editor
         }
 
         private bool Focused => Equals(Navigation.FocusedStopKey, EditorContext.StopBoard);
+
+        // The instructions picked with Ctrl+Up / Ctrl+Down, no mode holding the board, a tape to edit.
+        private bool Tape => _ctx.TapePicked && !_ctx.Carry.Active && !_ctx.Draw.Active
+            && _ctx.Program != null && _ctx.Ed != null && Board.Arms(_ctx.Ed).Count > 0;
 
         public override IEnumerable<ElementAction> GetActions()
         {
@@ -142,19 +152,54 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.Neighbours, Strings.Get("bind.ed.neighbours"), _ => EditorContext.Say(NeighboursText()));
 
             // Selecting and the clipboard.
+            bool tape = Tape;
+            var program = _ctx.Program;
             yield return new ElementAction(EditorActions.MarkCorner, Strings.Get("bind.ed.mark"), _ => MarkCorner());
             yield return new ElementAction(EditorActions.ToggleSelect, Strings.Get("bind.ed.toggle_select"), _ => ToggleSelect());
             yield return new ElementAction(EditorActions.SelectParts, Strings.Get("bind.ed.select_parts"), _ => SelectAllParts());
-            if (_ctx.PartsSelected)
+            if (tape)
+            {
+                yield return new ElementAction(EditorActions.SelectUp, Strings.Get("bind.ed.sel.up"), _ => program.MoveRow(-1, select: true));
+                yield return new ElementAction(EditorActions.SelectDown, Strings.Get("bind.ed.sel.down"), _ => program.MoveRow(1, select: true));
+                yield return new ElementAction(EditorActions.SelectLeft, Strings.Get("bind.ed.sel.left"), _ => program.MoveColumn(_ctx.Col - 1, select: true));
+                yield return new ElementAction(EditorActions.SelectRight, Strings.Get("bind.ed.sel.right"), _ => program.MoveColumn(_ctx.Col + 1, select: true));
+                yield return new ElementAction(EditorActions.SelectAll, Strings.Get("bind.ed.sel.all"), _ => program.SelectAll());
+            }
+            // Escape: the tape's selection first while the instructions are picked (or when it is
+            // the only one), else the board's.
+            if (_ctx.Selecting && (tape || !_ctx.PartsSelected))
+                yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ed.unselect"), _ => { _ctx.Selecting = false; EditorContext.Say(Strings.EditorSelectionCleared); });
+            else if (_ctx.PartsSelected)
                 yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ed.unselect"), _ => ClearSelection());
-            yield return new ElementAction(EditorActions.Copy, Strings.Get("bind.ed.copy"), _ => CopyParts(cut: false));
-            yield return new ElementAction(EditorActions.Cut, Strings.Get("bind.ed.cut"), _ => CopyParts(cut: true));
-            yield return new ElementAction(EditorActions.Paste, Strings.Get("bind.ed.paste"), _ => PasteParts());
+            if (tape)
+            {
+                yield return new ElementAction(EditorActions.Copy, Strings.Get("bind.ed.copy"), _ => program.Copy(cut: false));
+                yield return new ElementAction(EditorActions.Cut, Strings.Get("bind.ed.cut"), _ => program.Copy(cut: true));
+            }
+            else
+            {
+                yield return new ElementAction(EditorActions.Copy, Strings.Get("bind.ed.copy"), _ => CopyParts(cut: false));
+                yield return new ElementAction(EditorActions.Cut, Strings.Get("bind.ed.cut"), _ => CopyParts(cut: true));
+            }
+            // Paste follows the clipboard, not the category: parts at the cursor, instructions at
+            // the program cursor.
+            yield return new ElementAction(EditorActions.Paste, Strings.Get("bind.ed.paste"), _ =>
+            {
+                if (_ctx.PartsOnClipboard) PasteParts();
+                else if (program != null && arms > 0) program.Paste();
+            });
 
-            // Editing the part under the cursor (Ctrl+Up / Ctrl+Down choose which, when several).
-            if (_ctx.PartAt(_ctx.Cursor) == null) yield break;
+            // What edits on the cursor hex take: its parts, then the instructions (always there).
             yield return new ElementAction(EditorActions.PartPrev, Strings.Get("bind.ed.part_prev"), _ => _ctx.CyclePart(-1));
             yield return new ElementAction(EditorActions.PartNext, Strings.Get("bind.ed.part_next"), _ => _ctx.CyclePart(1));
+            if (tape)
+            {
+                yield return new ElementAction(EditorActions.Delete, Strings.Get("bind.ed.delete"), _ => program.Delete());
+                yield break;
+            }
+
+            // Editing the part under the cursor.
+            if (_ctx.PartAt(_ctx.Cursor) == null) yield break;
             yield return new ElementAction(EditorActions.RotateCcw, Strings.Get("bind.ed.rot.ccw"), _ => Rotate(true));
             yield return new ElementAction(EditorActions.RotateCw, Strings.Get("bind.ed.rot.cw"), _ => Rotate(false));
             yield return new ElementAction(EditorActions.Longer, Strings.Get("bind.ed.len.up"), _ => Length(1));
@@ -322,6 +367,13 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             if (_ctx.Carry.Active) { _ctx.Carry.Drop(); return; }
             if (_ctx.Draw.Active) { _ctx.Draw.Finish(); return; }
+            if (Tape)
+            {
+                // The tape's Enter: run to the program cursor's cell.
+                var arm = ProgramSection.RowArm(_ctx);
+                if (arm != null) _ctx.Run?.RunTo(arm, _ctx.Col);
+                return;
+            }
             var group = Group();
             if (group != null)
             {
@@ -671,11 +723,13 @@ namespace MagnumOpus.Module.Screens.Editor
                     ed.partSelection.Remove(p);
                     solution.RemovePart(p);
                 }
+                _ctx.PartsOnClipboard = true;
                 ed.MarkNeedsNewSnapshot();
                 Assets.sounds.piece_remove.PlaySound(1f);
                 EditorContext.Say(Strings.EditorCut(names));
                 return;
             }
+            _ctx.PartsOnClipboard = true;
             if (parts.Count > copyable.Count)
                 names += ", " + Strings.EditorCannotCopy(_ctx.Names(parts.Where(p => !_ctx.Copyable(p)).ToList()));
             EditorContext.Say(Strings.EditorCopied(names));

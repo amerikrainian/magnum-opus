@@ -372,6 +372,7 @@ namespace MagnumOpus.Core.Strings
             // The rectangle's selection: {0} = the range, {1} = the parts (or "no parts").
             D("editor.marked", "{0}: {1}"),
             D("editor.no_parts", "no parts"),
+            D("editor.pick_instructions", "instructions"),
             // Alt+P with no product on the board yet.
             D("editor.no_products", "no products placed"),
             // {0} = a part ("arm 2", "Glyph of Bonding") or a count of parts.
@@ -441,8 +442,8 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.jump", "Jump between the board and the tape"),
             D("bind.ed.origin", "Cursor to the origin"),
             D("bind.cinematic.next", "Next line"),
-            D("bind.ed.part_prev", "Previous part on this hex"),
-            D("bind.ed.part_next", "Next part on this hex"),
+            D("bind.ed.part_prev", "Previous part on this hex, or the instructions"),
+            D("bind.ed.part_next", "Next part on this hex, or the instructions"),
             D("bind.ed.mark", "Mark a corner"),
             D("bind.ed.toggle_select", "Select or unselect the part here"),
             D("bind.ed.select_parts", "Select all parts"),
@@ -764,6 +765,7 @@ namespace MagnumOpus.Core.Strings
         public static string EditorRange(string from, string to) => F("editor.range", from, to);
         public static string EditorMarked(string range, string parts) => F("editor.marked", range, parts);
         public static string EditorNoParts => Get("editor.no_parts");
+        public static string EditorPickInstructions => Get("editor.pick_instructions");
         public static string EditorNoProducts => Get("editor.no_products");
         public static string EditorPartSelected(string what) => F("editor.part_selected", what);
         public static string EditorPartUnselected(string what) => F("editor.part_unselected", what);

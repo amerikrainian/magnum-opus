@@ -117,8 +117,8 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.ToggleSelect, "Select or unselect the part here", new KeyboardBinding(Scancode.Space, ctrl: true, shift: true));
             Key(EditorActions.SelectParts, "Select all parts", new KeyboardBinding(Scancode.A, ctrl: true));
             Key(EditorActions.Jump, "Jump between the board and the tape", new KeyboardBinding(Scancode.Backspace, alt: true));
-            Key(EditorActions.PartPrev, "Previous part on this hex", new KeyboardBinding(Scancode.Up, ctrl: true));
-            Key(EditorActions.PartNext, "Next part on this hex", new KeyboardBinding(Scancode.Down, ctrl: true));
+            Key(EditorActions.PartPrev, "Previous part on this hex, or the instructions", new KeyboardBinding(Scancode.Up, ctrl: true));
+            Key(EditorActions.PartNext, "Next part on this hex, or the instructions", new KeyboardBinding(Scancode.Down, ctrl: true));
             Key(EditorActions.Copy, "Copy", new KeyboardBinding(Scancode.C, ctrl: true));
             Key(EditorActions.Cut, "Cut", new KeyboardBinding(Scancode.X, ctrl: true));
             Key(EditorActions.Paste, "Paste", new KeyboardBinding(Scancode.V, ctrl: true));

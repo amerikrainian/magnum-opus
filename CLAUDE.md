@@ -281,7 +281,11 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   k = direction k counter-clockwise from east; spoken as Civ's half-step x, y, x = Q + R/2, origin the
   game's (0, 0)). Keys Q NW, E NE, A W, D E, Z SW, C SE (scancodes; numpad 7 9 4 6 1 3; never the
   arrows, user rule 2026-11-04), Alt+Shift+them skip (Alt+numpad), Ctrl+Home the origin, Ctrl+Up / Ctrl+Down the part on the hex edits
-  take (default order arm base, other part, track, gripper; reset when the cursor moves), Up / Down choose the program cursor's arm (wrapping, silent with one; the cursor lands after the arm's last instruction, a Reset's filled cells included, "arm 2, 5"; user decision 2026-11-05: the board cursor's position never chooses it), Left / Right move the program cursor a cycle on that arm and Home / End to its first / last instruction (the tape's keys), [ ] categories,
+  take (default order arm base, other part, track, gripper; reset when the cursor moves), then always
+  "instructions", an empty hex's only category (Ctrl+Up / Ctrl+Down silent there; user decisions 2026-11-07): the board's tape keys then act on
+  the program cursor's cell or the tape's selection (Ctrl+C / X, Delete, Backspace, Shift+arrows,
+  Ctrl+Shift+A, Escape clears, Enter runs to the cell) and the part edits find no part. ONE CLIPBOARD for the player: Ctrl+V pastes what was
+  copied or cut last (`EditorContext.PartsOnClipboard`), parts at the board cursor, instructions at the program cursor; parts on the tape stop paste nothing, silently, Up / Down choose the program cursor's arm (wrapping, silent with one; the cursor lands after the arm's last instruction, a Reset's filled cells included, "arm 2, 5"; user decision 2026-11-05: the board cursor's position never chooses it), Left / Right move the program cursor a cycle on that arm and Home / End to its first / last instruction (the tape's keys), [ ] categories,
   , . items, S or / details, W molecule (size, composition, bonds, holder; the layout is read hex by hex), X neighbours. A hex reads coordinates, then the atom in play, arm
   bases ("arm 1, Piston Arm, northeast, length 1"), grippers, other parts (`Game/Board`; a track hex
   reads its joins marked with the move that goes there, "Track, +northeast, -southeast": the game
