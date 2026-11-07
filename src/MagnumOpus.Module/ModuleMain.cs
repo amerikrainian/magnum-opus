@@ -121,6 +121,7 @@ namespace MagnumOpus.Module
             ScreenManager.Register(new CinematicGameScreen());
             ScreenManager.Register(new UploadGameScreen());
             ScreenManager.Register(new SolutionEditorGameScreen());
+            ScreenManager.Register(new SolitaireGameScreen());
             ScreenManager.Register(new FallbackScreen());
             ScreenManager.Register(new ModMenuScreen());
             ScreenManager.Register(new HelpScreen());
@@ -131,6 +132,7 @@ namespace MagnumOpus.Module
             SdlKeyboard.Update();
             Patches.GameKeys.Forced = 0; // a synthesized press lasts one game frame
             Patches.ButtonPress.NewFrame();
+            Patches.MouseClick.NewFrame();
             Patches.TextCapture.NewFrame();
             // A dev-driver key the game would see if it were real: forward it (the game reads its
             // own SDL events and never sees an injection).
@@ -149,7 +151,7 @@ namespace MagnumOpus.Module
         private void Arm()
         {
             _armed = true;
-            try { Patches.GameKeys.Apply(_harmony); Patches.ButtonPress.Apply(_harmony); Patches.TextCapture.Apply(_harmony); }
+            try { Patches.GameKeys.Apply(_harmony); Patches.ButtonPress.Apply(_harmony); Patches.TextCapture.Apply(_harmony); Patches.MouseClick.Apply(_harmony); }
             catch (Exception e) { _host.LogError("[module] arming game patches failed: " + e); }
             try { Patches.SimNarration.Apply(_harmony); }
             catch (Exception e) { _host.LogError("[module] arming simulation narration failed: " + e); }

@@ -236,7 +236,9 @@ Type-ahead characters come from the same snapshot through `SDL_GetKeyFromScancod
   act on the mouse position and Z deletes the selection).
 - **Synthesized game input**: `GameKeys.Forced` makes the game see one key for one frame (only where
   `isKeyInputEnabled`); `ButtonPress.Press(label)` presses a drawn button (only where
-  `isMouseButtonInputEnabled`). Prefer them to replicating game code: the game then runs its exact path
+  `isMouseButtonInputEnabled`); `MouseClick.At(pos)` is a left click at a screen position for one frame
+  (prefixes on `MousePos` / `IsClickPressed`, only where mouse input is enabled; for click code with no
+  button, Sigmar's marbles). Prefer them to replicating game code: the game then runs its exact path
   (layout-dependent message boxes, sounds, transitions).
 - **Keys**: arrows, Tab / Shift+Tab, Enter, Backspace (secondary), Escape, Home / End, Alt+Up / Alt+Down;
   F1 keys here (Enter runs one; an `ElementAction.HelpRows` lists one action row by row: the editor's instruction keys, one row per permitted instruction, "pivot counter: Alt+Q" on the board, "Q" on the tape plus an insert row, 2026-11-07); Ctrl+Shift+M mod menu; Ctrl+Shift+N focus mode (moved from Ctrl+Shift+A 2026-11-04: the game selects all instructions there).
@@ -397,6 +399,23 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
 - **GIF recorder** (`SolutionRecorderGameScreen`, 2026-11-04): the game's status line (recording, saved
   to the desktop / the specified folder, or the collision error), spoken again when it changes; Close
   (the game's Escape; cancels a recording in progress). The animation is not described.
+- **Sigmar's Garden** (`SolitaireGameScreen`, 2026-11-07; all three variants): Board stop, a hex cursor
+  over `SolitaireScreen.boardHexes` (the editor's keys and `Game/Hex`, coordinates centred on the game's
+  (5, 0); a key that would leave the board does nothing, user rule): "selected" first, coordinates, the
+  marble, "locked" where `CanRemove` is false (the game dims it). Enter clicks the marble through
+  `MouseClick` at the position the game draws it (`ScreenPosition`, transcribed from `RenderFrame`), then
+  diffs the board and selection a frame later: "selected", "unselected", "selected, Mors unselected",
+  "cleared Mors, Vitae"; a dimmed one says "locked" without clicking. With no game in play Enter
+  forces Space instead: the story's next line (user decision). , . previous / next free marble
+  (reading order; NO pair suggestions, user rule: the game shows none), X neighbours. Marbles stop: the
+  game's counter strip per variant, "Salt, 4", "warning" where it uses its warning colour. New Game
+  (ButtonPress), Rules (its icon button's click code: `SolitaireHelpScreen`, still the fallback), Wins,
+  Close. The story panel's reached lines are spoken on opening and each new one as it appears; Space
+  passes to the game (it advances the panel); the first deal waits for the first section (10 lines,
+  `StoryPanel.GetCompletion() >= 10`). "dealt" when a reveal ends, "board cleared" + wins on a win.
+  Verified live: the cursor against a screenshot, free-marble order, select / replace / clear / unselect,
+  locked, Rules and back, the story by Space and Enter. NOT verified: a win, the Quintessence and Colvan
+  variants (five-marble quintessence picks), New Game.
 - **Fallback** (`FallbackScreen`): the screen's human type name ("Journal Submission"), the text it draws
   top to bottom (`TextCapture`, only while the fallback is up) and its labeled buttons (ButtonPress).
   Covers the journal (readable, not yet operable) and the rest.
@@ -420,7 +439,8 @@ Game terms are the game's own (`GameText.Translate`, `LocString`s).
 - **Never focus the game window** in automation; **live tests have no side effects** (section 9).
 
 ## 15. Roadmap
-- Phase 5: Sigmar's Garden (`SolitaireScreen`) on the editor's hex model (section 12).
+- Phase 5: Sigmar's Garden (`SolitaireScreen`) on the editor's hex model: DONE (section 12). Left: its
+  rules page (`SolitaireHelpScreen`, the fallback today), the items section 12 lists as not verified.
 - Phase 6: the solution editor. DONE: reading, narration and editing (section 12). Left: the items
   section 12 lists as not verified; dropping a new arm from the tray onto an arm to swap it (the
   game's drag does); a "step to next event" key. Read part, atom and puzzle names from the game's registries, never hardcoded

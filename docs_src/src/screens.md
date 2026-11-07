@@ -51,8 +51,24 @@ dropdowns, on and off settings (Enter switches them), the two volumes (Left and 
 steps of ten percent), and the buttons. Its second group is the story panel. Controls lists the
 game's controls.
 
+## Sigmar's Garden
+
+The solitaire. On opening you hear the conversation so far; Space shows the next line, and the
+game deals the first board once the first part of the conversation is read.
+
+1. **Board**: a hex cursor, moved with Q (northwest), E (northeast), A (west), D (east), Z
+   (southwest) and C (southeast), or the numpad's 7, 9, 4, 6, 1 and 3. Alt+Shift with them skips
+   to the next hex that reads differently; Ctrl+Home returns to the centre, 0, 0. A hex reads its
+   coordinates, then its marble, with "locked" where the marble is not free yet, and "selected"
+   first when you have picked it. Enter picks the marble under the cursor: "selected", then
+   "cleared" with both names when the second one matches. Comma and Period go to the previous
+   and next free marble; X reads the neighbours.
+2. **Marbles**: how many of each are left, as the strip under the board shows them, with
+   "warning" where the game marks a count that cannot all be paired.
+3. **New Game, Rules, Wins, Close.**
+
 ## Not yet covered
 
-The solution editor (the puzzles themselves), the journal, the puzzle editor, the solution
-recorder and Sigmar's Garden are not covered by this version. The mod names a screen it does not
+The solution editor (the puzzles themselves), the journal, the puzzle editor and the solution
+recorder are not covered by this version. The mod names a screen it does not
 know yet when it opens.

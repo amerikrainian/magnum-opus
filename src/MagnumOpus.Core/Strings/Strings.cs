@@ -353,6 +353,29 @@ namespace MagnumOpus.Core.Strings
             D("diagram.order.below", "top to bottom"),
             D("diagram.order.right", "left to right"),
             D("diagram.order.left", "right to left"),
+            // Sigmar's Garden (the solitaire).
+            D("solitaire.board", "Board"),
+            // The counter strip under the board: how many of each marble are left.
+            D("solitaire.counts", "Marbles"),
+            D("solitaire.count", "{0}, {1}"),
+            // The game draws a count in its warning colour (a salt or cardinal element that cannot
+            // all be paired off).
+            D("solitaire.warning", "warning"),
+            // The icon button that opens the game's rules page (it has no caption).
+            D("solitaire.rules", "Rules"),
+            D("solitaire.wins", "{0}: {1}"),
+            D("solitaire.selected", "selected"),
+            D("solitaire.unselected", "unselected"),
+            // Other marbles a pick dropped from the selection: {0} = their names.
+            D("solitaire.dropped", "{0} unselected"),
+            // Marbles a pick removed: {0} = their names.
+            D("solitaire.cleared", "cleared {0}"),
+            D("solitaire.dealt", "dealt"),
+            D("solitaire.won", "board cleared"),
+            D("bind.sol.center", "Cursor to the centre"),
+            D("bind.sol.free_prev", "Previous free marble"),
+            D("bind.sol.free_next", "Next free marble"),
+            D("bind.sol.pick", "Pick the marble"),
             D("editor.finish_first", "Put the part down or cancel first."),
             // {0} = a part's name or "arm 2".
             D("editor.fixed", "{0} cannot be changed"),
@@ -739,6 +762,19 @@ namespace MagnumOpus.Core.Strings
         public static string DiagramRelative(Text.Compass.Dir d, string anchor) => F("diagram.rel." + DirKey(d), anchor);
         // Runs go along an axis: Above, Below, Right or Left.
         public static string DiagramOrder(Text.Compass.Dir d) => Get("diagram.order." + DirKey(d));
+
+        public static string SolitaireBoard => Get("solitaire.board");
+        public static string SolitaireCounts => Get("solitaire.counts");
+        public static string SolitaireCount(string marble, int count) => F("solitaire.count", marble, count);
+        public static string SolitaireWarning => Get("solitaire.warning");
+        public static string SolitaireRules => Get("solitaire.rules");
+        public static string SolitaireWins(string label, int wins) => F("solitaire.wins", label, wins);
+        public static string SolitaireSelected => Get("solitaire.selected");
+        public static string SolitaireUnselected => Get("solitaire.unselected");
+        public static string SolitaireDropped(string names) => F("solitaire.dropped", names);
+        public static string SolitaireCleared(string names) => F("solitaire.cleared", names);
+        public static string SolitaireDealt => Get("solitaire.dealt");
+        public static string SolitaireWon => Get("solitaire.won");
 
         private static string DirKey(Text.Compass.Dir d)
         {
