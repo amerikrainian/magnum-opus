@@ -43,8 +43,8 @@ namespace MagnumOpus.Module.Screens.Editor
     /// removes the part under the cursor (the game's Shift+click); Ctrl+A selects every part; Escape
     /// clears. With the cursor on a selected part, Enter / Ctrl+Enter / Delete / Shift+A / Shift+D /
     /// Ctrl+C / Ctrl+X take the whole group; Ctrl+V places the clipboard at the cursor.
-    /// A part turns round the cursor hex when that is one of its own hexes (the game's drag), else
-    /// round its origin; a molecule, glyph or track then reads the hex again.
+    /// A part turns round the cursor hex, always (the game's A / D while dragging: an arm by its
+    /// gripper swings its base); a molecule, glyph or track then reads the hex again.
     /// While carrying or drawing, the hex keys move the part or the track's end and Escape cancels.
     /// </summary>
     internal sealed class BoardSection : ScreenSection
@@ -395,10 +395,10 @@ namespace MagnumOpus.Module.Screens.Editor
             return _ctx.CanEdit() ? group : new List<Part>();
         }
 
-        // Shift+A / Shift+D. A part whose own hexes include the cursor turns round the cursor hex
-        // (the game's A / D while dragging, round the hex it was grabbed by), so what is under the
-        // cursor stays there; anything else (an arm by its gripper) round its origin (the game's
-        // rotation handle). User decision 2026-11-07.
+        // Shift+A / Shift+D: the part turns round the cursor hex, so what is under the cursor stays
+        // there (the game's A / D while dragging, round the hex it was grabbed by; an arm by its
+        // gripper swings its base round it). One rule, no exception for the game's mouse-only
+        // rotation handle (user decision 2026-11-07).
         private void Rotate(bool counterclockwise)
         {
             var group = Group();
@@ -408,7 +408,7 @@ namespace MagnumOpus.Module.Screens.Editor
             var ed = _ctx.Ed;
             var solution = ed.GetSolution();
             if (!part.IsRotatable(solution)) return;
-            if (part.GetHexPos() != _ctx.Cursor && part.GetHexFootprint(solution).Contains(_ctx.Cursor))
+            if (part.GetHexPos() != _ctx.Cursor)
             {
                 RotateGroup(new List<Part> { part }, counterclockwise, single: part);
                 return;
@@ -651,7 +651,7 @@ namespace MagnumOpus.Module.Screens.Editor
             {
                 string message;
                 if (solution.IsAllowedPlacement(b.Part, b.Pos, b.Part.GetHexPos(), b.Part.GetRotation(), out message)) continue;
-                error = Strings.EditorPartError(Board.PartName(ed, b.Part), EditorContext.Error(message));
+                error = single != null ? EditorContext.Error(message) : Strings.EditorPartError(Board.PartName(ed, b.Part), EditorContext.Error(message));
                 break;
             }
             if (error != null)
