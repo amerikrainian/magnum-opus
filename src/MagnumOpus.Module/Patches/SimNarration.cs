@@ -207,11 +207,16 @@ namespace MagnumOpus.Module.Patches
                 foreach (var kv in _atomsBefore)
                     if (!atoms.ContainsKey(kv.Key))
                         events.Add(new KeyValuePair<HexIndex, string>(kv.Key, Strings.EventRemoved(Board.AtomName(kv.Value.Type))));
+                // A bond between two atoms that both just appeared came with them (a reagent's
+                // molecule); one between two atoms that both went went with them. Neither is a glyph
+                // bonding or unbonding anything.
                 foreach (var kv in bonds)
-                    if (!_bondsBefore.ContainsKey(kv.Key) && ParseBond(kv.Key, out var a, out var b))
+                    if (!_bondsBefore.ContainsKey(kv.Key) && ParseBond(kv.Key, out var a, out var b)
+                        && (_atomsBefore.ContainsKey(a) || _atomsBefore.ContainsKey(b)))
                         events.Add(new KeyValuePair<HexIndex, string>(a, Strings.EventBonded(AtomAt(atoms, a), AtomAt(atoms, b))));
                 foreach (var kv in _bondsBefore)
-                    if (!bonds.ContainsKey(kv.Key) && ParseBond(kv.Key, out var a, out var b))
+                    if (!bonds.ContainsKey(kv.Key) && ParseBond(kv.Key, out var a, out var b)
+                        && (atoms.ContainsKey(a) || atoms.ContainsKey(b)))
                         events.Add(new KeyValuePair<HexIndex, string>(a, Strings.EventUnbonded(AtomAt(_atomsBefore, a), AtomAt(_atomsBefore, b))));
                 // One sentence per part that did the work (two reagents of one name are two parts),
                 // in the order it happened; work on no part is keyed by its hex. A product taking its

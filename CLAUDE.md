@@ -356,7 +356,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   Undo / redo (Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z): the game's buffer stepped directly (an injected chord
   cannot give the game Ctrl), the change spoken (new states, three at most, else a count).
   Narration (`Patches/SimNarration`): arm moves from the sim states' deltas after `Sim.BeginCycle`, glyph
-  work as the atom / bond difference across each `RunCycleGlyphs` (content-mod glyphs included; one
+  work as the atom / bond difference across each `RunCycleGlyphs` (bonds that arrive or leave with both their atoms, a reagent's molecule, are not "bonded" / "unbonded", 2026-11-07; content-mod glyphs included; one
   sentence per part, not per name), products from `outputDone`; ONE MESSAGE PER EVENT (user rule
   2026-11-04, SpeechChem's way): a step says "cycle N" then each actor's sentence queued; at play each
   cycle's first message interrupts the last cycle's; fast forward says nothing (user rule 2026-11-04;
