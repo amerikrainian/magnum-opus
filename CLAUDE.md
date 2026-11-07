@@ -147,7 +147,7 @@ deploys: the host (`MagnumOpus.dll`, `MagnumOpus.Contracts.dll`, `MagnumOpus.Nam
 `MagnumOpus\mappings\named|obf`) into the game folder (locked while the game runs: close it for host
 changes; the copy warns and continues), and the module (`MagnumOpus\MagnumOpus.Core.dll`,
 `MagnumOpus.Module.dll`, `lang\`, `mappings\fingerprint.tsv`), which deploys with the game running:
-then `POST /reload` or F6. Tests: `dotnet test src/MagnumOpus.Tests` (Names, Core, Contracts; the two
+then `POST /reload` (no key: F6 dropped 2026-11-07, user request). Tests: `dotnet test src/MagnumOpus.Tests` (Names, Core, Contracts; the two
 real-exe tests skip without the workspace). `MAGNUMOPUS_WRITE_LANG_TEMPLATE=1` regenerates `lang/en.txt`
 (the test fails when the template lags the strings table). Override the install with `MAGNUMOPUS_DIR`,
 `-p:GameDir=`, or a gitignored `Directory.Build.local.props`. The host's AssemblyVersion is pinned at
@@ -239,7 +239,7 @@ Type-ahead characters come from the same snapshot through `SDL_GetKeyFromScancod
   `isMouseButtonInputEnabled`). Prefer them to replicating game code: the game then runs its exact path
   (layout-dependent message boxes, sounds, transitions).
 - **Keys**: arrows, Tab / Shift+Tab, Enter, Backspace (secondary), Escape, Home / End, Alt+Up / Alt+Down;
-  F1 keys here (Enter runs one); Ctrl+Shift+M mod menu; Ctrl+Shift+N focus mode (moved from Ctrl+Shift+A 2026-11-04: the game selects all instructions there); F6 reload (DEBUG).
+  F1 keys here (Enter runs one); Ctrl+Shift+M mod menu; Ctrl+Shift+N focus mode (moved from Ctrl+Shift+A 2026-11-04: the game selects all instructions there).
 - **Tab** wraps round the ends on every screen; with a single stop it does nothing and says nothing (user
   rule 2026-11-04; `GraphNavigator.Tab`, `TabWrapTests`). The same rule holds for EVERY cycling key
   (Ctrl+Up / Ctrl+Down through a hex's parts, categories...): wrap with two or more, silent no-op with one.

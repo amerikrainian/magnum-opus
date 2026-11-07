@@ -68,7 +68,6 @@ bind.ui.regionPrev=Previous section
 bind.ui.regionNext=Next section
 bind.ui.readFocus=Read current control
 bind.mod.focus=Toggle navigation
-bind.mod.reload=Reload mod code
 bind.mod.menu=Mod menu
 bind.mod.help=Keys here
 screen.confirm=Confirm

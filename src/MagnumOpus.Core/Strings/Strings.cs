@@ -112,7 +112,6 @@ namespace MagnumOpus.Core.Strings
             D("bind.ui.regionNext", "Next section"),
             D("bind.ui.readFocus", "Read current control"),
             D("bind.mod.focus", "Toggle navigation"),
-            D("bind.mod.reload", "Reload mod code"),
             D("bind.mod.menu", "Mod menu"),
             // The key help (F1): every key that does something right now.
             D("bind.mod.help", "Keys here"),

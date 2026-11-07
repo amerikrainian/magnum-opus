@@ -95,11 +95,6 @@ namespace MagnumOpus.Module
                 .AddBinding(new KeyboardBinding(Scancode.M, ctrl: true, shift: true));
             InputManager.Register(HelpScreen.ActionKey, "Keys here", InputCategory.Global, HelpScreen.Toggle)
                 .AddBinding(new KeyboardBinding(Scancode.F1));
-#if DEBUG
-            // Reload Core and the module from disk (the dev loop; also POST /reload).
-            InputManager.Register("mod.reload", "Reload mod code", InputCategory.Global, () => Runtime.Post(() => Runtime.ReloadModule()))
-                .AddBinding(new KeyboardBinding(Scancode.F6));
-#endif
         }
 
         private static void ToggleFocus()
