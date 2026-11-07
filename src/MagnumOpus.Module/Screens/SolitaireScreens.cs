@@ -160,7 +160,7 @@ namespace MagnumOpus.Module.Screens
                 var t = type;
                 b.AddItem(ControlId.Structural("solitaire:count:" + t.byteId), new NodeVtable
                 {
-                    ControlType = ControlTypes.Item,
+                    ControlType = ControlTypes.Text, // no role word (user rule 2026-11-07)
                     Announcements = new[] { Nodes.LabelPart(() => Counter(t)) },
                     SearchText = () => Board.AtomName(t),
                 });
