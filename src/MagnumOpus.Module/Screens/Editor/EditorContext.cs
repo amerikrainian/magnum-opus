@@ -67,6 +67,9 @@ namespace MagnumOpus.Module.Screens.Editor
         /// <summary>The board hex Alt+Backspace left for the tape, or null.</summary>
         public HexIndex? JumpHex;
 
+        /// <summary>The run section (run to a tape cell, the engine's refusals), set by it.</summary>
+        public RunSection Run;
+
         // ---- modes ----
         public readonly CarryMode Carry;
         public readonly TrackDrawMode Draw;

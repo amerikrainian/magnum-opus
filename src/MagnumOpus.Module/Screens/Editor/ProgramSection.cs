@@ -23,6 +23,7 @@ namespace MagnumOpus.Module.Screens.Editor
     /// Shift+arrows select a rectangle of cells, Ctrl+Shift+A every instruction, Escape drops the
     /// selection; Ctrl+C / X / V copy, cut and paste (pasting at the cursor, overwriting).
     /// Alt+Backspace goes back to the board hex the jump came from (else the row's arm base).
+    /// Enter runs the solution to the cell (<see cref="RunSection.RunTo"/>).
     /// </summary>
     internal sealed class ProgramSection : ScreenSection
     {
@@ -41,6 +42,12 @@ namespace MagnumOpus.Module.Screens.Editor
                 ControlType = ControlTypes.Text,
                 Announcements = new[] { Nodes.LabelPart(() => CellText(_ctx, withArm: true)) },
                 OnSecondary = Backspace,
+                // Enter: run to this cell (the game's Alt+click on the program, RunSection.RunTo).
+                OnActivate = () =>
+                {
+                    var arm = RowArm(_ctx);
+                    if (arm != null) _ctx.Run?.RunTo(arm, _ctx.Col);
+                },
             });
             b.PopContext();
         }

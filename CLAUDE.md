@@ -291,7 +291,10 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   pass, since neither the game nor Quintessential's recipes store what a hex takes (checked
   2026-11-05); a content mod's glyph reads no role); empty =
   coordinates only. Arms are numbered by program index (the game's own order; its cached list lags a
-  pickup or drop until it saves). Program: rows = arms, columns = cycles (1-based); Reset / Repeat cells
+  pickup or drop until it saves). Program: rows = arms, columns = cycles (1-based); Enter runs to the cell (the game's Alt+click on the
+  program, its code run from `RunSection.RunTo`: stopped, the cell must hold an instruction and the run
+  starts; running, the cell's next turn; it fast forwards silently and says only "cycle N" where it
+  pauses, user decision 2026-11-05; NOT yet verified live); Reset / Repeat cells
   read "clockwise, from reset" (each arm's own expansion, `EditableProgram.GetReferenceForPart`, so they
   read while an error stops the compile). Instruction errors (`Editor/ProgramErrors`, 2026-11-05): a
   Reset / Repeat whose filled cells hold an instruction (the only compile failure; the game draws its

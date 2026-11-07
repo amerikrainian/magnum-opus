@@ -29,7 +29,7 @@ namespace MagnumOpus.Module.Screens.Editor
         private SimError _spokenError;
         private bool _closeArmed;
 
-        public RunSection(EditorContext ctx) { _ctx = ctx; }
+        public RunSection(EditorContext ctx) { _ctx = ctx; ctx.Run = this; }
 
         public void Reset()
         {
@@ -39,6 +39,88 @@ namespace MagnumOpus.Module.Screens.Editor
             _wasPlaying = false;
             _spokenError = null;
             _closeArmed = false;
+        }
+
+        // A run to a tape cell is under way: its start says nothing, its stop says the cycle.
+        private bool _runTo;
+
+        /// <summary>
+        /// Enter on the tape: the game's run to a cell (its Alt+click on the program,
+        /// SolutionEditorProgramPanel; Alt+click cannot be injected, so its code is run here as it
+        /// is there). Stopped: the cell must hold an instruction; the run starts and fast forwards to
+        /// the cycle that instruction runs in (counted from the solution's first instruction, a halt
+        /// on the arm capping it). Running: any cell of the arm's compiled program; the run fast
+        /// forwards to that cell's next turn, playing again if paused. The engine pauses there with
+        /// the cell's instruction next; only "cycle N" is said (user decision 2026-11-05).
+        /// </summary>
+        public void RunTo(Part arm, int col)
+        {
+            var ed = _ctx.Ed;
+            if (ed == null || arm == null || _ctx.Busy()) return;
+            var solution = ed.GetSolution();
+            if (ed.GetSimPlayState() == SimPlayState.Stopped)
+            {
+                if (!arm.program.GetInstruction(col).HasValue()) { EditorContext.Say(Strings.EditorRunToEmpty); return; }
+                string reason = StartRefusal(ed);
+                if (reason != null) { Refuse(ed, reason); return; }
+                ed.StartPlayback(Sim.ConstructSimulation(ed).GetValue());
+                int first = solution.parts.Where(p => p.GetType().isProgrammable).Select(p => p.program.FirstInstructionIndex()).Min();
+                int armFirst = arm.program.FirstInstructionIndex();
+                int n = col - armFirst;
+                int halt = FirstHalt(arm);
+                if (halt >= 0) n = Math.Min(n, halt + 1);
+                int target = n + armFirst - first;
+                _runTo = true;
+                if (target > 0)
+                {
+                    ed.isFastForward = true;
+                    ed.fastForwardCycleTarget = target;
+                    ed.ToPlaying(false);
+                }
+                return;
+            }
+            if (ed.GetSimulationError().HasValue() && ed.GetCycleTime() >= ed.GetSimulationError().GetValue().errorTime)
+            {
+                EditorContext.Say(ErrorText(ed.GetSimulationError().GetValue()));
+                return;
+            }
+            var grid = CompiledProgramGrid.FromSolution(solution);
+            if (!grid.HasValue()) return;
+            var compiled = grid.GetValue().GetProgramForPart(arm);
+            var state = ed.GetSimulation().GetSimState(arm);
+            if (compiled == null || compiled.instructions == null || (state.hasHalted && !state.useInactiveCodeLine)) return;
+            int index = col - compiled.startIndex;
+            if (index < 0 || index >= compiled.instructions.Length) { EditorContext.Say(Strings.EditorRunToOutside); return; }
+            for (int i = 0; i < compiled.instructions.Length; i++)
+                if (compiled.instructions[i].type == InstructionTypes.halt) { index = Math.Min(index, i + 1); break; }
+            int cycle = index + compiled.startIndex - grid.GetValue().startIndex;
+            while (cycle <= ed.GetCycle()) cycle += compiled.instructions.Length;
+            _runTo = true;
+            ed.isFastForward = true;
+            ed.fastForwardCycleTarget = cycle;
+            if (ed.GetSimPlayState() == SimPlayState.Paused) ed.ToPlaying(false);
+        }
+
+        // The first halt on an arm's tape, or -1 (the game's own index for it).
+        private static int FirstHalt(Part arm)
+        {
+            var program = arm.program;
+            if (program.Count() == 0) return -1;
+            for (int c = program.FirstInstructionIndex(); c <= program.LastInstructionIndex(); c++)
+            {
+                var ins = program.GetInstruction(c);
+                if (ins.HasValue() && ins.GetValue() == InstructionTypes.halt) return c;
+            }
+            return -1;
+        }
+
+        // The game's refusal, then where the first instruction error is, as two messages.
+        private void Refuse(SolutionEditorScreen ed, string reason)
+        {
+            // Two messages (user rule 2026-11-05): the game's refusal, then where.
+            EditorContext.Say(reason);
+            string where = WhereOverlap(ed);
+            if (where != null) EditorContext.Say(where, interrupt: false);
         }
 
         public override IEnumerable<ElementAction> GetActions()
@@ -75,14 +157,7 @@ namespace MagnumOpus.Module.Screens.Editor
             if (ed.GetSimPlayState() == SimPlayState.Stopped)
             {
                 string reason = StartRefusal(ed);
-                if (reason != null)
-                {
-                    // Two messages (user rule 2026-11-05): the game's refusal, then where.
-                    EditorContext.Say(reason);
-                    string where = WhereOverlap(ed);
-                    if (where != null) EditorContext.Say(where, interrupt: false);
-                    return;
-                }
+                if (reason != null) { Refuse(ed, reason); return; }
             }
             else if (ed.GetSimulationError().HasValue() && ed.GetCycleTime() >= ed.GetSimulationError().GetValue().errorTime)
             {
@@ -131,21 +206,31 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             var state = ed.GetSimPlayState();
             bool fast = ed.isFastForward;
+            // A run to a cell that lands at once (its cell is the first cycle) pauses without playing.
+            if (_runTo && state == SimPlayState.Paused && _lastState == SimPlayState.Stopped)
+            {
+                _runTo = false;
+                Speech.Say(Strings.EditorCycle(ed.GetCycle() + 1));
+            }
             if (state == _lastState && fast == _lastFast) return;
             if (state == SimPlayState.Playing && (_lastState != SimPlayState.Playing || fast != _lastFast))
             {
-                Speech.Say(fast ? Strings.RunFast : Strings.RunRunning);
+                // A run to a cell says nothing as it goes, only where it stops.
+                if (!_runTo) Speech.Say(fast ? Strings.RunFast : Strings.RunRunning);
                 _wasPlaying = true;
             }
             else if (state == SimPlayState.Stopped && _lastState != SimPlayState.Stopped)
             {
+                _runTo = false;
                 Speech.Say(Strings.RunStopped);
                 _wasPlaying = false;
             }
             else if (state == SimPlayState.Paused && _wasPlaying)
             {
-                // Space pauses through a step (the cycle in flight finishes first).
-                Speech.Say(Strings.RunPaused);
+                // Space pauses through a step (the cycle in flight finishes first); a run to a cell
+                // pauses where it was sent, said as the cycle that runs next (the narration's count).
+                Speech.Say(_runTo ? Strings.EditorCycle(ed.GetCycle() + 1) : Strings.RunPaused);
+                _runTo = false;
                 _wasPlaying = false;
             }
             _lastState = state;

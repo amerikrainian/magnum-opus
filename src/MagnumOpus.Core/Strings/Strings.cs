@@ -317,6 +317,8 @@ namespace MagnumOpus.Core.Strings
             D("editor.track_minus", "-{0}"),
             D("editor.stop_to_edit", "Stop the engine to edit."),
             D("editor.stop_first", "Stop the engine first."),
+            D("editor.run_to_empty", "no instruction here"),
+            D("editor.run_to_outside", "outside the program"),
             D("program.overlaps", "overlaps {0}"),
             D("program.overlaps_at", "overlaps {0} at {1}"),
             D("program.overlap_line", "{0}, {1} at {2} overlaps {3}"),
@@ -713,6 +715,8 @@ namespace MagnumOpus.Core.Strings
         public static string EditorTrackHexes(int hexes) => F("editor.track_hexes", hexes);
         public static string EditorStopToEdit => Get("editor.stop_to_edit");
         public static string EditorStopFirst => Get("editor.stop_first");
+        public static string EditorRunToEmpty => Get("editor.run_to_empty");
+        public static string EditorRunToOutside => Get("editor.run_to_outside");
         public static string ProgramOverlaps(string cycles) => F("program.overlaps", cycles);
         public static string ProgramOverlapsAt(string instruction, int cycle) => F("program.overlaps_at", instruction, cycle);
         public static string ProgramOverlapLine(string arm, string instruction, int cycle, string cycles) => F("program.overlap_line", arm, instruction, cycle, cycles);
