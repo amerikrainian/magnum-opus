@@ -28,6 +28,17 @@ namespace MagnumOpus.Module.Screens.Editor
 
         public InstructionTraySection(EditorContext ctx) { _ctx = ctx; }
 
+        /// <summary>The tray's instructions row by row, left to right (Q W E R T, A S D F G, X C V B
+        /// on the game's default layout).</summary>
+        public static IEnumerable<InstructionType> RowOrder()
+        {
+            var columns = Columns();
+            int rows = columns.Max(c => c.Length);
+            for (int r = 0; r < rows; r++)
+                foreach (var column in columns)
+                    if (r < column.Length && !ReferenceEquals(column[r], null)) yield return column[r];
+        }
+
         // Columns left to right, each top to bottom (the game's tile positions).
         private static InstructionType[][] Columns() => new[]
         {
@@ -60,7 +71,7 @@ namespace MagnumOpus.Module.Screens.Editor
                         Announcements = new List<NodeAnnouncement>
                         {
                             Nodes.LabelPart(() => Instructions.Label(t)),
-                            Nodes.ValuePart(() => Letter(t)),
+                            Nodes.ValuePart(() => Instructions.Hotkey(t)),
                             new NodeAnnouncement(() => State(t), live: false, kind: AnnouncementKinds.Enabled),
                         },
                         SearchText = () => Instructions.Label(t),
@@ -92,13 +103,6 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             var t = FocusedType();
             if (t != null) EditorContext.Say(Instructions.Details(t));
-        }
-
-        // The game's letter for the hotkey (its Keyboard Layout option decides it).
-        private static string Letter(InstructionType t)
-        {
-            try { return GameText.Clean(SolutionEditorScreen.GetCharacterFromKey(t.GetHotkey())).ToUpperInvariant(); }
-            catch (System.Exception e) { MagnumOpus.Core.CoreLog.Warning("[editor] hotkey letter: " + e.Message); return ""; }
         }
 
         private string State(InstructionType t)

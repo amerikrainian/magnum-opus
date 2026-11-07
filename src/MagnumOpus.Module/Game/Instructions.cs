@@ -37,6 +37,15 @@ namespace MagnumOpus.Module.Game
             return null;
         }
 
+        /// <summary>The instruction's hotkey as the game draws it on its tile, upper case (its
+        /// Keyboard Layout option decides the letter); empty when it has none.</summary>
+        public static string Hotkey(InstructionType t)
+        {
+            if (ReferenceEquals(t, null)) return "";
+            try { return GameText.Clean(SolutionEditorScreen.GetCharacterFromKey(t.GetHotkey())).ToUpperInvariant(); }
+            catch (System.Exception e) { MagnumOpus.Core.CoreLog.Warning("[editor] hotkey letter: " + e.Message); return ""; }
+        }
+
         /// <summary>The game's name and description of an instruction (its tooltip).</summary>
         public static string Details(InstructionType t)
         {

@@ -437,6 +437,9 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.fast", "Fast forward"),
             D("bind.ed.instr", "Place instruction, Shift inserts"),
             D("bind.ed.program_arm", "Program the chosen arm"),
+            D("bind.ed.instr_insert", "Insert an instruction"),
+            // A key help row's keys: Shift held with any of the instruction keys listed above it.
+            D("help.ed.instr_insert_keys", "Shift with an instruction key"),
             D("bind.ed.diagram", "Show diagram"),
             D("bind.ed.jump", "Jump between the board and the tape"),
             D("bind.ed.origin", "Cursor to the origin"),

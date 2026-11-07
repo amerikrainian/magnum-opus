@@ -52,7 +52,7 @@ namespace MagnumOpus.Module.Screens
             foreach (var entry in s_entries)
             {
                 var e = entry;
-                b.AddItem(ControlId.Structural("help:" + e.ActionKey), new NodeVtable
+                b.AddItem(ControlId.Structural("help:" + e.ActionKey + ":" + e.Label), new NodeVtable
                 {
                     Announcements = new List<NodeAnnouncement> { Nodes.LabelPart(() => Strings.HelpRow(e.Label, e.Keys)) },
                     SearchText = () => e.Label,
@@ -72,14 +72,19 @@ namespace MagnumOpus.Module.Screens
             Core.Speech.BeginHold();
             Navigation.QuietNextLanding();
             s_open = false;
-            Later.Frames(DispatchAfter, () => Dispatch(entry.ActionKey), "help dispatch");
+            Later.Frames(DispatchAfter, () => Dispatch(entry), "help dispatch");
         }
 
-        private static void Dispatch(string actionKey)
+        private static void Dispatch(KeyHelpEntry entry)
         {
             var screen = Navigation.BoundScreen;
             var before = Navigation.FocusedNode?.Id;
-            if (!InputManager.Dispatch(actionKey)) { Core.Speech.EndHold(); return; }
+            if (entry.Run != null)
+            {
+                try { entry.Run(); }
+                catch (Exception e) { Core.CoreLog.Error("[help] running " + entry.Label + " failed: " + e); Core.Speech.EndHold(); return; }
+            }
+            else if (!InputManager.Dispatch(entry.ActionKey)) { Core.Speech.EndHold(); return; }
             Later.Frames(FocusAfter, () => ReadFocus(screen, before), "help focus");
         }
 

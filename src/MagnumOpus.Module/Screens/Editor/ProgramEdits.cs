@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MagnumOpus.Core.Strings;
+using MagnumOpus.Core.UI;
 using MagnumOpus.Module.Game;
 using MagnumOpus.Module.Input;
 
@@ -54,6 +55,39 @@ namespace MagnumOpus.Module.Screens.Editor
             arm.program.RemoveInstruction(col, asModification: true);
             Assets.sounds.instruction_remove.PlaySound(1f);
             return ins.GetValue();
+        }
+
+        /// <summary>The key help's rows for the instruction keys (user request 2026-11-07): one per
+        /// instruction the puzzle permits, in the tray's order, its name and its key ("pivot counter:
+        /// Alt+Q" from the board, "Q" on the tape, where Shift with the key inserts: one more row).
+        /// Enter on a row places the instruction as the key would.</summary>
+        public static IEnumerable<KeyHelpEntry> HelpRows(EditorContext ctx, bool fromBoard)
+        {
+            var ed = ctx.Ed;
+            var puzzle = ed?.GetSolution()?.GetPuzzle();
+            if (puzzle == null) yield break;
+            foreach (var type in InstructionTraySection.RowOrder())
+            {
+                if (!puzzle.HasPermissionForInstr(type)) continue;
+                string key = Instructions.Hotkey(type);
+                if (key.Length == 0) continue;
+                var t = type;
+                yield return new KeyHelpEntry
+                {
+                    ActionKey = EditorActions.Instruction,
+                    Label = Instructions.Label(t),
+                    Keys = fromBoard ? "Alt+" + key : key,
+                    Run = () => { if (ctx.CanEdit()) ProgramSection.PlaceAtCursor(ctx, t, insert: false, withPlace: fromBoard); },
+                };
+            }
+            if (!fromBoard)
+                yield return new KeyHelpEntry
+                {
+                    ActionKey = EditorActions.Instruction,
+                    Label = Strings.Get("bind.ed.instr_insert"),
+                    Keys = Strings.Get("help.ed.instr_insert_keys"),
+                    Run = () => { },
+                };
         }
 
         /// <summary>A short list of instructions for speech: up to three by name, more by count.</summary>

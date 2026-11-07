@@ -107,6 +107,51 @@ namespace MagnumOpus.Tests
             finally { Navigation.Active = previous; }
         }
 
+        private sealed class EditorLikeScreen : Screen
+        {
+            public override string Key => "test.editor";
+            public override bool IsActive() => true;
+
+            public override void Build(GraphBuilder b)
+            {
+                b.PushContext("Editor", null, positions: false);
+                b.BeginStop("board");
+                b.AddItem(ControlId.Structural("board"), new NodeVtable
+                {
+                    Announcements = new[] { new NodeAnnouncement(() => "board", kind: AnnouncementKinds.Label) },
+                });
+                b.PopContext();
+            }
+
+            public override IEnumerable<ElementAction> GetActions()
+            {
+                yield return new ElementAction("ed.instr", "Place instruction", _ => { })
+                {
+                    HelpRows = () => new[]
+                    {
+                        new KeyHelpEntry { ActionKey = "ed.instr", Label = "grab", Keys = "Alt+F", Run = () => { } },
+                        new KeyHelpEntry { ActionKey = "ed.instr", Label = "drop", Keys = "Alt+R", Run = () => { } },
+                    },
+                };
+            }
+        }
+
+        [Fact]
+        public void AnActionWithHelpRowsIsListedRowByRow()
+        {
+            var previous = Navigation.Active;
+            try
+            {
+                Attach(new EditorLikeScreen(), new List<string>());
+                var listed = KeyHelp.Collect(new[] { Ui("ed.instr") }, _ => true);
+                // The screen's rows stand in for the action's one row, in its order, each with its own
+                // keys and its own Enter.
+                Assert.Equal(new[] { "grab: Alt+F", "drop: Alt+R" }, listed.Select(e => e.Label + ": " + e.Keys).ToArray());
+                Assert.All(listed, e => Assert.NotNull(e.Run));
+            }
+            finally { Navigation.Active = previous; }
+        }
+
         [Fact]
         public void TheDryRunFollowsTheFocusedControl()
         {

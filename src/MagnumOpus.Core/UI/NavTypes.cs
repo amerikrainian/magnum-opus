@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MagnumOpus.Core.UI
 {
@@ -22,6 +23,11 @@ namespace MagnumOpus.Core.UI
         }
 
         public void Execute(object args = null) => _execute?.Invoke(args);
+
+        /// <summary>The key help's rows for this action in place of its one row, when one action
+        /// stands for several keys that each do their own thing (the editor's instruction keys: one
+        /// row per instruction, its name and its key). Null: the one row.</summary>
+        public Func<IEnumerable<KeyHelpEntry>> HelpRows { get; set; }
     }
 
     /// <summary>Standard action ids navigators map inputs to.</summary>

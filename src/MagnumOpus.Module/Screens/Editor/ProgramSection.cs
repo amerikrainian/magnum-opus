@@ -78,7 +78,10 @@ namespace MagnumOpus.Module.Screens.Editor
                 int arm = n;
                 yield return new ElementAction(EditorActions.ArmPrefix + n, Strings.Get("bind.ed.arm"), _ => JumpToRow(arm - 1));
             }
-            yield return new ElementAction(EditorActions.Instruction, Strings.Get("bind.ed.instr"), _ => Type());
+            yield return new ElementAction(EditorActions.Instruction, Strings.Get("bind.ed.instr"), _ => Type())
+            {
+                HelpRows = () => ProgramEdits.HelpRows(_ctx, fromBoard: false),
+            };
             yield return new ElementAction(EditorActions.Delete, Strings.Get("bind.ed.delete"), _ => Delete());
             yield return new ElementAction(EditorActions.Copy, Strings.Get("bind.ed.copy"), _ => Copy(cut: false));
             yield return new ElementAction(EditorActions.Cut, Strings.Get("bind.ed.cut"), _ => Copy(cut: true));

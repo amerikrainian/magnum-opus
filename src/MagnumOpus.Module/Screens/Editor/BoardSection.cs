@@ -137,7 +137,10 @@ namespace MagnumOpus.Module.Screens.Editor
                 yield return new ElementAction(UiActions.Home, Strings.Get("bind.ed.tape.first"), _ => TapeEdge(first: true));
                 yield return new ElementAction(UiActions.End, Strings.Get("bind.ed.tape.last"), _ => TapeEdge(first: false));
                 yield return new ElementAction(EditorActions.Jump, Strings.Get("bind.ed.jump"), _ => JumpToTape());
-                yield return new ElementAction(EditorActions.Instruction, Strings.Get("bind.ed.program_arm"), _ => ProgramArm());
+                yield return new ElementAction(EditorActions.Instruction, Strings.Get("bind.ed.program_arm"), _ => ProgramArm())
+                {
+                    HelpRows = () => ProgramEdits.HelpRows(_ctx, fromBoard: true),
+                };
             }
             for (int n = 1; n <= Math.Min(9, arms); n++)
             {

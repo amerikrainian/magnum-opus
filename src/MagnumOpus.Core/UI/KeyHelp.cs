@@ -10,6 +10,11 @@ namespace MagnumOpus.Core.UI
         public string ActionKey;
         public string Label;
         public string Keys;
+
+        /// <summary>What Enter on the row does in place of dispatching <see cref="ActionKey"/> (a row
+        /// from <see cref="ElementAction.HelpRows"/>, whose key alone does not say which thing it is;
+        /// its ActionKey then only names the row).</summary>
+        public Action Run;
     }
 
     /// <summary>
@@ -42,7 +47,7 @@ namespace MagnumOpus.Core.UI
             var navigationKeys = new List<KeyHelpEntry>();
             var generalKeys = new List<KeyHelpEntry>();
             var globalKeys = new List<KeyHelpEntry>();
-            var offered = Offered();
+            var offered = Offered(out var rows);
 
             foreach (var action in actions)
             {
@@ -50,6 +55,12 @@ namespace MagnumOpus.Core.UI
                 if (isLive != null && !isLive(action)) continue;
                 if (action.Category == InputCategory.UI && Navigation.WouldHandle(action))
                 {
+                    // An action the screen lists row by row (one per thing its keys stand for).
+                    if (rows.TryGetValue(OfferId(action.Key), out var expand))
+                    {
+                        screenKeys.AddRange(Expand(action, expand));
+                        continue;
+                    }
                     bool basic = action.Key.StartsWith("ui.", StringComparison.Ordinal);
                     // The screen's label for a key it offers says what the key does HERE.
                     string label = offered.TryGetValue(OfferId(action.Key), out var text) && !string.IsNullOrWhiteSpace(text)
@@ -77,15 +88,32 @@ namespace MagnumOpus.Core.UI
         // The navigator asks the screen for Escape by the standard id, for every other key by the key.
         private static string OfferId(string actionKey) => actionKey == UiActions.Back ? ActionIds.Back : actionKey;
 
-        private static Dictionary<string, string> Offered()
+        private static List<KeyHelpEntry> Expand(InputAction action, Func<IEnumerable<KeyHelpEntry>> rows)
+        {
+            var result = new List<KeyHelpEntry>();
+            try
+            {
+                foreach (var row in rows() ?? new KeyHelpEntry[0])
+                    if (row != null) result.Add(row);
+            }
+            catch (Exception e) { CoreLog.Warning("key help: the rows for " + action.Key + " failed: " + e.Message); }
+            return result;
+        }
+
+        private static Dictionary<string, string> Offered(out Dictionary<string, Func<IEnumerable<KeyHelpEntry>>> rows)
         {
             var labels = new Dictionary<string, string>(StringComparer.Ordinal);
+            rows = new Dictionary<string, Func<IEnumerable<KeyHelpEntry>>>(StringComparer.Ordinal);
             var screen = Navigation.BoundScreen;
             if (screen == null) return labels;
             try
             {
                 foreach (var a in screen.GetActions())
-                    if (a != null && a.Id != null && !labels.ContainsKey(a.Id)) labels[a.Id] = a.Label;
+                {
+                    if (a == null || a.Id == null || labels.ContainsKey(a.Id)) continue;
+                    labels[a.Id] = a.Label;
+                    if (a.HelpRows != null) rows[a.Id] = a.HelpRows;
+                }
             }
             catch (Exception e) { CoreLog.Warning("key help: the screen's actions failed: " + e.Message); }
             return labels;
