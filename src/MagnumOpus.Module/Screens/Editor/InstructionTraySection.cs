@@ -18,7 +18,7 @@ namespace MagnumOpus.Module.Screens.Editor
     /// letter (which follows its Keyboard Layout option); one the puzzle does not permit reads "not
     /// available" (the game draws a blank slot there), the period override "limit reached" once the
     /// solution has one (the game greys it). Enter puts the instruction at the program cursor and
-    /// steps it on, as typing its key on the tape does; S or / reads the game's description.
+    /// steps it on, as typing its key on the tape does; S reads the game's description.
     /// </summary>
     internal sealed class InstructionTraySection : ScreenSection
     {
@@ -78,7 +78,6 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             if (!Focused || _ctx.Ed == null) yield break;
             yield return new ElementAction(EditorActions.Details, Strings.Get("bind.ed.details"), _ => SayDetails());
-            yield return new ElementAction(EditorActions.Info, Strings.Get("bind.ed.details"), _ => SayDetails());
         }
 
         private static InstructionType FocusedType()

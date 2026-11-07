@@ -14,7 +14,7 @@ namespace MagnumOpus.Module.Input
         public const string ArmPrefix = "ed.arm.";
         public const string CatPrev = "ed.cat.prev", CatNext = "ed.cat.next", ItemPrev = "ed.item.prev", ItemNext = "ed.item.next";
         // S reads details on the board only (on the tape S is an instruction); / everywhere.
-        public const string Details = "ed.details", Info = "ed.info", Molecule = "ed.molecule", Neighbours = "ed.neighbours";
+        public const string Details = "ed.details", Molecule = "ed.molecule", Neighbours = "ed.neighbours";
         public const string Score = "ed.score", Tips = "ed.tips", Products = "ed.products", Diagram = "ed.diagram";
         public const string Play = "ed.play", Step = "ed.step", Fast = "ed.fast";
         // Editing.
@@ -78,7 +78,6 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.ItemPrev, "Previous item", new KeyboardBinding(Scancode.Comma));
             Key(EditorActions.ItemNext, "Next item", new KeyboardBinding(Scancode.Period));
             Key(EditorActions.Details, "Details", new KeyboardBinding(Scancode.S));
-            Key(EditorActions.Info, "Details", new KeyboardBinding(Scancode.Slash));
             Key(EditorActions.Molecule, "Molecule", new KeyboardBinding(Scancode.W));
             Key(EditorActions.Neighbours, "Neighbours", new KeyboardBinding(Scancode.X));
             // Ctrl+Shift: Alt + a letter is an instruction (S retract, T track minus).

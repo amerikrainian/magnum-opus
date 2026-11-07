@@ -286,7 +286,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   the program cursor's cell or the tape's selection (Ctrl+C / X, Delete, Backspace, Shift+arrows,
   Ctrl+Shift+A, Escape clears, Enter runs to the cell) and the part edits find no part. ONE CLIPBOARD for the player: Ctrl+V pastes what was
   copied or cut last (`EditorContext.PartsOnClipboard`), parts at the board cursor, instructions at the program cursor; parts on the tape stop paste nothing, silently, Up / Down choose the program cursor's arm (wrapping, silent with one; the cursor lands after the arm's last instruction, a Reset's filled cells included, "arm 2, 5"; user decision 2026-11-05: the board cursor's position never chooses it), Left / Right move the program cursor a cycle on that arm and Home / End to its first / last instruction (the tape's keys), [ ] categories,
-  , . items, S or / details, W molecule (size, composition, bonds, holder; the layout is read hex by hex), X neighbours. A hex reads coordinates, then the atom in play, arm
+  , . items, S details, W molecule (size, composition, bonds, holder; the layout is read hex by hex), X neighbours. A hex reads coordinates, then the atom in play, arm
   bases ("arm 1, Piston Arm, northeast, length 1"), grippers, other parts (`Game/Board`; a track hex
   reads its joins marked with the move that goes there, "Track, +northeast, -southeast": the game
   draws a minus sign on the end drawn first and a plus on the last (both at a loop's seam); no "end" /
@@ -345,12 +345,12 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   (`GraphBuilder.SetStopStart`, a per-stop landing).
   Parts tray: a reagent or product reads its molecule in brief ("Salt, Water; 1 bond"; the
   game draws the whole molecule on the tile), W opens `MoleculeViewerScreen` (a child screen: hex keys
-  walk the molecule in its own frame, each hex its atom and bond directions; W summary; Escape). S or /
+  walk the molecule in its own frame, each hex its atom and bond directions; W summary; Escape). S
   reads a tray part's tooltip description; multi-armed assemblies read "(N grippers)".
   Instructions stop (`InstructionTraySection`): the game's tray as five key columns (Q/A, W/S/X, E/D/C,
   R/F/V, T/G/B; its Delete tile left out), each tile "grab, F" (no role word, user rule), "not available"
   where the puzzle forbids it, "limit reached" for a second period override; Enter places at the program
-  cursor ("4, grab"), S or / the game's description.
+  cursor ("4, grab"), S the game's description (the tape has no details key: S types retract there; `/` dropped 2026-11-07, user request).
   Undo / redo (Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z): the game's buffer stepped directly (an injected chord
   cannot give the game Ctrl), the change spoken (new states, three at most, else a count).
   Narration (`Patches/SimNarration`): arm moves from the sim states' deltas after `Sim.BeginCycle`, glyph

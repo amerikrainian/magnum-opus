@@ -149,7 +149,6 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.ItemPrev, Strings.Get("bind.ed.item.prev"), _ => Item(-1));
             yield return new ElementAction(EditorActions.ItemNext, Strings.Get("bind.ed.item.next"), _ => Item(1));
             yield return new ElementAction(EditorActions.Details, Strings.Get("bind.ed.details"), _ => SayDetails());
-            yield return new ElementAction(EditorActions.Info, Strings.Get("bind.ed.details"), _ => SayDetails());
             yield return new ElementAction(EditorActions.Molecule, Strings.Get("bind.ed.molecule"), _ => EditorContext.Say(Board.MoleculeAround(_ctx.Ed, _ctx.Cursor)));
             yield return new ElementAction(EditorActions.Neighbours, Strings.Get("bind.ed.neighbours"), _ => EditorContext.Say(NeighboursText()));
 

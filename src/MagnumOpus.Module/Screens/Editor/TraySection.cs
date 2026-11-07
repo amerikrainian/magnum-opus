@@ -16,7 +16,7 @@ namespace MagnumOpus.Module.Screens.Editor
     /// until it is placed, a mechanism or glyph the puzzle permits, unavailable at its limit (a
     /// unique part, a puzzle's part count). Each reads its name (the game's tooltip name; a
     /// multi-armed assembly with its gripper count, which the game shows in its picture) and cost; S
-    /// or / reads the game's tooltip description, as hovering does. A reagent or product reads its
+    /// reads the game's tooltip description, as hovering does. A reagent or product reads its
     /// molecule in brief (the tile draws it), and W opens it in <see cref="MoleculeViewerScreen"/> to
     /// walk its atoms and bonds before placing. Enter creates the part at the board cursor and
     /// carries it there (<see cref="CarryMode"/>).
@@ -135,7 +135,6 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             if (!Focused || _ctx.Ed == null) yield break;
             yield return new ElementAction(EditorActions.Details, Strings.Get("bind.ed.details"), _ => SayDetails());
-            yield return new ElementAction(EditorActions.Info, Strings.Get("bind.ed.details"), _ => SayDetails());
             var focused = FocusedItem();
             if (focused.HasValue && (focused.Value.Type.isInput || focused.Value.Type.IsOutput()))
             {
@@ -167,7 +166,7 @@ namespace MagnumOpus.Module.Screens.Editor
             return m == null ? null : Board.MoleculeSummaryText(m);
         }
 
-        // S or /: the game's tooltip for the focused part (its name and description).
+        // S: the game's tooltip for the focused part (its name and description).
         private void SayDetails()
         {
             var focused = FocusedItem();
