@@ -34,7 +34,7 @@ namespace MagnumOpus.Module.Screens
     ///  2. Marbles: the counter strip under the board, in the game's order for the variant, each
     ///     "Salt, 4", with "warning" where the game draws the count in its warning colour.
     ///  3. New Game (the game's button), Rules (its icon button, the game's click code: it opens
-    ///     SolitaireHelpScreen), the wins, Close.
+    ///     SolitaireHelpScreen, <see cref="SolitaireHelpGameScreen"/>), the wins, Close.
     /// Opening with a game in play lands on the board and speaks the story so far; with none (before
     /// the first deal, after a win, the only times the story waits for a press) it lands on the
     /// story's latest item instead (user decision 2026-11-07: the story its own stop, so Enter on
@@ -154,7 +154,7 @@ namespace MagnumOpus.Module.Screens
             b.PopContext();
 
             b.BeginStop("solitaire.counts");
-            b.PushContext(Strings.SolitaireCounts, Strings.RoleList);
+            b.PushContext(Strings.SolitaireCounts, null); // no role word (user rule 2026-11-07)
             foreach (var type in CounterOrder(g.solitaireType))
             {
                 var t = type;
@@ -499,6 +499,52 @@ namespace MagnumOpus.Module.Screens
                 if (e.Message != _lastError) CoreLog.Warning("[solitaire] update: " + e);
                 _lastError = e.Message;
             }
+        }
+    }
+
+    /// <summary>
+    /// Sigmar's Garden's rules page (SolitaireHelpScreen, from the solitaire's Rules button): its
+    /// three sections as the game lays them out, top row left to right, then the bottom: Clearing
+    /// Marbles, Unlocking Marbles (with the note that off-board spaces count as empty), Matching
+    /// Combinations (the cardinals, salt, vitae and mors, the metals; the House Colvan variant's
+    /// own metals rule and no vitae and mors). The pictures between the texts are not described.
+    /// Then Close (the game's close button, which answers Escape).
+    /// </summary>
+    public sealed class SolitaireHelpGameScreen : GameScreen<SolitaireHelpScreen>
+    {
+        public override string Key => "game.solitaire_help";
+
+        public override string ScreenName => Strings.SolitaireRules;
+
+        public override void Build(GraphBuilder b)
+        {
+            var g = Game;
+            if (g == null) return;
+            b.BeginStop("solitaire.rules");
+            Section(b, "clearing", "Clearing Marbles", SolitaireHelpScreen.hintClearing);
+            Section(b, "unlocking", "Unlocking Marbles", SolitaireHelpScreen.hintUnlocking, SolitaireHelpScreen.field_4500);
+            if (g.type == SolitaireType.Colvan)
+                Section(b, "matching", "Matching Combinations", SolitaireHelpScreen.hintCardinals, SolitaireHelpScreen.hintSalt, SolitaireHelpScreen.hintMetalsColvan);
+            else
+                Section(b, "matching", "Matching Combinations", SolitaireHelpScreen.hintCardinals, SolitaireHelpScreen.hintSalt,
+                    SolitaireHelpScreen.hintVitaeMors, SolitaireHelpScreen.hintMetals);
+            b.BeginStop("solitaire.rules.close");
+            b.PushContext(null, null);
+            b.AddItem(ControlId.Structural("solitaire-rules:close"), Nodes.Button(() => Strings.ModClose, () => GameKeys.Forced = GameKeys.Escape));
+            b.PopContext();
+        }
+
+        // A heading the game draws (in capitals) over its texts: the heading is the context, each
+        // text a line.
+        private static void Section(GraphBuilder b, string key, string englishHeading, params LocString[] texts)
+        {
+            b.PushContext(GameText.Translate(englishHeading), null, positions: false);
+            for (int i = 0; i < texts.Length; i++)
+            {
+                var text = texts[i];
+                b.AddItem(ControlId.Structural("solitaire-rules:" + key + ":" + i), Nodes.Text(() => GameText.Clean(text)));
+            }
+            b.PopContext();
         }
     }
 }

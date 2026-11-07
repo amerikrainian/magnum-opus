@@ -25,9 +25,14 @@ namespace MagnumOpus.Module.Patches
         private static int _pendingFrames;
 
         private static List<string> _drawing = new List<string>();
+        private static object _drawingScreen;
 
         /// <summary>The labeled buttons the game drew last frame with input access, in draw order.</summary>
         public static List<string> LastFrame { get; private set; } = new List<string>();
+
+        /// <summary>The game screen on top when last frame began: the frame a screen opens in still
+        /// draws the one it opened from, so its buttons are that screen's, not the new top's.</summary>
+        public static object LastFrameScreen { get; private set; }
 
         public static void Apply(Harmony harmony)
         {
@@ -58,7 +63,9 @@ namespace MagnumOpus.Module.Patches
         public static void NewFrame()
         {
             LastFrame = _drawing;
+            LastFrameScreen = _drawingScreen;
             _drawing = new List<string>();
+            _drawingScreen = GameScreens.Top;
             if (_pending != null && --_pendingFrames < 0) _pending = null;
         }
 

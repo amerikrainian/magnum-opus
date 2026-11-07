@@ -34,7 +34,8 @@ namespace MagnumOpus.Module.Screens
 
         public override void Build(GraphBuilder b)
         {
-            var labels = ButtonPress.LastFrame;
+            // Buttons drawn while another screen was on top (the frame this one opened in) are not its.
+            var labels = ReferenceEquals(ButtonPress.LastFrameScreen, GameScreens.Top) ? ButtonPress.LastFrame : new List<string>();
             var buttonText = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
             foreach (var l in labels) buttonText.Add(GameText.Clean(l));
             var seen = new Dictionary<string, int>();

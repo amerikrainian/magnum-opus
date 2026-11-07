@@ -68,7 +68,8 @@ is read.
    and next free marble; X reads the neighbours.
 3. **Marbles**: how many of each are left, as the strip under the board shows them, with
    "warning" where the game marks a count that cannot all be paired.
-4. **New Game, Rules, Wins, Close.**
+4. **New Game, Rules, Wins, Close.** Rules opens the game's rules page: how to clear and unlock
+   marbles and which marbles match.
 
 ## Not yet covered
 

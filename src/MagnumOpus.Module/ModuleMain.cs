@@ -122,6 +122,7 @@ namespace MagnumOpus.Module
             ScreenManager.Register(new UploadGameScreen());
             ScreenManager.Register(new SolutionEditorGameScreen());
             ScreenManager.Register(new SolitaireGameScreen());
+            ScreenManager.Register(new SolitaireHelpGameScreen());
             ScreenManager.Register(new FallbackScreen());
             ScreenManager.Register(new ModMenuScreen());
             ScreenManager.Register(new HelpScreen());

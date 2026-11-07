@@ -411,15 +411,20 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   "cleared Mors, Vitae"; a dimmed one says "locked" without clicking. , . previous / next free marble
   (reading order; NO pair suggestions, user rule: the game shows none), X neighbours. Marbles stop: the
   game's counter strip per variant, "Salt, 4", "warning" where it uses its warning colour. New Game
-  (ButtonPress), Rules (its icon button's click code: `SolitaireHelpScreen`, still the fallback), Wins,
-  Close. Opening lands on the story's latest item with no game in play (before the first deal, after a
+  (ButtonPress), Rules (its icon button's click code), Wins, Close. No role words on the marble counts
+  or their stop (user rule). The rules page (`SolitaireHelpGameScreen`): Clearing Marbles, Unlocking
+  Marbles, Matching Combinations as contexts over the game's own hint texts (Colvan's metals rule and no
+  vitae / mors there; Quintessence shows the normal page, as the game does), then Close; pictures not
+  described. Verified live 2026-11-07. Opening lands on the story's latest item with no game in play (before the first deal, after a
   win: the only times the story waits), else on the board with the story spoken; each new story item is
   spoken as it appears; Space passes to the game (it advances the panel); the first deal waits for the first section (10 lines,
   `StoryPanel.GetCompletion() >= 10`). "dealt" when a reveal ends, "board cleared" + wins on a win.
   Verified live: the cursor against a screenshot, free-marble order, select / replace / clear / unselect,
   locked, Rules and back, the story stop (landing, Enter, the divider), Space. NOT verified: a win, the Quintessence and Colvan
   variants (five-marble quintessence picks), New Game.
-- **Fallback** (`FallbackScreen`): the screen's human type name ("Journal Submission"), the text it draws
+- **Fallback** (`FallbackScreen`): buttons only from a frame that began with this screen on top
+  (`ButtonPress.LastFrameScreen`: the frame a screen opens in still draws the one beneath, whose buttons
+  were once read on the new screen). The screen's human type name ("Journal Submission"), the text it draws
   top to bottom (`TextCapture`, only while the fallback is up) and its labeled buttons (ButtonPress).
   Covers the journal (readable, not yet operable) and the rest.
 
@@ -443,7 +448,7 @@ Game terms are the game's own (`GameText.Translate`, `LocString`s).
 
 ## 15. Roadmap
 - Phase 5: Sigmar's Garden (`SolitaireScreen`) on the editor's hex model: DONE (section 12). Left: its
-  rules page (`SolitaireHelpScreen`, the fallback today), the items section 12 lists as not verified.
+  items section 12 lists as not verified.
 - Phase 6: the solution editor. DONE: reading, narration and editing (section 12). Left: the items
   section 12 lists as not verified; dropping a new arm from the tray onto an arm to swap it (the
   game's drag does); a "step to next event" key. Read part, atom and puzzle names from the game's registries, never hardcoded
