@@ -43,6 +43,8 @@ namespace MagnumOpus.Module.Screens.Editor
     /// removes the part under the cursor (the game's Shift+click); Ctrl+A selects every part; Escape
     /// clears. With the cursor on a selected part, Enter / Ctrl+Enter / Delete / Shift+A / Shift+D /
     /// Ctrl+C / Ctrl+X take the whole group; Ctrl+V places the clipboard at the cursor.
+    /// A part turns round the cursor hex when that is one of its own hexes (the game's drag), else
+    /// round its origin; a molecule, glyph or track then reads the hex again.
     /// While carrying or drawing, the hex keys move the part or the track's end and Escape cancels.
     /// </summary>
     internal sealed class BoardSection : ScreenSection
@@ -393,6 +395,10 @@ namespace MagnumOpus.Module.Screens.Editor
             return _ctx.CanEdit() ? group : new List<Part>();
         }
 
+        // Shift+A / Shift+D. A part whose own hexes include the cursor turns round the cursor hex
+        // (the game's A / D while dragging, round the hex it was grabbed by), so what is under the
+        // cursor stays there; anything else (an arm by its gripper) round its origin (the game's
+        // rotation handle). User decision 2026-11-07.
         private void Rotate(bool counterclockwise)
         {
             var group = Group();
@@ -402,6 +408,11 @@ namespace MagnumOpus.Module.Screens.Editor
             var ed = _ctx.Ed;
             var solution = ed.GetSolution();
             if (!part.IsRotatable(solution)) return;
+            if (part.GetHexPos() != _ctx.Cursor && part.GetHexFootprint(solution).Contains(_ctx.Cursor))
+            {
+                RotateGroup(new List<Part> { part }, counterclockwise, single: part);
+                return;
+            }
             var rot = counterclockwise ? HexRotation.Counterclockwise : HexRotation.Clockwise;
             string message;
             if (!solution.IsAllowedPlacement(part, part.GetHexPos(), part.GetHexPos(), (part.GetRotation() + rot).Clamped06(), out message))
@@ -412,7 +423,16 @@ namespace MagnumOpus.Module.Screens.Editor
             part.RotateBy(solution, rot);
             ed.MarkNeedsNewSnapshot();
             Assets.sounds.piece_rotate.PlaySound(1f);
+            SayRotated(part);
+        }
+
+        // A lone part's turn: its new direction; a part that is not an arm (a molecule, a glyph, a
+        // track), whose direction says little, then the cursor hex again as a separate announcement,
+        // as if landed on (user decision 2026-11-07).
+        private void SayRotated(Part part)
+        {
             EditorContext.Say(_ctx.Facing(part));
+            if (!part.HasArms()) EditorContext.Say(Board.Readout(_ctx.Ed, _ctx.Cursor), interrupt: false);
         }
 
         private void Length(int delta)
@@ -613,7 +633,8 @@ namespace MagnumOpus.Module.Screens.Editor
         // ---- group edits ----
 
         // Turned in place round the cursor hex: every part must fit where it lands, else nothing moves.
-        private void RotateGroup(List<Part> group, bool counterclockwise)
+        // A lone part (<paramref name="single"/>) is said as one (<see cref="SayRotated"/>).
+        private void RotateGroup(List<Part> group, bool counterclockwise, Part single = null)
         {
             var ed = _ctx.Ed;
             var solution = ed.GetSolution();
@@ -646,7 +667,8 @@ namespace MagnumOpus.Module.Screens.Editor
             foreach (var p in group) solution.RepositionPart(p, p.GetHexPos());
             ed.MarkNeedsNewSnapshot();
             Assets.sounds.piece_rotate.PlaySound(1f);
-            EditorContext.Say(Strings.EditorRotated);
+            if (single != null) SayRotated(single);
+            else EditorContext.Say(Strings.EditorRotated);
         }
 
         // Removed together (conduits stay: the game never deletes them).
