@@ -26,6 +26,7 @@ namespace MagnumOpus.Module.Input
         public const string Copy = "ed.copy", Cut = "ed.cut", Paste = "ed.paste";
         public const string MarkCorner = "ed.mark", ToggleSelect = "ed.toggle_select", SelectParts = "ed.select_parts";
         public const string Jump = "ed.jump";
+        public const string ShiftLeft = "ed.shift.left", ShiftRight = "ed.shift.right";
         public const string PartPrev = "ed.part.prev", PartNext = "ed.part.next";
         public const string Undo = "ed.undo", Redo = "ed.redo";
     }
@@ -111,6 +112,8 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.SelectDown, "Select down", new KeyboardBinding(Scancode.Down, shift: true)).Repeating();
             Key(EditorActions.SelectLeft, "Select left", new KeyboardBinding(Scancode.Left, shift: true)).Repeating();
             Key(EditorActions.SelectRight, "Select right", new KeyboardBinding(Scancode.Right, shift: true)).Repeating();
+            Key(EditorActions.ShiftLeft, "Move instructions a cycle left", new KeyboardBinding(Scancode.Left, ctrl: true, shift: true)).Repeating();
+            Key(EditorActions.ShiftRight, "Move instructions a cycle right", new KeyboardBinding(Scancode.Right, ctrl: true, shift: true)).Repeating();
             Key(EditorActions.SelectAll, "Select all instructions", new KeyboardBinding(Scancode.A, ctrl: true, shift: true));
             Key(EditorActions.MarkCorner, "Mark a corner", new KeyboardBinding(Scancode.Space, shift: true));
             Key(EditorActions.ToggleSelect, "Select or unselect the part here", new KeyboardBinding(Scancode.Space, ctrl: true, shift: true));

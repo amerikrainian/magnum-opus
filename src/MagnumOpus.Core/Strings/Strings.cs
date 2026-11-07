@@ -462,6 +462,8 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.instr", "Place instruction, Shift inserts"),
             D("bind.ed.program_arm", "Program the chosen arm"),
             D("bind.ed.instr_insert", "Insert an instruction"),
+            D("bind.ed.shift_left", "Move instructions a cycle left"),
+            D("bind.ed.shift_right", "Move instructions a cycle right"),
             // A key help row's keys: Shift held with any of the instruction keys listed above it.
             D("help.ed.instr_insert_keys", "Shift with an instruction key"),
             D("bind.ed.diagram", "Show diagram"),

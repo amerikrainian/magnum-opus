@@ -317,7 +317,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   instruction keys (the key's character on the player's layout matched to the game's hotkeys, which
   follow its Keyboard Layout option: `ProgramEdits.PressedInstruction`) type at the cursor and step on,
   overwriting; Shift inserts (`InsertInstruction`, the push stops at the first gap); Delete clears the
-  cell or selection, Backspace the previous cell; Shift+arrows select a rectangle, Ctrl+Shift+A all,
+  cell or selection, Backspace the previous cell; Shift+arrows select a rectangle, Ctrl+Shift+A all, Ctrl+Shift+Left / Right move the program cursor's arm's whole program a cycle (the selected cells instead, selection and cursor along; only with room: not before cycle 1, not onto an instruction that stays; said as the cursor's cell, "2, grab"; also on the board; user request 2026-11-07, verified live),
   Escape clears; Ctrl+C / X / V. Refusals spoken: engine running, a fixed arm, an instruction the puzzle
   does not permit. Alt+instruction key on the board programs the program cursor's arm at its cycle,
   wherever the board cursor is ("4, grab"; user decision 2026-11-04: Ctrl is selection and clipboard

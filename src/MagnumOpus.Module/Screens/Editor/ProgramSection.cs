@@ -22,6 +22,8 @@ namespace MagnumOpus.Module.Screens.Editor
     /// clears the cell (or the selection), Backspace clears the previous cell and steps back onto it.
     /// Shift+arrows select a rectangle of cells, Ctrl+Shift+A every instruction, Escape drops the
     /// selection; Ctrl+C / X / V copy, cut and paste (pasting at the cursor, overwriting).
+    /// Ctrl+Shift+Left / Right move the arm's whole program a cycle (the selected cells instead, when
+    /// there is a selection), where there is room (<see cref="ShiftInstructions"/>).
     /// Alt+Backspace goes back to the board hex the jump came from (else the row's arm base).
     /// Enter runs the solution to the cell (<see cref="RunSection.RunTo"/>).
     /// The board runs these same edits while Ctrl+Up / Ctrl+Down have the instructions picked
@@ -73,6 +75,8 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.SelectLeft, Strings.Get("bind.ed.sel.left"), _ => MoveColumn(_ctx.Col - 1, select: true));
             yield return new ElementAction(EditorActions.SelectRight, Strings.Get("bind.ed.sel.right"), _ => MoveColumn(_ctx.Col + 1, select: true));
             yield return new ElementAction(EditorActions.SelectAll, Strings.Get("bind.ed.sel.all"), _ => SelectAll());
+            yield return new ElementAction(EditorActions.ShiftLeft, Strings.Get("bind.ed.shift_left"), _ => ShiftInstructions(-1));
+            yield return new ElementAction(EditorActions.ShiftRight, Strings.Get("bind.ed.shift_right"), _ => ShiftInstructions(1));
             for (int n = 1; n <= Math.Min(9, arms); n++)
             {
                 int arm = n;
@@ -273,6 +277,57 @@ namespace MagnumOpus.Module.Screens.Editor
             // An overlap this made is said at once (the game marks it red).
             string error = ProgramErrors.AtCell(ctx.Ed, arm, col);
             EditorContext.Say(error == null ? text : text + ", " + error);
+        }
+
+        private struct Moved { public Part Arm; public int Row, Col; public InstructionType Type; }
+
+        /// <summary>Ctrl+Shift+Left / Right (user request 2026-11-07), on the tape and the board: the
+        /// program cursor's arm's instructions, all of them, move a cycle that way; with a selection,
+        /// the selected cells move instead, the selection and the cursor with them. Only where there
+        /// is room: nothing moves before cycle 1 or onto an instruction that stays. Said as the
+        /// cursor's cell afterwards ("2, grab": without a selection the cursor stays, so it reads what
+        /// moved under it). One undo step (the game snapshots at the frame's end).</summary>
+        internal void ShiftInstructions(int step)
+        {
+            var ed = _ctx.Ed;
+            if (ed == null || RowArm(_ctx) == null || !_ctx.CanEdit()) return;
+            var arms = Board.Arms(ed);
+            bool selection = _ctx.Selecting;
+            int r0 = selection ? Math.Min(_ctx.AnchorRow, _ctx.Row) : _ctx.Row;
+            int r1 = selection ? Math.Max(_ctx.AnchorRow, _ctx.Row) : _ctx.Row;
+            int c0 = selection ? Math.Min(_ctx.AnchorCol, _ctx.Col) : 0;
+            int c1 = selection ? Math.Max(_ctx.AnchorCol, _ctx.Col) : EditorContext.MaxColumn;
+            var moved = new List<Moved>();
+            for (int r = r0; r <= r1 && r < arms.Count; r++)
+            {
+                var program = arms[r].program;
+                if (program.Count() == 0) continue;
+                for (int c = Math.Max(c0, program.FirstInstructionIndex()); c <= Math.Min(c1, program.LastInstructionIndex()); c++)
+                {
+                    var ins = program.GetInstruction(c);
+                    if (ins.HasValue()) moved.Add(new Moved { Arm = arms[r], Row = r, Col = c, Type = ins.GetValue() });
+                }
+            }
+            if (moved.Count == 0) return;
+            var fixedArm = moved.FirstOrDefault(m => m.Arm.GetIsFixed());
+            if (fixedArm.Arm != null) { EditorContext.Say(Strings.EditorFixed(Strings.EditorArm(fixedArm.Row + 1))); return; }
+            // Room: every instruction lands on the tape, on a cell that is empty or moving too.
+            foreach (var m in moved)
+            {
+                int to = m.Col + step;
+                if (to < 0 || to > EditorContext.MaxColumn) return;
+                bool alsoMoving = m.Row >= r0 && m.Row <= r1 && to >= c0 && to <= c1;
+                if (!alsoMoving && m.Arm.program.GetInstruction(to).HasValue()) return;
+            }
+            foreach (var m in moved) m.Arm.program.RemoveInstruction(m.Col, asModification: true);
+            foreach (var m in moved) m.Arm.program.SetInstruction(m.Col + step, m.Type);
+            Assets.sounds.instruction_place.PlaySound(1f);
+            if (selection)
+            {
+                _ctx.AnchorCol += step;
+                _ctx.Col += step;
+            }
+            EditorContext.Say(CellText(_ctx, withArm: false));
         }
 
         internal void Delete()
