@@ -77,6 +77,7 @@ namespace MagnumOpus.Module.Input
         public static void Register()
         {
             var cursorMoves = new[] { KeyScopes.Board, KeyScopes.Solitaire, KeyScopes.Molecule };
+            var turning = new[] { KeyScopes.Board, KeyScopes.Molecule };
             Hex(EditorActions.HexNW, "Cursor northwest", cursorMoves, Scancode.Q, Scancode.Kp7);
             Hex(EditorActions.HexNE, "Cursor northeast", cursorMoves, Scancode.E, Scancode.Kp9);
             Hex(EditorActions.HexW, "Cursor west", cursorMoves, Scancode.A, Scancode.Kp4);
@@ -100,11 +101,11 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.ItemNext, "Next item", KeyGroups.Board, Cursors, new KeyboardBinding(Scancode.Period));
             Key(EditorActions.Details, "Details", KeyGroups.Board, new[] { KeyScopes.Board, KeyScopes.Tray }, new KeyboardBinding(Scancode.S));
             Key(EditorActions.Molecule, "Molecule", KeyGroups.Board, new[] { KeyScopes.Board, KeyScopes.Tray, KeyScopes.Molecule }, new KeyboardBinding(Scancode.W));
-            Key(EditorActions.Neighbours, "Neighbours", KeyGroups.Board, Cursors, new KeyboardBinding(Scancode.X));
+            Key(EditorActions.Neighbours, "Neighbours", KeyGroups.Board, cursorMoves, new KeyboardBinding(Scancode.X));
             Key(EditorActions.Clone, "Pick up a copy", KeyGroups.Board, Board, new KeyboardBinding(Scancode.Return, ctrl: true));
             Key(EditorActions.DrawTrack, "Extend track", KeyGroups.Board, Board, new KeyboardBinding(Scancode.Return, shift: true));
-            Key(EditorActions.RotateCcw, "Rotate counter-clockwise", KeyGroups.Board, Board, new KeyboardBinding(Scancode.A, shift: true));
-            Key(EditorActions.RotateCw, "Rotate clockwise", KeyGroups.Board, Board, new KeyboardBinding(Scancode.D, shift: true));
+            Key(EditorActions.RotateCcw, "Rotate counter-clockwise", KeyGroups.Board, turning, new KeyboardBinding(Scancode.A, shift: true));
+            Key(EditorActions.RotateCw, "Rotate clockwise", KeyGroups.Board, turning, new KeyboardBinding(Scancode.D, shift: true));
             Key(EditorActions.Longer, "Longer arm", KeyGroups.Board, Board, new KeyboardBinding(Scancode.W, shift: true));
             Key(EditorActions.Shorter, "Shorter arm", KeyGroups.Board, Board, new KeyboardBinding(Scancode.S, shift: true));
             Key(EditorActions.MarkCorner, "Mark a corner", KeyGroups.Board, Board, new KeyboardBinding(Scancode.Space, shift: true));

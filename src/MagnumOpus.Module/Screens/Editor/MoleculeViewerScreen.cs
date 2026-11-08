@@ -16,14 +16,20 @@ namespace MagnumOpus.Module.Screens.Editor
     /// (W on the tile; a child screen of the editor, nothing placed or bought). The hex keys walk it as
     /// the board is walked: each hex reads its coordinates in the molecule's own frame, then its atom
     /// and the directions of its bonds ("1, 0, Water, bonds west"); an empty hex reads its coordinates.
-    /// W reads the summary; Escape closes. The molecule is fetched from the puzzle each time it is
-    /// read, never held.
+    /// X reads the neighbours, as on the board. Shift+A / Shift+D turn the molecule round the cursor
+    /// hex, as the game's A / D do while dragging: only this viewer's view of it (a turned copy, the
+    /// puzzle's molecule untouched), gone when the viewer closes. W reads the summary; Escape closes.
+    /// The molecule is fetched from the puzzle each time it is read, never held.
     /// </summary>
     internal sealed class MoleculeViewerScreen : Screen
     {
         private readonly string _title;
         private readonly Func<Molecule> _molecule;
         private HexIndex _cursor;
+
+        // The view: the molecule turned round the origin, then moved. No game object.
+        private HexRotation _rotation = HexRotation.R0;
+        private HexIndex _offset = new HexIndex(0, 0);
 
         public MoleculeViewerScreen(string title, Func<Molecule> molecule)
         {
@@ -65,8 +71,32 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.Molecule, Strings.Get("bind.ed.molecule"), _ =>
             {
                 var m = _molecule();
-                if (m != null) EditorContext.Say(Board.MoleculeSummaryText(m));
+                if (m != null) EditorContext.Say(Board.MoleculeSummaryText(m, _rotation.GetNumberOfTurns()));
             });
+            yield return new ElementAction(EditorActions.Neighbours, Strings.Get("bind.ed.neighbours"), _ => EditorContext.Say(Neighbours()));
+            yield return new ElementAction(EditorActions.RotateCcw, Strings.Get("bind.ed.rot.ccw"), _ => Rotate(HexRotation.Counterclockwise));
+            yield return new ElementAction(EditorActions.RotateCw, Strings.Get("bind.ed.rot.cw"), _ => Rotate(HexRotation.Clockwise));
+        }
+
+        // Round the cursor hex, so what is under the cursor stays there.
+        private void Rotate(HexRotation by)
+        {
+            _rotation = (_rotation + by).Clamped06();
+            _offset = _offset.RotatedAround(_cursor, by);
+            Assets.sounds.piece_rotate.PlaySound(1f);
+            EditorContext.Say(Hex.Word(Hex.FromTurns(_rotation.GetNumberOfTurns()))); // the board's feedback for a molecule
+            EditorContext.Say(Readout(), interrupt: false);
+        }
+
+        // A copy as the viewer shows it; null when the puzzle has no molecule here.
+        private Molecule View()
+        {
+            var m = _molecule();
+            if (m == null) return null;
+            var view = m.Clone();
+            view.Rotate(new HexIndex(0, 0), _rotation);
+            view.Translate(_offset);
+            return view;
         }
 
         private void Move(HexDir dir)
@@ -77,15 +107,28 @@ namespace MagnumOpus.Module.Screens.Editor
 
         private string Readout()
         {
-            var parts = new List<string> { Hex.Coords(_cursor) };
-            var m = _molecule();
-            if (m != null && m.GetAtoms().TryGetValue(_cursor, out var atom))
+            string atom = Describe(View(), _cursor);
+            return atom == null ? Hex.Coords(_cursor) : Hex.Coords(_cursor) + ", " + atom;
+        }
+
+        private string Neighbours()
+        {
+            var m = View();
+            var parts = new List<string>();
+            foreach (var dir in Hex.All)
             {
-                parts.Add(Board.AtomName(atom.atomType));
-                string bonds = Board.Bonds(new Board.AtomAt { Atom = atom, Molecule = m, Hex = _cursor });
-                if (bonds.Length > 0) parts.Add(bonds);
+                string atom = Describe(m, Hex.Step(_cursor, dir));
+                if (atom != null) parts.Add(Strings.EditorNeighbour(Hex.Word(dir), atom));
             }
-            return string.Join(", ", parts);
+            return string.Join("; ", parts);
+        }
+
+        // The atom on a hex and the directions of its bonds; null for an empty hex.
+        private static string Describe(Molecule m, HexIndex hex)
+        {
+            if (m == null || !m.GetAtoms().TryGetValue(hex, out var atom)) return null;
+            string bonds = Board.Bonds(new Board.AtomAt { Atom = atom, Molecule = m, Hex = hex });
+            return bonds.Length > 0 ? Board.AtomName(atom.atomType) + ", " + bonds : Board.AtomName(atom.atomType);
         }
     }
 }

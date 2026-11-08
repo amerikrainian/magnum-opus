@@ -392,7 +392,7 @@ namespace MagnumOpus.Module.Game
         // Size and composition (most common atom first, then the molecule's own order), then the
         // bond counts. A single atom is just its name.
         /// <summary>A molecule in brief: "Salt, Water; 1 bond" (a single atom: its name).</summary>
-        public static string MoleculeSummaryText(Molecule molecule) => string.Join("; ", MoleculeSummary(molecule));
+        public static string MoleculeSummaryText(Molecule molecule, int turn = 0) => string.Join("; ", MoleculeSummary(molecule, turn));
 
         // A repeating product is stored laid out six times; it reads as one unit and the offset
         // between units, turned by the part it is on.
