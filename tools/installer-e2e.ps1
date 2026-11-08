@@ -74,7 +74,7 @@ try {
         "Mono.Cecil.dll", "0Harmony.dll", "prism.dll", "steam_appid.txt",
         "MagnumOpus\MagnumOpus.Core.dll", "MagnumOpus\MagnumOpus.Module.dll", "MagnumOpus\lang\en.txt",
         "MagnumOpus\mappings\fingerprint.tsv", "MagnumOpus\mappings\named\mappings_ce_0.1.0.txt",
-        "MagnumOpusDocs\index.html", "MagnumOpus\install.json")
+        "MagnumOpus\install.json")
     foreach ($rel in $shipped) { Assert-True (Test-Path (Join-Path $game $rel)) "installed $rel" }
     Assert-True ((Get-Content -Raw (Join-Path $game "steam_appid.txt")) -eq "558990") "steam_appid.txt is the shipped one"
     Assert-True ((@(Get-ChildItem -Recurse -File (Join-Path $game "MagnumOpus\backups") -ErrorAction SilentlyContinue | Where-Object Name -eq "steam_appid.txt")).Count -eq 1) "pre-existing steam_appid.txt backed up"
@@ -85,7 +85,6 @@ try {
     $out | ForEach-Object { Write-Host "    $_" }
     foreach ($rel in $shipped) { if ($rel -ne "steam_appid.txt") { Assert-True (-not (Test-Path (Join-Path $game $rel))) "removed $rel" } }
     Assert-True (-not (Test-Path (Join-Path $game "MagnumOpus"))) "mod folder gone"
-    Assert-True (-not (Test-Path (Join-Path $game "MagnumOpusDocs"))) "manual folder gone"
     Assert-True ((Get-Content -Raw (Join-Path $game "steam_appid.txt")) -eq "original") "pre-existing steam_appid.txt restored"
     Assert-True ((Get-ChildItem $game).Count -eq 3) "game folder back to its three original files"
 }
