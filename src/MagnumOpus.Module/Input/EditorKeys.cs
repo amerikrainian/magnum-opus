@@ -30,6 +30,7 @@ namespace MagnumOpus.Module.Input
         public const string ShiftLeft = "ed.shift.left", ShiftRight = "ed.shift.right";
         public const string PartPrev = "ed.part.prev", PartNext = "ed.part.next";
         public const string Undo = "ed.undo", Redo = "ed.redo";
+        public const string TutorialRepeat = "ed.tutorial";
     }
 
     /// <summary>Where the editor's keys work, for a rebind's conflicts (<see cref="InputAction.Scopes"/>):
@@ -144,6 +145,11 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.Copy, "Copy", KeyGroups.Editor, BoardOrTape, new KeyboardBinding(Scancode.C, ctrl: true));
             Key(EditorActions.Cut, "Cut", KeyGroups.Editor, BoardOrTape, new KeyboardBinding(Scancode.X, ctrl: true));
             Key(EditorActions.Paste, "Paste", KeyGroups.Editor, BoardOrTape, new KeyboardBinding(Scancode.V, ctrl: true));
+            // A handler, not a screen's key: it answers from the molecule viewer too.
+            InputManager.Register(EditorActions.TutorialRepeat, "Repeat the tutorial step", InputCategory.UI, MagnumOpus.Module.Tutorial.Tutorials.Repeat)
+                .When(MagnumOpus.Module.Tutorial.Tutorials.HasActive)
+                .In(KeyScopes.Board, KeyScopes.Tape, KeyScopes.Tray, KeyScopes.Molecule).Grouped(KeyGroups.Editor)
+                .AddBinding(new KeyboardBinding(Scancode.T, ctrl: true));
             Key(EditorActions.Undo, "Undo", KeyGroups.Editor, Editor, new KeyboardBinding(Scancode.Z, ctrl: true));
             Key(EditorActions.Redo, "Redo", KeyGroups.Editor, Editor, new KeyboardBinding(Scancode.Y, ctrl: true)).AddBinding(new KeyboardBinding(Scancode.Z, ctrl: true, shift: true));
         }

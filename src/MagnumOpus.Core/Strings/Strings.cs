@@ -168,6 +168,54 @@ namespace MagnumOpus.Core.Strings
             // {0} = the new key.
             D("keys.bound", "Bound to {0}"),
             // Refused: an instruction's key is one key alone; Shift inserts and Alt programs from the board.
+            D("bind.ed.tutorial", "Repeat the tutorial step"),
+            D("tutorial.stop", "Tutorial"),
+            D("tutorial.restart", "Restart tutorial"),
+            // Lesson: Introduction. {0} repeat, {1} key help, {2}-{7} the hex keys NW NE W E SW SE.
+            D("tut.intro.move", "Welcome! We figured we'll start you off easy and let you watch this machine to learn the ropes. If you need to repeat this information, hit {0} to do so. If you get confused, {1} is your friend. Now, what you're really here for: the board is a field of hexes. Move with {2} northwest, {3} northeast, {4} west, {5} east, {6} southwest and {7} southeast."),
+            // {0} neighbours.
+            D("tut.intro.neighbours", "A hex says its coordinates, then what is on it. {0} reads what is on the hexes around you."),
+            // {0} the game's note, {1} {2} category keys, {3} {4} item keys.
+            D("tut.intro.reagent", "{0} {1} and {2} choose a kind of thing on the board, and {3} and {4} go through them. Choose Reagents and go to one."),
+            // {0} molecule.
+            D("tut.intro.molecule", "{0} reads the whole molecule on this hex."),
+            // {0} the game's note.
+            D("tut.intro.product", "{0} Use the same keys to go to the product."),
+            // {0} arm 1's key.
+            D("tut.intro.arm", "The digits jump to an arm. {0} goes to arm 1: its hex says its number, type, direction and length."),
+            // {0} the game's note, {1} jump.
+            D("tut.intro.tape", "{0} Each arm has a row of them, its tape. {1} goes between an arm on the board and its tape."),
+            // {0} {1} cycles, {2} {3} arms.
+            D("tut.intro.cells", "Each cell of the tape is one cycle. {0} and {1} go through the cycles, {2} and {3} change arms."),
+            // {0} step.
+            D("tut.intro.step", "Now run it. {0} advances one cycle from anywhere, and says the cycle, then what each arm and glyph did. Press it three times."),
+            // {0} back.
+            D("tut.intro.stop", "{0} stops the machine and puts everything back."),
+            // {0} the game's note, {1} play.
+            D("tut.intro.play", "{0} {1} plays and pauses. While it plays, each cycle's speech cuts off the last one's."),
+            // {0} fast forward.
+            D("tut.intro.fast", "{0} fast forwards without all the spam!"),
+            // Lesson: Arms. {0} the game's note, {1} {2} category keys, {3} next item.
+            D("tut.arms.goal", "{0} Some hexes are highlighted: find them with {1} and {2}, under Highlighted, then {3}. Those with arms on them are finished. Go to the empty one."),
+            // {0} activate.
+            D("tut.arms.carry", "In Parts, {0} on the arm picks it up at the board cursor."),
+            // {0} {1} rotate, {2} {3} length, {4} put down, {5} cancel.
+            D("tut.arms.place", "You are holding the arm. The hex keys move it and say when it cannot go there. {0} and {1} turn it, {2} and {3} change its length, {4} puts it down and {5} cancels. Now place it on that empty highlighted hex."),
+            // {0} the reagent's hex, {1} {2} rotate, {3} activate.
+            D("tut.arms.reach", "The gripper has to be on the reagent, at {0}. By default, the arm starts out facing east, but you can rotate it as we've just described with {1} and {2}. On the board the same keys adjust it, and {3} picks it up again."),
+            D("tut.arms.reach.after", "The gripper is over the reagent."),
+            // {0} jump, {1} {2} arms.
+            D("tut.arms.tape", "Now its program. {0} on the arm goes to its tape, and {1} and {2} change arms there."),
+            // {0} the game's note, {1} grab's key.
+            D("tut.arms.grab", "{0} Each instruction has a key, and typing one moves on a cycle. {1} is grab: place one."),
+            // {0} jump.
+            D("tut.arms.board", "You can program from the board too. Back on the board with {0}, Alt with an instruction's key adds it at this tape's cursor, wherever the board cursor is. Try one."),
+            // {0} delete, {1} backspace, {2} undo.
+            D("tut.arms.edit", "To correct a program: {0} clears a cell, {1} clears the one before the cursor, and {2} undoes anything."),
+            // {0} next stop, {1} details.
+            D("tut.arms.list", "{0} to Instructions lists every instruction with its key, and {1} describes one."),
+            // {0} key help.
+            D("tut.arms.finish", "The rest of the program is yours. Remember: if you get lost, {0} is your handy reference for what you can do!"),
             D("keys.instruction_bare", "An instruction takes a key without Ctrl, Shift or Alt, press another key"),
             D("mod.category.global", "Global"),
             D("mod.category.ui", "UI"),
@@ -250,6 +298,9 @@ namespace MagnumOpus.Core.Strings
             D("editor.cat.glyphs", "Glyphs"),
             D("editor.cat.tracks", "Tracks"),
             D("editor.cat.atoms", "Atoms"),
+            D("editor.cat.highlights", "Highlighted"),
+            // A hex the game marks in a lesson.
+            D("editor.hex_highlighted", "highlighted"),
             // One kind of atom in that summary: {0} = how many, {1} = the atom.
             D("editor.atom_count", "{0} {1}"),
             D("editor.molecule_bond_one", "1 bond"),
@@ -761,6 +812,9 @@ namespace MagnumOpus.Core.Strings
         public static string KeysTaken(string key, string action) => F("keys.taken", key, action);
         public static string KeysBound(string key) => F("keys.bound", key);
         public static string KeysInstructionBare => Get("keys.instruction_bare");
+        public static string TutorialStop => Get("tutorial.stop");
+        public static string TutorialRestart => Get("tutorial.restart");
+        public static string EditorHexHighlighted => Get("editor.hex_highlighted");
         public static string ModClose => Get("mod.close");
         public static string ModSpeakPositions => Get("mod.speak_positions");
         public static string ModFocusOnLaunch => Get("mod.focus_on_launch");

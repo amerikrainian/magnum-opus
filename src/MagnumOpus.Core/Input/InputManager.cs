@@ -25,6 +25,9 @@ namespace MagnumOpus.Core.Input
         /// <summary>Whether the player is typing in a game text field right now (we then stand down).</summary>
         public static Func<bool> TextFieldFocused = () => false;
 
+        /// <summary>An action a key or a dispatch ran and something answered (the lessons' conditions).</summary>
+        public static Action<string> ActionHandled;
+
         public static InputAction Register(string key, string label, InputCategory category, Action onPerformed = null)
         {
             var action = new InputAction(key, label) { Category = category };
@@ -47,6 +50,7 @@ namespace MagnumOpus.Core.Input
             _activeCats.Clear();
             _live.Clear();
             _chordRank.Clear();
+            ActionHandled = null;
         }
 
         // The frame's live state, rebuilt at the top of Tick (cheap: ~50 actions x ~1 binding).
@@ -145,6 +149,7 @@ namespace MagnumOpus.Core.Input
             bool consumed = action.Category == InputCategory.UI
                 && UI.Navigation.DispatchJustPressed(action);
             if (!consumed) action.InvokePerformed();
+            if (consumed || action.HasHandler) ActionHandled?.Invoke(action.Key);
         }
 
         public static void Tick()

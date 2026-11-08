@@ -16,6 +16,13 @@
 | Ctrl+Shift+M | The Magnum Opus menu (settings, all keys) |
 | Ctrl+Shift+N | Hand the keyboard back to the game, and take it again |
 
+## Tutorial
+
+The lessons of the Transmutation Engine prologue teach the mod's keys as you go, in the game's own
+notes and no further than the game's lessons go. A step waits until you have done it, and every key
+keeps working meanwhile. Ctrl+T repeats the step. The Tutorial stop in the editor shows it, with
+Restart tutorial to begin the lesson again.
+
 ## Changing keys
 
 Every key the mod uses can be changed: in the Magnum Opus menu (Ctrl+Shift+M), All keys lists them

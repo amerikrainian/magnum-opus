@@ -318,6 +318,8 @@ namespace MagnumOpus.Module.Game
             var parts = new List<string>();
             if (HasSelectedPart(ed, hex)) parts.Add(Strings.EditorHexSelected);
             parts.Add(Hex.Coords(hex));
+            // The game pulses these hexes in its lessons.
+            if (SolutionOf(ed) != null && SolutionOf(ed).GetPuzzle().highlights.Contains(hex)) parts.Add(Strings.EditorHexHighlighted);
             if (extra != null) parts.Add(extra);
             parts.AddRange(Contents(ed, hex));
             return string.Join(", ", parts);

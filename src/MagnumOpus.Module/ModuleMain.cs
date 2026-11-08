@@ -65,6 +65,7 @@ namespace MagnumOpus.Module
             KeyBindings.Snapshot();
             KeyBindings.Load(host.Settings.Store.GetString(KeyBindings.StoreKey, ""));
             KeyBindings.Persist = saved => host.Settings.Store.SetString(KeyBindings.StoreKey, saved);
+            Tutorial.Tutorials.Start(host.Settings.Store);
             RegisterScreens();
             FocusMode.Set(host.Settings.FocusModeOnLaunch);
             // Once per launch: a reloaded module does not ask again.
@@ -166,6 +167,7 @@ namespace MagnumOpus.Module
             InputManager.Tick();
             ScreenManager.Tick();
             Navigation.TickTypeahead();
+            Safe(Tutorial.Tutorials.Tick, "tutorial");
             Safe(Later.Tick, "later");
         }
 

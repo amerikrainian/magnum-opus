@@ -33,9 +33,11 @@ namespace MagnumOpus.Module.Screens
             Add(new ProgramSection(_ctx));
             Add(new InstructionTraySection(_ctx));
             Add(new TraySection(_ctx));
+            Add(new TutorialSection());
             Add(new LogSection());
             _run = Add(new RunSection(_ctx));
             Add(new UndoSection(_ctx));
+            MagnumOpus.Module.Tutorial.Tutorials.Bind(_ctx);
         }
 
         public override string Key => "game.editor";
@@ -79,6 +81,8 @@ namespace MagnumOpus.Module.Screens
             base.OnFocus();
             if (!_tipsPending) return;
             _tipsPending = false;
+            // A lesson says the game's notes in its own steps.
+            if (MagnumOpus.Module.Tutorial.Tutorials.Here) return;
             // After the landing is read (the navigator speaks it this frame).
             Later.Frames(2, () => EditorContext.Say(_run.TipsText(), interrupt: false), "editor tips");
         }

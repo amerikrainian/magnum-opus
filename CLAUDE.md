@@ -173,7 +173,7 @@ fingerprint), though the mod survives without one (section 4).
 `%LOCALAPPDATA%\MagnumOpus\magnumopus.log`, a fresh file per launch (the one path to give testers), also
 served by `GET /log?since=N&grep=S`. Settings: `%LOCALAPPDATA%\MagnumOpus\settings.json` (flat
 `{"key": "value"}`: `speech.output` auto|prism|sapi|clipboard, `speech.trace`, `mappings.download`,
-`focus_mode_on_launch`, `speak_positions`, `key_bindings`).
+`focus_mode_on_launch`, `speak_positions`, `key_bindings`, `tutorial_done`).
 
 ## 9. Dev server (DEBUG builds; on by default, `MAGNUMOPUS_NO_DEV=1` disables, `MAGNUMOPUS_DEV_PORT` moves it from 8776)
 `GET /health`, `POST /say`, `GET /speech?since=N`, `GET /log?since=N&grep=S`, `GET /screen` (the game's
@@ -371,6 +371,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   NOT yet verified live: track drawing, reagents / products from the tray, placing a
   copy, Alt+Space (the game reads Alt itself), the numpad.
 - **Production puzzles** (`Game/Chambers`, 2026-11-08): only the hexes inside the puzzle's chambers exist. The board cursor stops at a chamber's edge, silently, carrying too (user decision: hard edges, the Sigmar rule); an Alt+Shift skip stops on the last hex that way; a track step off the chambers gets the game's refusal at once. Page Up / Page Down cycle the chambers (wrap; silent with one; off while drawing a track): each lands on the chamber's centre, "chamber 2, 4, 4", a carried part coming along. A conduit reads where it leads, "Conduit, to 3, 4" (the sim's mapping, hex for hex). An error on a chamber wall moves the cursor to the closest real hex.
+- **Tutorial** (`Module/Tutorial/`, `Core/Tutorial/TutorialRunner` tested, `Editor/TutorialSection`, 2026-11-08; SpeechChem's engine, user request): lessons by puzzle id (`TutorialScripts`: P044 Lesson: Introduction, P001 Lesson: Arms so far). Steps LIVE (done while met) or LATCHED (done once while active, saved in the store's `tutorial_done`); active = first undone; non-blocking; no finished state. Text `tut.<lesson>.<step>` (+ `.after`), keys from live bindings (`Tutorials.Key`). **A step's words use only the game's notes and highlights and key names: never a rotation, length or order of instructions (user rule).** A condition or text about where parts stand goes through `TutorialContext.WhileStopped`: a running arm moves. Conditions: `TutorialContext` (`Pressed`: `InputManager.ActionHandled`, `Tutorials.Report` for events with no action). Ctrl+T repeats. Stop: the step and Restart tutorial. On a lesson the sticky notes are not spoken on entry (the steps say them; Ctrl+Shift+T still reads them). The game's highlighted hexes read "highlighted" and are a board category.
 - **Completion** (`CompletionGameScreen`, 2026-11-04): one stop: the game's message, then its notice
   (tutorial, custom, hermit mode) or a TABLE (graph columns, SpeechChem's layout): a column per metric
   (cost / cycles / area or instructions; its name the column's context, spoken on crossing), first the

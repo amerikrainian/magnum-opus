@@ -356,6 +356,7 @@ namespace MagnumOpus.Module.Screens.Editor
             Add("arms", Board.Arms(ed).Select(p => Board.BaseHex(ed, p)));
             Add("glyphs", solution.parts.Where(p => p.GetType().glyphHexes.Length > 0).Select(p => p.GetHexPos()));
             Add("tracks", solution.parts.Where(p => p.GetType().isTrack).Select(p => p.GetHexPos()));
+            Add("highlights", solution.GetPuzzle().highlights);
             if (Board.Running(ed))
                 Add("atoms", ed.GetSimulation().GetMolecules().Where(m => m.GetAtoms().Count > 0)
                     .Select(m => m.GetAtoms().Keys.OrderBy(h => h.R).ThenBy(h => h.Q).First()));
@@ -548,6 +549,7 @@ namespace MagnumOpus.Module.Screens.Editor
             if (!SdlKeyboard.AltHeld || SdlKeyboard.CtrlHeld || SdlKeyboard.ShiftHeld) return;
             if (!_ctx.CanEdit()) return;
             ProgramSection.PlaceAtCursor(_ctx, type, insert: false, withPlace: true);
+            MagnumOpus.Module.Tutorial.Tutorials.Report(MagnumOpus.Module.Tutorial.TutorialEvents.ProgrammedFromBoard);
         }
 
         // ---- the tape jump ----
