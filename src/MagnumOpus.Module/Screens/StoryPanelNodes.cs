@@ -16,6 +16,9 @@ namespace MagnumOpus.Module.Screens
     {
         public readonly List<string> Items = new List<string>();
 
+        /// <summary>The items are dialogue lines (not the quote or a journal page, each one piece).</summary>
+        public bool Dialogue;
+
         /// <summary>The panel is waiting for a press to show the next line (the game's pulsing arrow).</summary>
         public bool More;
 
@@ -52,6 +55,7 @@ namespace MagnumOpus.Module.Screens
                     if (!string.IsNullOrWhiteSpace(text)) view.Items.Add(GameText.Clean(text));
                 return view;
             }
+            view.Dialogue = true;
             if (PuzzleSelectScreen.unlockAllMode) reached = int.MaxValue;
             int progress = GameLogic.instance.saveData.GetVignetteProgress(localized);
             int index = 0;
@@ -89,11 +93,12 @@ namespace MagnumOpus.Module.Screens
     /// <summary>
     /// The story panel as a stop of puzzle info and Options: every item <see cref="StoryPanelNodes"/>
     /// reads, landing on the latest; Enter on any of them shows the next line, as the game's own
-    /// Space does anywhere on the screen. The story is spoken when the game screen opens; after that
-    /// each new line as it appears, whether a press or the game's timer brought it. The latest item
-    /// says "More story" while the panel waits for a press, and so does speech each time it starts
-    /// waiting (user decision 2026-11-08: the game draws its "Click to advance the story" on the
-    /// first lesson only, and a pulsing arrow elsewhere).
+    /// Space does anywhere on the screen. Opening the game screen speaks the first line of dialogue
+    /// (the whole of a quote or journal page); after that each new line as it appears, whether a
+    /// press or the game's timer brought it. The latest item reads "More story" while the panel
+    /// waits for a press, in the stop only, never spoken by itself (user decisions 2026-11-08: the
+    /// game draws its "Click to advance the story" on the first lesson only, and a pulsing arrow
+    /// elsewhere).
     /// </summary>
     internal sealed class StoryStop
     {
@@ -105,7 +110,6 @@ namespace MagnumOpus.Module.Screens
 
         private int _opened; // the game screen this stop last opened on (its identity hash)
         private int _spoken; // items already spoken
-        private bool _moreSaid;
         private string _lastError;
 
         public StoryStop(Func<StoryPanel> panel, Func<Tuple<int, LocString>[]> sections, Func<int> reached)
@@ -172,11 +176,10 @@ namespace MagnumOpus.Module.Screens
             if (id == _opened) return;
             _opened = id;
             var view = Read();
-            foreach (var item in view.Items)
-                if (!string.IsNullOrWhiteSpace(item)) Speech.Say(item, interrupt: false);
+            int count = view.Dialogue ? Math.Min(1, view.Items.Count) : view.Items.Count;
+            for (int i = 0; i < count; i++)
+                if (!string.IsNullOrWhiteSpace(view.Items[i])) Speech.Say(view.Items[i], interrupt: false);
             _spoken = view.Items.Count;
-            _moreSaid = view.More;
-            if (view.More) Speech.Say(Strings.StoryMore, interrupt: false);
         }
 
         /// <summary>From the screen's OnUpdate, every frame.</summary>
@@ -187,8 +190,6 @@ namespace MagnumOpus.Module.Screens
             for (int i = _spoken; i < view.Items.Count; i++)
                 if (!string.IsNullOrWhiteSpace(view.Items[i])) Speech.Say(view.Items[i], interrupt: false);
             _spoken = Math.Max(_spoken, view.Items.Count);
-            if (view.More && !_moreSaid) Speech.Say(Strings.StoryMore, interrupt: false);
-            _moreSaid = view.More;
             FinishScrollDelay();
         }
 
