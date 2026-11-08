@@ -13,7 +13,8 @@ namespace MagnumOpus.Module.Screens
     ///  1. the chapter's campaign items (puzzles, cutscenes, letters, solitaire): name, kind,
     ///     completed; a locked row (the game draws it blank) says "locked". For a campaign whose
     ///     chapters share the screen (De Re Metallica) every unlocked chapter is a group;
-    ///  2. the chapter gems (the main campaign's chapters, locked or not, the current one selected);
+    ///  2. the chapter gems (the main campaign's chapters, locked or not, the current one selected;
+    ///     none on a campaign that shows its chapters together);
     ///  3. Journal, the campaign switch, Options.
     /// Enter does what the click does, by the game's own code path (the same screen pushes with the
     /// same transitions and sounds; see the matching lines of PuzzleSelectScreen.RenderFrame and
@@ -59,25 +60,29 @@ namespace MagnumOpus.Module.Screens
                 Chapter(b, g, chapter);
             }
 
-            b.BeginStop("chapters");
-            b.PushContext(Strings.SelectChapters, Strings.RoleList);
-            foreach (var c in Campaigns.opusMagnum.chapters)
+            // The game slides the gems off the screen on a campaign that shows its chapters together.
+            if (!campaign.sameScreenChapters)
             {
-                var ch = c;
-                b.AddItem(ControlId.Structural("chapter:" + ch.chapterNumber), new NodeVtable
+                b.BeginStop("chapters");
+                b.PushContext(Strings.SelectChapters, Strings.RoleList);
+                foreach (var c in Campaigns.opusMagnum.chapters)
                 {
-                    ControlType = Core.UI.ControlTypes.Button,
-                    Announcements = new List<NodeAnnouncement>
+                    var ch = c;
+                    b.AddItem(ControlId.Structural("chapter:" + ch.chapterNumber), new NodeVtable
                     {
-                        Nodes.LabelPart(() => Strings.SelectChapter(GameText.Of(ch.title), GameText.Of(ch.name))),
-                        Nodes.SelectedPart(() => Game != null && Shown(Game) == ch),
-                        new NodeAnnouncement(() => Game != null && !Game.IsUnlocked(ch) ? Strings.StateLocked : null, kind: AnnouncementKinds.Enabled),
-                    },
-                    SearchText = () => GameText.Of(ch.name),
-                    OnActivate = () => SelectChapter(ch),
-                });
+                        ControlType = Core.UI.ControlTypes.Button,
+                        Announcements = new List<NodeAnnouncement>
+                        {
+                            Nodes.LabelPart(() => Strings.SelectChapter(GameText.Of(ch.title), GameText.Of(ch.name))),
+                            Nodes.SelectedPart(() => Game != null && Shown(Game) == ch),
+                            new NodeAnnouncement(() => Game != null && !Game.IsUnlocked(ch) ? Strings.StateLocked : null, kind: AnnouncementKinds.Enabled),
+                        },
+                        SearchText = () => GameText.Of(ch.name),
+                        OnActivate = () => SelectChapter(ch),
+                    });
+                }
+                b.PopContext();
             }
-            b.PopContext();
 
             b.BeginStop("actions");
             b.AddItem(ControlId.Structural("select:journal"), Nodes.Button(() => Strings.SelectJournal, OpenJournal));

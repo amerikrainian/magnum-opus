@@ -255,7 +255,7 @@ Type-ahead characters come from the same snapshot through `SDL_GetKeyFromScancod
 registers T, and `FallbackScreen` (layer -10) covers every other game screen.
 - **Title** (`TitleGateScreen`): "Press any key to continue"; any key reaches the game as Escape.
 - **Puzzle select** (`PuzzleSelectGameScreen`): items (name, kind, completed; locked rows "locked"; every
-  unlocked chapter when the campaign shares the screen, as De Re Metallica does), chapter gems, Journal /
+  unlocked chapter when the campaign shares the screen, as De Re Metallica does), chapter gems (not on such a campaign: the game slides them off the screen), Journal /
   campaign switch (store notice without the DLC) / Options. Enter runs the game's click code. The unlock
   sequence is spoken as the game plays it (it only sounds it).
 - **Letters** (`DocumentGameScreen`): sections as lines, Close (the game's Escape: marks seen, pops).
