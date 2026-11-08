@@ -142,6 +142,7 @@ namespace MagnumOpus.Module.Game
             int turn = at.IoPart != null ? at.IoPart.GetRotation().GetNumberOfTurns() : 0;
             var plain = new List<string>();
             var triplex = new List<string>();
+            var partial = new List<string>();
             foreach (var bond in at.Molecule.GetBonds())
             {
                 HexIndex other;
@@ -151,13 +152,26 @@ namespace MagnumOpus.Module.Game
                 var dir = Hex.DirOf(other.Q - at.Hex.Q, other.R - at.Hex.R);
                 if (dir == null) continue;
                 string word = Hex.Word(Hex.FromTurns((int)dir.Value + turn));
+                int kinds = TriplexKinds(bond.type);
                 if ((bond.type & BondTypeEnum.Standard) != 0) plain.Add(word);
-                else triplex.Add(word);
+                else if (kinds == 3) triplex.Add(word);
+                else partial.Add(Strings.EditorTriplexPartialDirection(word, kinds));
             }
             var parts = new List<string>();
             if (plain.Count > 0) parts.Add(Strings.EditorBonds(string.Join(", ", plain)));
             if (triplex.Count > 0) parts.Add(Strings.EditorTriplex(string.Join(", ", triplex)));
+            if (partial.Count > 0) parts.Add(Strings.EditorTriplexPartial(string.Join(", ", partial)));
             return string.Join(", ", parts);
+        }
+
+        /// <summary>How many of a triplex bond's three kinds a bond has (the glyph makes one per side).</summary>
+        public static int TriplexKinds(BondTypeEnum type)
+        {
+            int kinds = 0;
+            if ((type & BondTypeEnum.Prisma0) != 0) kinds++;
+            if ((type & BondTypeEnum.Prisma1) != 0) kinds++;
+            if ((type & BondTypeEnum.Prisma2) != 0) kinds++;
+            return kinds;
         }
 
         /// <summary>The atom's own words: name, then bonds, then who holds it.</summary>
@@ -352,14 +366,16 @@ namespace MagnumOpus.Module.Game
             string composition = string.Join(", ", groups.Select(g => g.Count() == 1 ? g.Key : Strings.EditorAtomCount(g.Count(), g.Key)));
             // The atoms themselves, no total (user rule 2026-11-04): "2 Fire, Salt".
             var parts = new List<string> { composition };
-            int plain = 0, triplex = 0;
+            int plain = 0, triplex = 0, partial = 0;
             foreach (var bond in molecule.GetBonds())
             {
                 if ((bond.type & BondTypeEnum.Standard) != 0) plain++;
-                else triplex++;
+                else if (TriplexKinds(bond.type) == 3) triplex++;
+                else partial++;
             }
             if (plain > 0) parts.Add(Strings.EditorMoleculeBonds(plain));
             if (triplex > 0) parts.Add(Strings.EditorMoleculeTriplex(triplex));
+            if (partial > 0) parts.Add(Strings.EditorMoleculeTriplexPartial(partial));
             return parts;
         }
     }

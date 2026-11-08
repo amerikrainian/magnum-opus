@@ -191,6 +191,9 @@ namespace MagnumOpus.Core.Strings
             // An atom's bonds as directions; triplex = the three-colour bonds.
             D("editor.bonds", "bonds {0}"),
             D("editor.triplex", "triplex bonds {0}"),
+            // Bonds some of whose three kinds are still missing; one entry: {0} = direction, {1} = kinds it has.
+            D("editor.triplex_partial", "partial triplex bonds {0}"),
+            D("editor.triplex_partial_dir", "{0}, {1} of 3"),
             // The arm holding an atom.
             D("editor.held_by", "held by arm {0}"),
             // A tape cell: {0} = column, {1} = instruction.
@@ -211,6 +214,8 @@ namespace MagnumOpus.Core.Strings
             D("editor.molecule_bonds", "{0} bonds"),
             D("editor.molecule_triplex_one", "1 triplex bond"),
             D("editor.molecule_triplex", "{0} triplex bonds"),
+            D("editor.molecule_triplex_partial_one", "1 partial triplex bond"),
+            D("editor.molecule_triplex_partial", "{0} partial triplex bonds"),
             // A product's outline on a hex while the engine runs: {0} = the atom it wants, with bonds.
             D("editor.product_wants", "wants {0}"),
             // A neighbour of the cursor: {0} = direction, {1} = what is there.
@@ -272,6 +277,9 @@ namespace MagnumOpus.Core.Strings
             D("event.removed", "{0} removed"),
             D("event.transmuted", "{0} became {1}"),
             D("event.bonded", "bonded {0} and {1}"),
+            // A triplex glyph adding one of the bond's three kinds: {2} = how many it has now.
+            D("event.triplex_partial", "{0} and {1}, {2} of 3"),
+            D("event.triplex_bonded", "triplex bonded {0} and {1}"),
             D("event.unbonded", "unbonded {0} and {1}"),
             // An atom and its hex: {0} = atom, {1} = coordinates.
             D("event.atom_at", "{0} at {1}"),
@@ -709,6 +717,8 @@ namespace MagnumOpus.Core.Strings
         public static string EditorGripClosed(int n) => F("editor.grip_closed", n);
         public static string EditorBonds(string directions) => F("editor.bonds", directions);
         public static string EditorTriplex(string directions) => F("editor.triplex", directions);
+        public static string EditorTriplexPartial(string directions) => F("editor.triplex_partial", directions);
+        public static string EditorTriplexPartialDirection(string direction, int kinds) => F("editor.triplex_partial_dir", direction, kinds);
         public static string EditorHeldBy(int n) => F("editor.held_by", n);
         public static string EditorCell(int column, string instruction) => F("editor.cell", column, instruction);
         public static string EditorCycle(int n) => F("editor.cycle", n);
@@ -717,6 +727,7 @@ namespace MagnumOpus.Core.Strings
         public static string EditorAtomCount(int count, string atom) => F("editor.atom_count", count, atom);
         public static string EditorMoleculeBonds(int n) => n == 1 ? Get("editor.molecule_bond_one") : F("editor.molecule_bonds", n);
         public static string EditorMoleculeTriplex(int n) => n == 1 ? Get("editor.molecule_triplex_one") : F("editor.molecule_triplex", n);
+        public static string EditorMoleculeTriplexPartial(int n) => n == 1 ? Get("editor.molecule_triplex_partial_one") : F("editor.molecule_triplex_partial", n);
         public static string EditorProductWants(string atom) => F("editor.product_wants", atom);
         public static string EditorNeighbour(string direction, string what) => F("editor.neighbour", direction, what);
         public static string EditorScoreItem(string label, string value) => F("editor.score_item", label, value);
@@ -855,6 +866,8 @@ namespace MagnumOpus.Core.Strings
         public static string EventRemoved(string atom) => F("event.removed", atom);
         public static string EventTransmuted(string from, string to) => F("event.transmuted", from, to);
         public static string EventBonded(string a, string b) => F("event.bonded", a, b);
+        public static string EventTriplexPartial(string a, string b, int kinds) => F("event.triplex_partial", a, b, kinds);
+        public static string EventTriplexBonded(string a, string b) => F("event.triplex_bonded", a, b);
         public static string EventUnbonded(string a, string b) => F("event.unbonded", a, b);
         public static string EventAtomAt(string atom, string where) => F("event.atom_at", atom, where);
         public static string EventCount(int count, string atom) => F("event.count", count, atom);

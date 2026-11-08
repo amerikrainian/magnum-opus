@@ -211,9 +211,13 @@ namespace MagnumOpus.Module.Patches
                 // molecule); one between two atoms that both went went with them. Neither is a glyph
                 // bonding or unbonding anything.
                 foreach (var kv in bonds)
-                    if (!_bondsBefore.ContainsKey(kv.Key) && ParseBond(kv.Key, out var a, out var b)
-                        && (_atomsBefore.ContainsKey(a) || _atomsBefore.ContainsKey(b)))
-                        events.Add(new KeyValuePair<HexIndex, string>(a, Strings.EventBonded(AtomAt(atoms, a), AtomAt(atoms, b))));
+                {
+                    // A bond that gains a kind is said too: a triplex glyph adds one per side.
+                    bool existed = _bondsBefore.TryGetValue(kv.Key, out var had);
+                    if ((existed && had == kv.Value) || !ParseBond(kv.Key, out var a, out var b)) continue;
+                    if (!existed && !_atomsBefore.ContainsKey(a) && !_atomsBefore.ContainsKey(b)) continue;
+                    events.Add(new KeyValuePair<HexIndex, string>(a, BondEvent(kv.Value, AtomAt(atoms, a), AtomAt(atoms, b))));
+                }
                 foreach (var kv in _bondsBefore)
                     if (!bonds.ContainsKey(kv.Key) && ParseBond(kv.Key, out var a, out var b)
                         && (atoms.ContainsKey(a) || atoms.ContainsKey(b)))
@@ -237,6 +241,13 @@ namespace MagnumOpus.Module.Patches
             }
             catch (Exception e) { CoreLog.Warning("[sim] glyph events: " + e.Message); }
             finally { _atomsBefore = null; }
+        }
+
+        private static string BondEvent(BondTypeEnum type, string a, string b)
+        {
+            if ((type & BondTypeEnum.Standard) != 0) return Strings.EventBonded(a, b);
+            int kinds = Board.TriplexKinds(type);
+            return kinds == 3 ? Strings.EventTriplexBonded(a, b) : Strings.EventTriplexPartial(a, b, kinds);
         }
 
         private static void Snapshot(Sim sim, out Dictionary<HexIndex, WorldAtom> atoms, out Dictionary<string, BondTypeEnum> bonds)
