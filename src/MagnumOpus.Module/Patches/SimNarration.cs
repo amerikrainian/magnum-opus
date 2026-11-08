@@ -22,8 +22,8 @@ namespace MagnumOpus.Module.Patches
     /// frame to check the program).
     ///
     /// Every cycle goes to the run log (<see cref="RunLog"/>). Speech, one message per event: every
-    /// event while stepping, after "cycle N"; while playing, each cycle's first message cuts off the
-    /// last cycle's (no backlog at speed); fast forward is silent. The log empties when a run starts
+    /// event while stepping, after "cycle N"; while playing, every message queues, nothing is cut
+    /// off; fast forward is silent. The log empties when a run starts
     /// and when the editor opens. Errors are spoken by the editor screen when the game shows them.
     /// </summary>
     internal static class SimNarration
@@ -346,13 +346,13 @@ namespace MagnumOpus.Module.Patches
             // So is the endless run after a win: Continue Editing sets the machine playing again.
             if (state == SimPlayState.Playing && (fast || ed.wasCompleted)) return;
             // One message per event, SpeechChem's way ("cycle 3", "arm 1: grabbed Fire", "arm 2: ..."):
-            // the first interrupts, the rest queue behind it. A step opens with the cycle's number;
-            // at speed each cycle's first message cuts the last cycle's off, so what is said is the
-            // present and nothing backs up.
+            // a step opens with the cycle's number and interrupts, the rest queue behind it. While
+            // playing nothing interrupts (user rule 2026-11-08): every cycle's messages queue.
+            bool playing = state == SimPlayState.Playing;
             var all = new List<string>(sentences);
             all.AddRange(cycle.Products);
-            if (state != SimPlayState.Playing) all.Insert(0, Strings.EditorCycle(cycle.Number));
-            for (int i = 0; i < all.Count; i++) Speech.Say(all[i], interrupt: i == 0);
+            if (!playing) all.Insert(0, Strings.EditorCycle(cycle.Number));
+            for (int i = 0; i < all.Count; i++) Speech.Say(all[i], interrupt: i == 0 && !playing);
         }
 
         /// <summary>A molecule in words: its atoms by name with counts ("Fire", "2 Fire, Salt").</summary>
