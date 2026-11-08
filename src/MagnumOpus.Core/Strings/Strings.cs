@@ -216,6 +216,24 @@ namespace MagnumOpus.Core.Strings
             D("tut.arms.list", "{0} to Instructions lists every instruction with its key, and {1} describes one."),
             // {0} key help.
             D("tut.arms.finish", "The rest of the program is yours. Remember: if you get lost, {0} is your handy reference for what you can do!"),
+            // Lesson: Pivots. {0} arm 1's key.
+            D("tut.pivots.meet", "Back for more! This lesson brings in a new move, the pivot, and {0} jumps to arm 1, who already knows it."),
+            // {0} jump, {1} {2} cycles.
+            D("tut.pivots.tape", "Have a look at its program: {0} goes to its tape, and {1} and {2} walk through it."),
+            // {0} next stop, {1} details.
+            D("tut.pivots.describe", "Wondering what a pivot actually does? {0} over to Instructions, find one, and {1} spells it out."),
+            // {0} step.
+            D("tut.pivots.watch", "Enough reading, let's see it. Hit {0} three times."),
+            D("tut.pivots.held", "That arm still has its molecule in hand. Go find its gripper with the hex keys, and it'll tell you what it's holding."),
+            // {0} back.
+            D("tut.pivots.stop", "Good stuff. {0} to stop it, same as ever."),
+            // {0} the game's note, {1} {2} category keys.
+            D("tut.pivots.goal", "Your turn! {0} You know the drill: {1} and {2} to Highlighted, then go to the empty one."),
+            // {0} activate.
+            D("tut.pivots.carry", "In Parts, {0} on the arm picks it up, same as last time."),
+            // {0} molecule.
+            D("tut.pivots.reagent", "Before you program it, size up the job: go to a reagent and hit {0} to hear what it's made of."),
+            D("tut.pivots.program", "You're all set! Remember to pivot!"),
             D("keys.instruction_bare", "An instruction takes a key without Ctrl, Shift or Alt, press another key"),
             D("mod.category.global", "Global"),
             D("mod.category.ui", "UI"),

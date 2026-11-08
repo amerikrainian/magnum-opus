@@ -18,9 +18,9 @@ namespace MagnumOpus.Module.Tutorial
     /// </summary>
     internal static class TutorialScripts
     {
-        private const string Introduction = "P044", Arms = "P001";
+        private const string Introduction = "P044", Arms = "P001", Pivots = "P004";
 
-        public static bool Has(string puzzleId) => puzzleId == Introduction || puzzleId == Arms;
+        public static bool Has(string puzzleId) => puzzleId == Introduction || puzzleId == Arms || puzzleId == Pivots;
 
         public static List<TutorialStep> For(string puzzleId, TutorialContext c)
         {
@@ -28,6 +28,7 @@ namespace MagnumOpus.Module.Tutorial
             {
                 case Introduction: return IntroductionSteps(c);
                 case Arms: return ArmsSteps(c);
+                case Pivots: return PivotsSteps(c);
                 default: return new List<TutorialStep>();
             }
         }
@@ -93,6 +94,28 @@ namespace MagnumOpus.Module.Tutorial
                 Latch(P, "edit", () => c.Pressed(EditorActions.Delete, UiActions.Secondary, EditorActions.Undo), () => new object[] { K(EditorActions.Delete), K(UiActions.Secondary), K(EditorActions.Undo) }),
                 Latch(P, "list", () => Equals(c.Stop, InstructionTraySection.Stop), () => new object[] { K(UiActions.Next), K(EditorActions.Details) }),
                 Latch(P, "finish", () => c.RunState != SimPlayState.Stopped, () => new object[] { K("mod.help") }),
+            };
+        }
+
+        // ---- Lesson: Pivots: the game's own arm shows a pivot, then the player places an arm on the
+        // highlight. The game's notes say only to place an arm and to move the reagent. ----
+
+        private static List<TutorialStep> PivotsSteps(TutorialContext c)
+        {
+            const string P = "tut.pivots.";
+            Func<bool> armPlaced = () => c.PlayerArms.Any();
+            return new List<TutorialStep>
+            {
+                Latch(P, "meet", () => c.Pressed(EditorActions.ArmPrefix + 1), () => new object[] { K(EditorActions.ArmPrefix + 1) }),
+                Latch(P, "tape", () => Equals(c.Stop, EditorContext.StopProgram) && c.Pressed(UiActions.Left, UiActions.Right), () => new object[] { K(EditorActions.Jump), K(UiActions.Left), K(UiActions.Right) }),
+                Latch(P, "describe", () => Equals(c.Stop, InstructionTraySection.Stop) && c.Pressed(EditorActions.Details), () => new object[] { K(UiActions.Next), K(EditorActions.Details) }),
+                Latch(P, "watch", () => c.Pressed(EditorActions.Step) && c.Cycle >= 3 && c.RunState != SimPlayState.Stopped, () => new object[] { K(EditorActions.Step) }),
+                Latch(P, "held", () => Board.Arms(c.Ed).Where(a => a.GetIsFixed()).Any(a => Board.Grippers(c.Ed, a).Any(g => g.Key == c.Cursor)), () => new object[0]),
+                Latch(P, "stop", () => c.RunState == SimPlayState.Stopped, () => new object[] { K(UiActions.Back) }),
+                Latch(P, "goal", () => armPlaced() || c.FreeHighlights.Contains(c.Cursor), () => new object[] { c.Note(0, 0), K(EditorActions.CatPrev), K(EditorActions.CatNext) }),
+                Live(P, "carry", armPlaced, () => new object[] { K(UiActions.Activate) }),
+                Latch(P, "reagent", () => c.Pressed(EditorActions.Molecule) && c.CursorOn(p => p.GetType().isInput), () => new object[] { K(EditorActions.Molecule) }),
+                Live(P, "program", () => c.PlayerArms.Any(a => a.program.Count() > 0), () => new object[0]),
             };
         }
 
