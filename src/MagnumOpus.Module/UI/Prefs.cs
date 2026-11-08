@@ -6,6 +6,7 @@ namespace MagnumOpus.Module.UI
     {
         private const string BoardItemsStayKey = "board_items_stay";
         private const string ShortDirectionsKey = "short_directions";
+        private const string InterruptWhilePlayingKey = "interrupt_while_playing";
 
         private static MagnumOpus.Contracts.ISettingsStore Store => ModuleMain.Host.Settings.Store;
 
@@ -22,6 +23,14 @@ namespace MagnumOpus.Module.UI
         {
             get => Store.GetBool(ShortDirectionsKey, false);
             set => Store.SetBool(ShortDirectionsKey, value);
+        }
+
+        /// <summary>While a run plays, each cycle's first message cuts off the last cycle's, instead
+        /// of everything queueing (the mod menu).</summary>
+        public static bool InterruptWhilePlaying
+        {
+            get => Store.GetBool(InterruptWhilePlayingKey, false);
+            set => Store.SetBool(InterruptWhilePlayingKey, value);
         }
     }
 }

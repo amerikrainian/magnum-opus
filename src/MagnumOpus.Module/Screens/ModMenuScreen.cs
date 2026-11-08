@@ -66,6 +66,8 @@ namespace MagnumOpus.Module.Screens
                     () => settings.FocusModeOnLaunch, v => settings.FocusModeOnLaunch = v));
                 b.AddItem(ControlId.Structural("modsettings:short_directions"), Nodes.Toggle(() => Strings.ModShortDirections,
                     () => Prefs.ShortDirections, v => Prefs.ShortDirections = v));
+                b.AddItem(ControlId.Structural("modsettings:interrupt_playing"), Nodes.Toggle(() => Strings.ModInterruptWhilePlaying,
+                    () => Prefs.InterruptWhilePlaying, v => Prefs.InterruptWhilePlaying = v));
             }
             b.PopContext();
         }

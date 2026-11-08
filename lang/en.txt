@@ -83,6 +83,7 @@ mod.close=Close
 mod.speak_positions=Speak list positions
 mod.focus_on_launch=Keyboard navigation on at launch
 mod.short_directions=Abbreviate directions
+mod.interrupt_playing=Interrupt speech while playing
 mod.key_category={0} keys
 mod.category.navigation=Navigation
 mod.category.board=Board

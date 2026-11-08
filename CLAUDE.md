@@ -170,7 +170,7 @@ fingerprint), though the mod survives without one (section 4).
 `%LOCALAPPDATA%\MagnumOpus\magnumopus.log`, a fresh file per launch (the one path to give testers), also
 served by `GET /log?since=N&grep=S`. Settings: `%LOCALAPPDATA%\MagnumOpus\settings.json` (flat
 `{"key": "value"}`: `speech.output` auto|prism|sapi|clipboard, `speech.trace`, `mappings.download`,
-`focus_mode_on_launch`, `speak_positions`, `key_bindings`, `tutorial_done`, `board_items_stay`, `short_directions`).
+`focus_mode_on_launch`, `speak_positions`, `key_bindings`, `tutorial_done`, `board_items_stay`, `short_directions`, `interrupt_while_playing`).
 
 ## 9. Dev server (DEBUG builds; on by default, `MAGNUMOPUS_NO_DEV=1` disables, `MAGNUMOPUS_DEV_PORT` moves it from 8776)
 `GET /health`, `POST /say`, `GET /speech?since=N`, `GET /log?since=N&grep=S`, `GET /screen` (the game's
@@ -357,7 +357,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   work as the atom / bond difference across each `RunCycleGlyphs` (bonds that arrive or leave with both their atoms, a reagent's molecule, are not "bonded" / "unbonded", 2026-11-07; a triplex glyph adds one of the bond's three kinds per side, each said, "Fire at 0, 0 and Fire at 1, 0, 1 of 3", then "triplex bonded ...", and hexes and molecules read "partial triplex bonds east, 2 of 3" / "1 partial triplex bond" until all three, 2026-11-08, verified live; content-mod glyphs included; one
   sentence per part, not per name), products from `outputDone`; ONE MESSAGE PER EVENT (user rule
   2026-11-04, SpeechChem's way): a step says "cycle N" then each actor's sentence queued; at play
-  every message queues, nothing interrupts (user rule 2026-11-08); fast forward says nothing, nor does the endless run Continue Editing starts after a win (steps still speak; 2026-11-08) (user rule 2026-11-04;
+  every message queues, nothing interrupts (user rule 2026-11-08; the mod menu's Interrupt speech while playing, off by default, has each cycle's first message cut off the last cycle's); fast forward says nothing, nor does the endless run Continue Editing starts after a win (steps still speak; 2026-11-08) (user rule 2026-11-04;
   a product is announced only up to its required count: the game keeps counting past it); errors when the
   game shows them (message + hexes, the board cursor moved there).
   Error panel (`ErrorSection`, a stop after Board while the game shows it): "Error, <message> at
