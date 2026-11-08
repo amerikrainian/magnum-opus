@@ -5,8 +5,7 @@ Steam branch. Speaks screens and makes them keyboard-operable through Prism. Bui
 architecture (Contracts / Core / host / module, the key-graph UI) with the Zachtronics machinery of
 Echopunks (`../exaaccess`) and SpeechChem (`../speechchem`): AppDomainManager injection into the stock
 exe, a byte-loaded hot-reloadable module, a load-time name remap. Speech is the sole interface: a silent
-failure is invisible to the player, so every catch logs, and nothing caches game state. The investigation
-behind the decisions is `docs/investigation.md`.
+failure is invisible to the player, so every catch logs, and nothing caches game state.
 
 ## 1. Game facts (verified live 2026-11-03)
 - **Engine**: Zachtronics' own SDL2 + D3D11/OpenGL engine, NOT Unity. `Lightning.exe` is one
@@ -156,8 +155,7 @@ real-exe tests skip without the workspace). `MAGNUMOPUS_WRITE_LANG_TEMPLATE=1` r
 ## 7. Releases (the Non-Visual Calculus / Harkest Dungeon / Echopunks tooling, MIT attribution kept)
 Bump `Version` in `Directory.Build.props`, add a `## Vx.y.z` section to `CHANGELOG.md`, commit, tag, then:
 - `build_release.ps1` -> `releases\MagnumOpus-vX.Y.Z.zip`, root = game folder: the host files above minus
-  Mono.CSharp, `MagnumOpus\` (Core, Module, lang, mappings named + current obf + fingerprint),
-  `MagnumOpusDocs\` (the mdbook manual from `docs_src`). Refuses a build with dev tooling.
+  Mono.CSharp, `MagnumOpus\` (Core, Module, lang, mappings named + current obf + fingerprint). Refuses a build with dev tooling.
 - `build-installer.ps1` -> `releases\MagnumOpusInstaller.exe` (Rust + wxWidgets, `installer\`: game
   detection, the GitHub releases of `amerikrainian/magnum-opus`, sha256 check, install manifest
   `MagnumOpus\install.json`, backups, repair, uninstall, the branch warning). `test-installer.ps1` = cargo
@@ -165,7 +163,6 @@ Bump `Version` in `Directory.Build.props`, add a `## Vx.y.z` section to `CHANGEL
   the CLI first: `cargo build --release --example cli` in `installer\`). The first e2e run of a session
   can fail while the local feed starts; rerun.
 - `create-release.ps1 vX.Y.Z` = the gh release with the zip, the installer and the CHANGELOG section.
-- `.github/workflows/build-docs.yml` publishes `docs_src` to GitHub Pages on a push touching it.
 Every game update with a new community mapping deserves a release (it bundles the new obf map and a new
 fingerprint), though the mod survives without one (section 4).
 

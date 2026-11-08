@@ -6,7 +6,6 @@
 #   MagnumOpus\MagnumOpus.Core.dll, MagnumOpus\MagnumOpus.Module.dll, MagnumOpus\lang\*.txt
 #   MagnumOpus\mappings\named\** (intermediary -> human names), mappings\obf\<mvid>.tsv (the
 #     current build), mappings\fingerprint.tsv (the matcher's reference for newer builds)
-#   MagnumOpusDocs\ (the rendered mdbook manual, docs_src)
 # A Release build carries no dev tooling (no dev server, no Mono.CSharp): refused if it leaks.
 #
 # Adapted from the Non-Visual Calculus installer by Rashad Naqeeb (MIT),
@@ -25,7 +24,6 @@ $releaseDir = Join-Path $root "releases"
 $stageDir = Join-Path $root "obj\release-stage"
 $hostOut = Join-Path $root "src\MagnumOpus\bin\Release"
 $moduleOut = Join-Path $root "src\MagnumOpus.Module\bin\Release"
-$bookDir = Join-Path $root "docs_src"
 $fingerprint = Join-Path $root "game\fingerprint.tsv"
 $zipPath = Join-Path $releaseDir "MagnumOpus-v$version.zip"
 
@@ -35,10 +33,6 @@ Push-Location $root
 try {
     dotnet build MagnumOpus.slnx -c Release -v:minimal
     if ($LASTEXITCODE -ne 0) { throw "Release build failed with exit code $LASTEXITCODE (the module needs the game installed: see CLAUDE.md)" }
-    if (Test-Path (Join-Path $bookDir "book.toml")) {
-        mdbook build $bookDir
-        if ($LASTEXITCODE -ne 0) { throw "Docs build failed with exit code $LASTEXITCODE" }
-    }
 
     $rootFiles = @(
         (Join-Path $root "deploy\Lightning.exe.config"),
@@ -66,9 +60,6 @@ try {
     Copy-Item -Path (Join-Path $root "mappings\named") -Destination (Join-Path $modDir "mappings\named") -Recurse
     Copy-Item -Path (Join-Path $root "mappings\obf\*.tsv") -Destination (Join-Path $modDir "mappings\obf")
     Copy-Item -LiteralPath $fingerprint -Destination (Join-Path $modDir "mappings")
-    if (Test-Path (Join-Path $bookDir "book")) {
-        Copy-Item -Path (Join-Path $bookDir "book") -Destination (Join-Path $stageDir "MagnumOpusDocs") -Recurse
-    }
 
     if (Test-Path $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
     Compress-Archive -Path (Join-Path $stageDir "*") -DestinationPath $zipPath -Force
