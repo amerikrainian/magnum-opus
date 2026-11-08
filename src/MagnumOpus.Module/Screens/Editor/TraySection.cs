@@ -197,6 +197,7 @@ namespace MagnumOpus.Module.Screens.Editor
         // A new part at the board cursor, carried there: the board takes focus.
         private void Take(TrayItem it)
         {
+            if (_ctx.FinishDrawing()) return;
             var ed = _ctx.Ed;
             if (ed == null || !it.Available || _ctx.Busy() || !_ctx.CanEdit()) return;
             var part = new Part(it.Type, false);

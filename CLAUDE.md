@@ -330,7 +330,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   Escape restores it and the cursor, an editor pop restores it too; the board's finding and reading keys work while carrying, the part following any jump, user request 2026-11-08); Ctrl+Enter carries a copy (the
   game's rules: no reagent, product, unique, conduit, or limited-count puzzle); Shift+A / D rotate (always round the cursor hex, the game's A / D while dragging: an arm by its gripper swings its base; a non-arm part then reads the hex again as a separate announcement; user decisions 2026-11-07, verified live on a product),
   Shift+W / S arm length; Delete removes; Shift+Enter extends a track (`TrackDrawMode`: hex keys extend
-  the end or back up along it; a new track from the tray starts drawing when put down). Selection (user
+  the end or back up along it; Enter ends it, from any stop of the editor, user decision 2026-11-08; a new track from the tray starts drawing when put down). Selection (user
   design 2026-11-04; the game's own `partSelection`, so it draws it): Shift+Space marks a corner, the next
   the opposite one and selects every part touching that x, y rectangle (the game's box-select rule:
   footprint, gripper or attached atom), a third starts over; Ctrl+Shift+Space adds / removes the part

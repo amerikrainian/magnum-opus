@@ -143,6 +143,15 @@ namespace MagnumOpus.Module.Screens.Editor
         }
 
         /// <summary>Whether a mode is holding the board (a carry or a track drawing); says so.</summary>
+        /// <summary>Enter anywhere in the editor while a track is being drawn ends the drawing
+        /// (user decision 2026-11-08). True when it did what Enter was for.</summary>
+        public bool FinishDrawing()
+        {
+            if (!Draw.Active) return false;
+            Draw.Finish();
+            return true;
+        }
+
         public bool Busy()
         {
             if (!Carry.Active && !Draw.Active) return false;

@@ -49,6 +49,7 @@ namespace MagnumOpus.Module.Screens.Editor
                 // Enter: run to this cell (the game's Alt+click on the program, RunSection.RunTo).
                 OnActivate = () =>
                 {
+                    if (_ctx.FinishDrawing()) return;
                     var arm = RowArm(_ctx);
                     if (arm != null) _ctx.Run?.RunTo(arm, _ctx.Col);
                 },

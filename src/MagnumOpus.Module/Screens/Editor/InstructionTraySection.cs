@@ -120,6 +120,7 @@ namespace MagnumOpus.Module.Screens.Editor
 
         private void Place(InstructionType t)
         {
+            if (_ctx.FinishDrawing()) return;
             var ed = _ctx.Ed;
             if (ed == null || !_ctx.CanEdit()) return;
             if (LimitReached(ed.GetSolution(), t)) { EditorContext.Say(Strings.EditorLimitReached); return; }
