@@ -19,6 +19,12 @@ namespace MagnumOpus.Module.Screens
         /// <summary>The items are dialogue lines (not the quote or a journal page, each one piece).</summary>
         public bool Dialogue;
 
+        /// <summary>The last dialogue line shown (the dividers are items, not lines), or null.</summary>
+        public string LastLine;
+
+        /// <summary>Every line of the story has been shown.</summary>
+        public bool Finished;
+
         /// <summary>The panel is waiting for a press to show the next line (the game's pulsing arrow).</summary>
         public bool More;
 
@@ -73,11 +79,13 @@ namespace MagnumOpus.Module.Screens
                     }
                     if (!list[k].IsLineEvent()) continue;
                     var line = list[k].ToLineEvent();
-                    view.Items.Add(GameText.Of(line.portrait.name) + ": " + GameText.Clean(line.line));
+                    view.LastLine = GameText.Of(line.portrait.name) + ": " + GameText.Clean(line.line);
+                    view.Items.Add(view.LastLine);
                 }
                 if (list.Count == 0) continue;
                 if (j == sections.Length - 1)
                 {
+                    view.Finished = true;
                     view.ReturnToMenu = localized.vignettePath != "solitaire" && localized.vignettePath != "options";
                     return view;
                 }
@@ -86,6 +94,7 @@ namespace MagnumOpus.Module.Screens
                 view.Items.Add(GameText.Clean(divider));
                 if (reached < sections[j].Item1) return view;
             }
+            view.Finished = true;
             return view;
         }
     }
@@ -93,9 +102,9 @@ namespace MagnumOpus.Module.Screens
     /// <summary>
     /// The story panel as a stop of puzzle info and Options: every item <see cref="StoryPanelNodes"/>
     /// reads, landing on the latest; Enter on any of them shows the next line, as the game's own
-    /// Space does anywhere on the screen. Opening the game screen speaks the first line of dialogue
-    /// (the whole of a quote or journal page); after that each new line as it appears, whether a
-    /// press or the game's timer brought it. The latest item reads "More story" while the panel
+    /// Space does anywhere on the screen. Opening the game screen speaks the last line of dialogue
+    /// shown, nothing when the story is finished (the whole of a quote or journal page); after that
+    /// each new line as it appears, whether a press or the game's timer brought it. The latest item reads "More story" while the panel
     /// waits for a press, in the stop only, never spoken by itself (user decisions 2026-11-08: the
     /// game draws its "Click to advance the story" on the first lesson only, and a pulsing arrow
     /// elsewhere).
@@ -176,9 +185,15 @@ namespace MagnumOpus.Module.Screens
             if (id == _opened) return;
             _opened = id;
             var view = Read();
-            int count = view.Dialogue ? Math.Min(1, view.Items.Count) : view.Items.Count;
-            for (int i = 0; i < count; i++)
-                if (!string.IsNullOrWhiteSpace(view.Items[i])) Speech.Say(view.Items[i], interrupt: false);
+            if (!view.Dialogue)
+            {
+                foreach (var item in view.Items)
+                    if (!string.IsNullOrWhiteSpace(item)) Speech.Say(item, interrupt: false);
+            }
+            else if (!view.Finished && !string.IsNullOrWhiteSpace(view.LastLine))
+            {
+                Speech.Say(view.LastLine, interrupt: false);
+            }
             _spoken = view.Items.Count;
         }
 
