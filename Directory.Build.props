@@ -4,7 +4,7 @@
        stays pinned at 1.0.0.0 (deploy/Lightning.exe.config binds it by full display name), so only
        the file version moves per release. -->
   <PropertyGroup>
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
     <FileVersion>$(Version)</FileVersion>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
