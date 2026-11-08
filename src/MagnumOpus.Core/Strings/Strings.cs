@@ -552,6 +552,8 @@ namespace MagnumOpus.Core.Strings
             // Sigmar's Garden (the solitaire).
             D("solitaire.board", "Board"),
             D("solitaire.story", "Story"),
+            // The story panel is waiting for a press to show its next line (the game's pulsing arrow).
+            D("story.more", "More story"),
             // The counter strip under the board: how many of each marble are left.
             D("solitaire.counts", "Marbles"),
             D("solitaire.count", "{0}, {1}"),
@@ -1007,6 +1009,7 @@ namespace MagnumOpus.Core.Strings
 
         public static string SolitaireBoard => Get("solitaire.board");
         public static string SolitaireStory => Get("solitaire.story");
+        public static string StoryMore => Get("story.more");
         public static string SolitaireCounts => Get("solitaire.counts");
         public static string SolitaireCount(string marble, int count) => F("solitaire.count", marble, count);
         public static string SolitaireWarning => Get("solitaire.warning");

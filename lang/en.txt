@@ -369,6 +369,7 @@ diagram.order.right=left to right
 diagram.order.left=right to left
 solitaire.board=Board
 solitaire.story=Story
+story.more=More story
 solitaire.counts=Marbles
 solitaire.count={0}, {1}
 solitaire.warning=warning

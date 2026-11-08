@@ -264,8 +264,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   portrait is sliding; Enter or Space finishes its clocks (timeSinceEvent, cinematicsEventTime) and
   forces Space, so the game's own advance runs. Escape passes (skips a seen cutscene).
 - **Puzzle info** (`PuzzleInfoGameScreen`): solutions (focus selects, Enter opens), New / Open / Rename /
-  Copy / Delete via ButtonPress, the leaderboard notice; the story panel's lines (`StoryPanelNodes`,
-  shared with Options, which does the same) are spoken on opening, no stop (user rule 2026-11-04). Histograms: `ScoreTable` in comparing mode.
+  Copy / Delete via ButtonPress, the leaderboard notice. Histograms: `ScoreTable` in comparing mode. Story (`StoryStop`, shared with Options; user decision 2026-11-08, replacing "no stop"; verified live): a stop before the first (opening still lands on the solutions / settings), the panel's items from `StoryPanelNodes.Read` (also Sigmar's), landing on the latest; Enter on any shows the next line, the game's Space does too, one press one line (the game's 0.35 s lock after an advance is finished for it). The story is spoken when the game screen opens, not on coming back to it; then each new line as it appears, a press's or the game's timer's (a section's first line comes by itself). "More story" on the latest item while the panel waits for a press, and spoken each time it starts waiting (the game's arrow; it draws "Click to advance the story" on the first lesson only). The game's Return to Menu button once all is shown (not Options).
 - **Message boxes** (`MessageBoxGameScreen`): notice / confirm / text box; the game keeps typed
   characters and Backspace in a text box (type-ahead stands down), each change echoed. The typing echo is
   NOT verified live (needs OS input).

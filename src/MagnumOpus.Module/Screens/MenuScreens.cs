@@ -44,12 +44,23 @@ namespace MagnumOpus.Module.Screens
     /// tenths). Every change does exactly what the game's own widget does (the same settings write,
     /// the same follow-up: the live language, the window re-apply flag, the volume, the click
     /// sound). Show Top Percentile stays disabled until the game is complete, as in the game. A
-    /// second stop reads the story panel. Escape passes to the game, which closes the screen.
+    /// Story stop reads the story panel (<see cref="StoryStop"/>); opening lands on the settings.
+    /// Escape passes to the game, which closes the screen.
     /// </summary>
     public sealed class OptionsGameScreen : GameScreen<OptionsScreen>
     {
         public override string Key => "game.options";
         public override string ScreenName => GameText.Translate("Options");
+
+        public override object InitialFocusStop => "settings";
+
+        private readonly StoryStop _story;
+
+        public OptionsGameScreen()
+        {
+            _story = new StoryStop(() => Game?.storyPanel, () => OptionsScreen.storyPanelSections,
+                () => GameLogic.instance.saveData.IsComplete(Puzzles.stabilizedWater) ? 1 : 0);
+        }
 
         private static global::Settings Settings => GameLogic.instance.settingsData;
 
@@ -57,6 +68,8 @@ namespace MagnumOpus.Module.Screens
         {
             var g = Game;
             if (g == null) return;
+
+            _story.Build(b);
 
             b.BeginStop("settings");
             b.AddItem(ControlId.Structural("opt:language"), Nodes.Dropdown(
@@ -139,17 +152,16 @@ namespace MagnumOpus.Module.Screens
                 GameLogic.instance.PopScreen(Transitions.sink, MaybeHelper.empty)));
         }
 
-        // The story panel's lines are spoken on opening, after the name, one message each, not a
-        // stop of their own (user rule 2026-11-04).
         public override void OnFocus()
         {
             base.OnFocus();
-            try
-            {
-                foreach (var line in StoryPanelNodes.Lines(Game?.storyPanel))
-                    if (!string.IsNullOrWhiteSpace(line)) MagnumOpus.Core.Speech.Say(line, interrupt: false);
-            }
-            catch (System.Exception e) { MagnumOpus.Core.CoreLog.Warning("[options] story lines: " + e.Message); }
+            _story.Opened(Game);
+        }
+
+        public override void OnUpdate()
+        {
+            base.OnUpdate();
+            _story.Update();
         }
 
         private static readonly KeyboardLayout[] Layouts =

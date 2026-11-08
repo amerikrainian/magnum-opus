@@ -19,7 +19,8 @@ namespace MagnumOpus.Module.Screens
     ///  3. the histograms (ScoreTable, comparing: the selected solution's score as "this" and the
     ///     best, each tagged on its bar), or the game's notice when it draws none (tutorial, custom,
     ///     hermit mode, unsolved);
-    ///  4. the story panel, spoken on opening after the name (no stop).
+    /// Before them, a Story stop (<see cref="StoryStop"/>: the panel left of the solutions, spoken on
+    /// opening after the name; Enter shows the next line); opening still lands on the solutions.
     /// The game's own keys keep working where they are not ours: Delete asks to delete, F2 renames.
     /// Escape passes to the game, which closes the screen.
     /// </summary>
@@ -29,6 +30,16 @@ namespace MagnumOpus.Module.Screens
 
         public override string ScreenName => Game == null ? null : GameText.Of(Game.puzzle.puzzleName);
 
+        public override object InitialFocusStop => "solutions";
+
+        private readonly StoryStop _story;
+
+        public PuzzleInfoGameScreen()
+        {
+            _story = new StoryStop(() => Game?.storyPanel, () => PuzzleInfoScreen.storyPanelSections,
+                () => Game != null && GameLogic.instance.saveData.IsComplete(Game.puzzle) ? 1 : 0);
+        }
+
         private Solution[] Solutions() => Game == null ? new Solution[0] : SolutionManager.method_2144(Game.puzzle);
 
         public override void Build(GraphBuilder b)
@@ -36,6 +47,8 @@ namespace MagnumOpus.Module.Screens
             var g = Game;
             if (g == null) return;
             var solutions = Solutions();
+
+            _story.Build(b);
 
             b.BeginStop("solutions");
             b.PushContext(Strings.InfoSolutions, Strings.RoleList);
@@ -72,17 +85,16 @@ namespace MagnumOpus.Module.Screens
                 b.AddItem(ControlId.Structural("info:leaderboard"), Nodes.Text(LeaderboardNotice));
         }
 
-        // The story panel's lines are spoken on opening, after the puzzle's name, one message each,
-        // not a stop of their own (user rule 2026-11-04).
         public override void OnFocus()
         {
             base.OnFocus();
-            try
-            {
-                foreach (var line in StoryPanelNodes.Lines(Game?.storyPanel))
-                    if (!string.IsNullOrWhiteSpace(line)) Speech.Say(line, interrupt: false);
-            }
-            catch (System.Exception e) { CoreLog.Warning("[puzzle info] story lines: " + e.Message); }
+            _story.Opened(Game);
+        }
+
+        public override void OnUpdate()
+        {
+            base.OnUpdate();
+            _story.Update();
         }
 
         private static bool IsSelected(PuzzleInfoScreen g, Solution s) => g.selectedSolution.HasValue() && g.selectedSolution.GetValue() == s;

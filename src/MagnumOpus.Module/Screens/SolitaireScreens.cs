@@ -406,33 +406,9 @@ namespace MagnumOpus.Module.Screens
         // count. None without a vignette (the Colvan variant).
         private static List<string> StoryItems(SolitaireScreen g)
         {
-            var items = new List<string>();
             var panel = g?.storyPanel;
-            if (panel == null || !panel.vignette.HasValue()) return items;
-            var localized = panel.vignette.GetValue();
-            var events = localized.GetVignette().events;
-            bool all = PuzzleSelectScreen.unlockAllMode;
-            int progress = all ? int.MaxValue : GameLogic.instance.saveData.GetVignetteProgress(localized);
-            int wins = all ? int.MaxValue : g.solitaireStat;
-            var sections = SolitaireScreen.storyPanelSections;
-            int index = 0;
-            for (int j = 0; j < sections.Length && j < events.Count; j++)
-            {
-                foreach (var e in events[j])
-                {
-                    if (index >= progress) return items;
-                    index++;
-                    if (!e.IsLineEvent()) continue;
-                    var line = e.ToLineEvent();
-                    items.Add(GameText.Of(line.portrait.name) + ": " + GameText.Clean(line.line));
-                }
-                if (j == sections.Length - 1) break;
-                string divider = string.Format(Translations.Translate("{0} to continue").GetTranslated(), sections[j].Item2.GetTranslated())
-                    + " " + Translations.Translate("(Optional)").GetTranslated();
-                items.Add(GameText.Clean(divider));
-                if (wins < sections[j].Item1) break;
-            }
-            return items;
+            if (panel == null || !panel.vignette.HasValue()) return new List<string>();
+            return StoryPanelNodes.Read(panel, SolitaireScreen.storyPanelSections, g.solitaireStat).Items;
         }
 
         // ---- lifecycle ----
