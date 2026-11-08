@@ -65,7 +65,9 @@ namespace MagnumOpus.Module.Game
             return arms > 1 ? Strings.EditorWithGrippers(name, arms) : name;
         }
 
-        public static string AtomName(AtomType type) => ReferenceEquals(type, null) ? "" : GameText.Of(type.name);
+        // The repeat placeholder of a repeating product has a blank name in the game.
+        public static string AtomName(AtomType type) =>
+            ReferenceEquals(type, null) ? "" : ReferenceEquals(type, AtomTypes.repeat) ? Strings.EditorRepeatsHere : GameText.Of(type.name);
 
         /// <summary>The base hex of a part right now (an arm on a track moves while running).</summary>
         public static HexIndex BaseHex(SolutionEditorScreen ed, Part part) => ed.GetSimulation().GetSimState(part).newPosition;
@@ -349,7 +351,7 @@ namespace MagnumOpus.Module.Game
             {
                 var io = IoAtom(ed, part, hex);
                 if (!io.HasValue) continue;
-                return PartName(ed, part) + ", " + string.Join("; ", MoleculeSummary(io.Value.Molecule));
+                return PartName(ed, part) + ", " + string.Join("; ", MoleculeSummary(io.Value.Molecule, part.GetRotation().GetNumberOfTurns()));
             }
             return null;
         }
@@ -359,15 +361,19 @@ namespace MagnumOpus.Module.Game
         /// <summary>A molecule in brief: "Salt, Water; 1 bond" (a single atom: its name).</summary>
         public static string MoleculeSummaryText(Molecule molecule) => string.Join("; ", MoleculeSummary(molecule));
 
-        private static List<string> MoleculeSummary(Molecule molecule)
+        // A repeating product is stored laid out six times; it reads as one unit and the offset
+        // between units, turned by the part it is on.
+        private static List<string> MoleculeSummary(Molecule molecule, int turn = 0)
         {
-            var atoms = molecule.GetAtoms().Values.Select(a => AtomName(a.atomType)).ToList();
+            bool repeating = molecule.HasRepetitionPos();
+            var unit = repeating ? molecule.GetMonomer() : molecule;
+            var atoms = unit.GetAtoms().Values.Where(a => !ReferenceEquals(a.atomType, AtomTypes.repeat)).Select(a => AtomName(a.atomType)).ToList();
             var groups = atoms.GroupBy(n => n).OrderByDescending(g => g.Count()).ThenBy(g => atoms.IndexOf(g.Key));
             string composition = string.Join(", ", groups.Select(g => g.Count() == 1 ? g.Key : Strings.EditorAtomCount(g.Count(), g.Key)));
             // The atoms themselves, no total (user rule 2026-11-04): "2 Fire, Salt".
-            var parts = new List<string> { composition };
+            var parts = new List<string> { repeating ? Strings.EditorMoleculeRepeating(composition) : composition };
             int plain = 0, triplex = 0, partial = 0;
-            foreach (var bond in molecule.GetBonds())
+            foreach (var bond in unit.GetBonds())
             {
                 if ((bond.type & BondTypeEnum.Standard) != 0) plain++;
                 else if (TriplexKinds(bond.type) == 3) triplex++;
@@ -376,6 +382,11 @@ namespace MagnumOpus.Module.Game
             if (plain > 0) parts.Add(Strings.EditorMoleculeBonds(plain));
             if (triplex > 0) parts.Add(Strings.EditorMoleculeTriplex(triplex));
             if (partial > 0) parts.Add(Strings.EditorMoleculeTriplexPartial(partial));
+            if (repeating)
+            {
+                var offset = molecule.GetRepetitionPos().GetValue().Rotated(new HexRotation(turn));
+                parts.Add(Strings.EditorMoleculeRepeatsEvery(Hex.Describe(offset.Q, offset.R)));
+            }
             return parts;
         }
     }

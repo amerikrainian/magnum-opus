@@ -346,7 +346,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   ButtonPress; user decision 2026-11-05); entering the stop still lands on the first part
   (`GraphBuilder.SetStopStart`, a per-stop landing).
   Parts tray: a reagent or product reads its molecule in brief ("Salt, Water; 1 bond"; the
-  game draws the whole molecule on the tile), W opens `MoleculeViewerScreen` (a child screen: hex keys
+  game draws the whole molecule on the tile; a repeating product reads its unit and offset, "repeating, 2 Iron; 2 bonds; every 2 east", and its placeholder hex "repeats here": the game stores it laid out six times, the placeholder's name blank, 2026-11-08), W opens `MoleculeViewerScreen` (a child screen: hex keys
   walk the molecule in its own frame, each hex its atom and bond directions; W summary; Escape). S
   reads a tray part's tooltip description; multi-armed assemblies read "(N grippers)".
   Instructions stop (`InstructionTraySection`): the game's tray as five key columns (Q/A, W/S/X, E/D/C,

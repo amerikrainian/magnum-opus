@@ -216,6 +216,11 @@ namespace MagnumOpus.Core.Strings
             D("editor.molecule_triplex", "{0} triplex bonds"),
             D("editor.molecule_triplex_partial_one", "1 partial triplex bond"),
             D("editor.molecule_triplex_partial", "{0} partial triplex bonds"),
+            // A repeating product: {0} = the atoms of one repeating unit; {0} of the second = the offset between units.
+            D("editor.molecule_repeating", "repeating, {0}"),
+            D("editor.molecule_repeats_every", "every {0}"),
+            // The hex of a repeating product where its next unit would join.
+            D("editor.repeats_here", "repeats here"),
             // A product's outline on a hex while the engine runs: {0} = the atom it wants, with bonds.
             D("editor.product_wants", "wants {0}"),
             // A neighbour of the cursor: {0} = direction, {1} = what is there.
@@ -728,6 +733,9 @@ namespace MagnumOpus.Core.Strings
         public static string EditorMoleculeBonds(int n) => n == 1 ? Get("editor.molecule_bond_one") : F("editor.molecule_bonds", n);
         public static string EditorMoleculeTriplex(int n) => n == 1 ? Get("editor.molecule_triplex_one") : F("editor.molecule_triplex", n);
         public static string EditorMoleculeTriplexPartial(int n) => n == 1 ? Get("editor.molecule_triplex_partial_one") : F("editor.molecule_triplex_partial", n);
+        public static string EditorMoleculeRepeating(string atoms) => F("editor.molecule_repeating", atoms);
+        public static string EditorMoleculeRepeatsEvery(string offset) => F("editor.molecule_repeats_every", offset);
+        public static string EditorRepeatsHere => Get("editor.repeats_here");
         public static string EditorProductWants(string atom) => F("editor.product_wants", atom);
         public static string EditorNeighbour(string direction, string what) => F("editor.neighbour", direction, what);
         public static string EditorScoreItem(string label, string value) => F("editor.score_item", label, value);
