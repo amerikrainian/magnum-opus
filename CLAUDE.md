@@ -423,12 +423,13 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   Verified live: the cursor against a screenshot, free-marble order, select / replace / clear / unselect,
   locked, Rules and back, the story stop (landing, Enter, the divider), Space. NOT verified: a win, the Quintessence and Colvan
   variants (five-marble quintessence picks), New Game.
+- **Journal** (`JournalGameScreen`, `JournalSubmissionGameScreen`, 2026-11-08): stops: first the issue (a dropdown of every issue, the game's previous / next arrows, the issue's text) with its five puzzles below (user decision: one stop; the game's "name (author)", "completed"; Enter its click code; Sigmar's Garden II says what unlocks it), then the tabs and Close (the game's Escape). The product pictures are not described. The Puzzle Editor / Steam Workshop tabs do NOT set `field_2466` (the tab the Journal button opens) as the game does, while those screens are not operable. The panel over it (`JournalSubmissionScreen`): the new-player warning, the submission rules, the issue list.
 - **Credits** (`CreditsGameScreen`, `DlcCreditsGameScreen`, 2026-11-08): the game's timed cards, read from what it draws (`TextCapture`) and spoken as each appears, queued; Escape stays the game's (it skips only once seen).
 - **Fallback** (`FallbackScreen`): buttons only from a frame that began with this screen on top
   (`ButtonPress.LastFrameScreen`: the frame a screen opens in still draws the one beneath, whose buttons
   were once read on the new screen). The screen's human type name ("Journal Submission"), the text it draws
   top to bottom (`TextCapture`, only while the fallback is up) and its labeled buttons (ButtonPress).
-  Covers the journal (readable, not yet operable) and the rest.
+  Covers the rest.
 
 ## 13. Languages
 The mod's words follow the GAME's language (`LanguageSync`: `Translations.currentLanguage` ->
@@ -455,7 +456,7 @@ Game terms are the game's own (`GameText.Translate`, `LocString`s).
   section 12 lists as not verified; dropping a new arm from the tray onto an arm to swap it (the
   game's drag does); a "step to next event" key. Read part, atom and puzzle names from the game's registries, never hardcoded
   (content mods).
-- Phase 7: the journal (operable), the puzzle editor, the solution browser, the GIF recorder, Workshop and
+- Phase 7: the puzzle editor, the solution browser, the GIF recorder, Workshop and
   leaderboards; histograms on puzzle info.
 - Phase 9: the Quintessential copy: a net10.0 shim mod (CoreCLR has no AppDomainManager), the module
   multi-targeted, our human names -> intermediary -> their version's human names, Harmony alongside their

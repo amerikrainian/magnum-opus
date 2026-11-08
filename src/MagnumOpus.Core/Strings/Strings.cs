@@ -151,6 +151,9 @@ namespace MagnumOpus.Core.Strings
             // {0} = the chapter's title ("Chapter 1"), {1} = its name.
             D("select.chapter", "{0}, {1}"),
             D("select.journal", "Journal"),
+            D("journal.issue", "Issue"),
+            D("journal.previous", "Previous issue"),
+            D("journal.next", "Next issue"),
             // The campaign switch; {0} = the other campaign's name.
             D("select.switch_campaign", "Switch to {0}"),
             D("select.dlc_not_owned", "not owned, opens the store page"),
@@ -709,6 +712,9 @@ namespace MagnumOpus.Core.Strings
         public static string SelectChapters => Get("select.chapters");
         public static string SelectChapter(string title, string name) => F("select.chapter", title, name);
         public static string SelectJournal => Get("select.journal");
+        public static string JournalIssue => Get("journal.issue");
+        public static string JournalPrevious => Get("journal.previous");
+        public static string JournalNext => Get("journal.next");
         public static string SwitchCampaign(string campaign) => F("select.switch_campaign", campaign);
         public static string DlcNotOwned => Get("select.dlc_not_owned");
         public static string CampaignOpusMagnum => Get("campaign.opus_magnum");
