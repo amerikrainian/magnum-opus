@@ -185,6 +185,9 @@ namespace MagnumOpus.Core.Strings
             // An arm's base hex: {0} = row number, {1} = the game's part name, {2} = the direction
             // it points, {3} = its length.
             D("editor.arm_base", "arm {0}, {1}, {2}, length {3}"),
+            // A wheel's hex: {0} = its tape row, {1} = its name, {2} = its atoms; one atom: {0} = atom, {1} = direction.
+            D("editor.wheel_base", "arm {0}, {1}, {2}"),
+            D("editor.wheel_atom", "{0} {1}"),
             // An arm's gripper hex; closed = holding on while the engine runs.
             D("editor.grip", "arm {0} grip"),
             D("editor.grip_closed", "arm {0} grip, closed"),
@@ -718,6 +721,8 @@ namespace MagnumOpus.Core.Strings
         public static string EditorLog => Get("editor.log");
         public static string EditorArm(int n) => F("editor.arm", n);
         public static string EditorArmBase(int n, string part, string direction, int length) => F("editor.arm_base", n, part, direction, length);
+        public static string EditorWheelBase(int n, string part, string atoms) => F("editor.wheel_base", n, part, atoms);
+        public static string EditorWheelAtom(string atom, string direction) => F("editor.wheel_atom", atom, direction);
         public static string EditorGrip(int n) => F("editor.grip", n);
         public static string EditorGripClosed(int n) => F("editor.grip_closed", n);
         public static string EditorBonds(string directions) => F("editor.bonds", directions);

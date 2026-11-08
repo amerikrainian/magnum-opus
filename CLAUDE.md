@@ -289,7 +289,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   Ctrl+Shift+A, Escape clears, Enter runs to the cell) and the part edits find no part. ONE CLIPBOARD for the player: Ctrl+V pastes what was
   copied or cut last (`EditorContext.PartsOnClipboard`), parts at the board cursor, instructions at the program cursor; parts on the tape stop paste nothing, silently, Up / Down choose the program cursor's arm (wrapping, silent with one; the cursor lands after the arm's last instruction, a Reset's filled cells included, "arm 2, 5"; user decision 2026-11-05: the board cursor's position never chooses it), Left / Right move the program cursor a cycle on that arm and Home / End to its first / last instruction (the tape's keys), [ ] categories,
   , . items, S details, W molecule (size, composition, bonds, holder; the layout is read hex by hex), X neighbours. A hex reads coordinates, then the atom in play, arm
-  bases ("arm 1, Piston Arm, northeast, length 1"), grippers, other parts (`Game/Board`; a track hex
+  bases ("arm 1, Piston Arm, northeast, length 1"), wheels ("arm 3, Van Berlo's Wheel, Water east, Air northeast, ..."; the hexes round one read its atom, "Air, Van Berlo's Wheel", at its live rotation, 2026-11-08), grippers, other parts (`Game/Board`; a track hex
   reads its joins marked with the move that goes there, "Track, +northeast, -southeast": the game
   draws a minus sign on the end drawn first and a plus on the last (both at a loop's seam); no "end" /
   "loop" words, user rules 2026-11-04; a glyph hex adds its role, "Glyph of Projection, metal in",

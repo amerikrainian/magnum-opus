@@ -206,6 +206,14 @@ namespace MagnumOpus.Module.Game
             if (solution == null) return result;
             world = world ?? WorldAtoms(ed);
             if (world.TryGetValue(hex, out var atom)) result.Add(DescribeAtom(ed, atom));
+            // The atoms fixed to a wheel, where the wheel has them right now.
+            foreach (var wheel in solution.parts.Where(p => p.HasAtoms()))
+            {
+                var state = ed.GetSimulation().GetSimState(wheel);
+                foreach (var fixedAtom in wheel.GetType().attachedAtoms)
+                    if (state.newPosition + fixedAtom.Key.Rotated(state.rotation) == hex)
+                        result.Add(AtomName(fixedAtom.Value) + ", " + PartName(ed, wheel));
+            }
 
             var arms = Arms(ed);
             for (int i = 0; i < arms.Count; i++)
@@ -275,8 +283,22 @@ namespace MagnumOpus.Module.Game
             return string.Join(", ", parts);
         }
 
-        public static string DescribeArmBase(SolutionEditorScreen ed, Part arm, int number) =>
-            Strings.EditorArmBase(number, PartName(ed, arm), Hex.Word(Hex.FromTurns(Turns(ed, arm))), Length(ed, arm));
+        public static string DescribeArmBase(SolutionEditorScreen ed, Part arm, int number)
+        {
+            if (!arm.HasAtoms())
+                return Strings.EditorArmBase(number, PartName(ed, arm), Hex.Word(Hex.FromTurns(Turns(ed, arm))), Length(ed, arm));
+            // A wheel has no reach: what it offers is which atom lies which way, east round counter-clockwise.
+            var turn = ed.GetSimulation().GetSimState(arm).rotation;
+            var atoms = arm.GetType().attachedAtoms
+                .Select(kv => new KeyValuePair<HexIndex, AtomType>(kv.Key.Rotated(turn), kv.Value))
+                .OrderBy(kv => (int?)Hex.DirOf(kv.Key.Q, kv.Key.R) ?? 6)
+                .Select(kv =>
+                {
+                    var dir = Hex.DirOf(kv.Key.Q, kv.Key.R);
+                    return Strings.EditorWheelAtom(AtomName(kv.Value), dir.HasValue ? Hex.Word(dir.Value) : Hex.Describe(kv.Key.Q, kv.Key.R));
+                });
+            return Strings.EditorWheelBase(number, PartName(ed, arm), string.Join(", ", atoms));
+        }
 
         /// <summary>The hex's full readout: "selected" when a selected part is on it, coordinates,
         /// then its contents.</summary>
