@@ -265,6 +265,45 @@ namespace MagnumOpus.Core.Strings
             D("tut.tracks.arm", "{0}"),
             // {0} {1} the move instructions' keys.
             D("tut.tracks.done", "You're all set! Arms move along tracks with {0} and {1}."),
+            // Lesson: Transmutation. {0} {1} category keys, {2} next item.
+            D("tut.transmute.meet", "Transmutation! Glyphs change the atoms that land on them. {0} and {1} to Glyphs, then {2} to go to one."),
+            // {0} details.
+            D("tut.transmute.details", "Remember, {0} tells you what it does."),
+            // {0} diagram.
+            D("tut.transmute.diagram", "Not sure what turns into what? {0} brings up the game's diagram, though you don't need to look at it for this puzzle."),
+            D("tut.transmute.parts", "Your turn!"),
+            // {0} undo, {1} redo.
+            D("tut.transmute.redo", "Changed your mind about changing your mind? {0} undoes, and {1} puts it back."),
+            // {0} products.
+            D("tut.transmute.counts", "{0} tells you how many of each product you've made so far."),
+            D("tut.transmute.done", "You're all set!"),
+            // Lesson: Bonding.
+            D("tut.bonding.meet", "Bonding! Drop two atoms on a glyph of bonding and they stick together. As per usual, arm 1 has an example."),
+            // {0} activate.
+            D("tut.bonding.runto", "If you want to skip to a particular instruction, {0} on a cell with an instruction runs the machine right to it."),
+            D("tut.bonding.parts", "Your turn!"),
+            D("tut.bonding.program", "Get a couple of instructions on a tape."),
+            D("tut.bonding.select", "Want the same thing twice? Shift with the arrows marks cells on a tape."),
+            // {0} copy, {1} cut, {2} paste.
+            D("tut.bonding.copy", "{0} copies them, {1} cuts them, and {2} pastes them at the cursor."),
+            D("tut.bonding.done", "You're all set!"),
+            // Lesson: Stabilized Water.
+            D("tut.water.parts", "Last one! From now on you're responsible for laying out products, reagents and parts. Head over to the parts list to see what you're producing."),
+            // {0} molecule.
+            D("tut.water.viewer", "{0} on a reagent or product opens it up before you commit."),
+            // {0} neighbours, {1} {2} rotate.
+            D("tut.water.turn", "In here the hex keys walk it, {0} reads what's around you, and {1} and {2} turn it to see it from another angle."),
+            // {0} back.
+            D("tut.water.close", "{0} closes it."),
+            // {0} activate.
+            D("tut.water.place", "Put them on the board: {0} picks one up, same as any part."),
+            // {0} clone.
+            D("tut.water.copy", "Need another of something? {0} on a part picks up a copy."),
+            // {0} mark a corner, {1} select all, {2} back.
+            D("tut.water.select", "Moving a bunch at once? {0} marks a corner and then the opposite one, and {1} takes everything. {2} clears it."),
+            // {0} score.
+            D("tut.water.score", "{0} tells you how your machine's doing."),
+            D("tut.water.done", "You're all set!"),
             D("keys.instruction_bare", "An instruction takes a key without Ctrl, Shift or Alt, press another key"),
             D("mod.category.global", "Global"),
             D("mod.category.ui", "UI"),

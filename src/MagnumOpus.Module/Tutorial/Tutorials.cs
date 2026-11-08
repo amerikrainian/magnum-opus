@@ -30,6 +30,9 @@ namespace MagnumOpus.Module.Tutorial
         public int Cycle => Ed.GetCycle();
         public HexIndex Cursor => Editor.Cursor;
 
+        /// <summary>The molecule viewer is open.</summary>
+        public bool Viewing => ScreenManager.Current is MoleculeViewerScreen;
+
         /// <summary>Whether any of these actions ran since this step became active.</summary>
         public bool Pressed(params string[] actions) => actions.Any(WasPressed);
 

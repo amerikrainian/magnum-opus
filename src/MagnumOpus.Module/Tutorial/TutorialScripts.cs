@@ -18,10 +18,12 @@ namespace MagnumOpus.Module.Tutorial
     /// </summary>
     internal static class TutorialScripts
     {
-        private const string Introduction = "P044", Arms = "P001", Pivots = "P004", Pistons = "P002", Tracks = "P003";
+        private const string Introduction = "P044", Arms = "P001", Pivots = "P004", Pistons = "P002", Tracks = "P003",
+            Transmutation = "P006", Bonding = "P005", StabilizedWater = "P007";
 
-        public static bool Has(string puzzleId) =>
-            puzzleId == Introduction || puzzleId == Arms || puzzleId == Pivots || puzzleId == Pistons || puzzleId == Tracks;
+        private static readonly HashSet<string> Lessons = new HashSet<string> { Introduction, Arms, Pivots, Pistons, Tracks, Transmutation, Bonding, StabilizedWater };
+
+        public static bool Has(string puzzleId) => puzzleId != null && Lessons.Contains(puzzleId);
 
         public static List<TutorialStep> For(string puzzleId, TutorialContext c)
         {
@@ -32,6 +34,9 @@ namespace MagnumOpus.Module.Tutorial
                 case Pivots: return PivotsSteps(c);
                 case Pistons: return PistonsSteps(c);
                 case Tracks: return TracksSteps(c);
+                case Transmutation: return TransmutationSteps(c);
+                case Bonding: return BondingSteps(c);
+                case StabilizedWater: return StabilizedWaterSteps(c);
                 default: return new List<TutorialStep>();
             }
         }
@@ -162,6 +167,60 @@ namespace MagnumOpus.Module.Tutorial
                 Latch(P, "extend", () => c.Pressed(EditorActions.DrawTrack) && !c.Editor.Draw.Active, () => new object[] { K(EditorActions.DrawTrack), K(UiActions.Activate) }),
                 Live(P, "arm", () => c.PlayerArms.Any(), () => new object[] { c.Note(0, 1) }),
                 Latch(P, "done", () => c.RunState != SimPlayState.Stopped, () => new object[] { Instr("move_plus"), Instr("move_minus") }),
+            };
+        }
+
+        // ---- Lesson: Transmutation: reading glyphs, the diagram and the product counts. ----
+
+        private static List<TutorialStep> TransmutationSteps(TutorialContext c)
+        {
+            const string P = "tut.transmute.";
+            return new List<TutorialStep>
+            {
+                Latch(P, "meet", () => c.Pressed(EditorActions.ItemNext, EditorActions.ItemPrev) && c.CursorOn(p => p.GetType().glyphHexes.Length > 0), () => new object[] { K(EditorActions.CatPrev), K(EditorActions.CatNext), K(EditorActions.ItemNext) }),
+                Latch(P, "details", () => c.Pressed(EditorActions.Details), () => new object[] { K(EditorActions.Details) }),
+                // A mention, not a task: said once, nothing to wait for.
+                Latch(P, "diagram", () => true, () => new object[] { K(EditorActions.Diagram) }),
+                Live(P, "parts", () => c.PlayerArms.Any(), () => new object[0]),
+                Latch(P, "redo", () => c.Pressed(EditorActions.Redo), () => new object[] { K(EditorActions.Undo), K(EditorActions.Redo) }),
+                Latch(P, "counts", () => c.Pressed(EditorActions.Products), () => new object[] { K(EditorActions.Products) }),
+                Latch(P, "done", () => c.RunState != SimPlayState.Stopped, () => new object[0]),
+            };
+        }
+
+        // ---- Lesson: Bonding: run to a cell, bonds, and copying cells of a tape. ----
+
+        private static List<TutorialStep> BondingSteps(TutorialContext c)
+        {
+            const string P = "tut.bonding.";
+            return new List<TutorialStep>
+            {
+                Latch(P, "meet", () => Equals(c.Stop, EditorContext.StopProgram), () => new object[0]),
+                Latch(P, "runto", () => Equals(c.Stop, EditorContext.StopProgram) && c.Pressed(UiActions.Activate) && c.RunState != SimPlayState.Stopped, () => new object[] { K(UiActions.Activate) }),
+                Live(P, "parts", () => c.PlayerArms.Count() >= 2, () => new object[0]),
+                Live(P, "program", () => c.PlayerArms.Any(a => a.program.Count() >= 2), () => new object[0]),
+                Latch(P, "select", () => c.Pressed(EditorActions.SelectUp, EditorActions.SelectDown, EditorActions.SelectLeft, EditorActions.SelectRight), () => new object[0]),
+                Latch(P, "copy", () => c.Pressed(EditorActions.Paste), () => new object[] { K(EditorActions.Copy), K(EditorActions.Cut), K(EditorActions.Paste) }),
+                Latch(P, "done", () => c.RunState != SimPlayState.Stopped, () => new object[0]),
+            };
+        }
+
+        // ---- Stabilized Water: the first puzzle with reagents and products of the player's own. ----
+
+        private static List<TutorialStep> StabilizedWaterSteps(TutorialContext c)
+        {
+            const string P = "tut.water.";
+            return new List<TutorialStep>
+            {
+                Latch(P, "parts", () => Equals(c.Stop, EditorContext.StopTray), () => new object[0]),
+                Latch(P, "viewer", () => c.Viewing, () => new object[] { K(EditorActions.Molecule) }),
+                Latch(P, "turn", () => c.Pressed(EditorActions.RotateCcw, EditorActions.RotateCw), () => new object[] { K(EditorActions.Neighbours), K(EditorActions.RotateCcw), K(EditorActions.RotateCw) }),
+                Latch(P, "close", () => !c.Viewing, () => new object[] { K(UiActions.Back) }),
+                Live(P, "place", () => c.Solution.parts.Any(p => p.GetType().isInput) && c.Solution.parts.Any(p => p.GetType().IsOutput()), () => new object[] { K(UiActions.Activate) }),
+                Latch(P, "copy", () => c.Pressed(EditorActions.Clone), () => new object[] { K(EditorActions.Clone) }),
+                Latch(P, "select", () => c.Pressed(EditorActions.MarkCorner, EditorActions.SelectParts), () => new object[] { K(EditorActions.MarkCorner), K(EditorActions.SelectParts), K(UiActions.Back) }),
+                Latch(P, "score", () => c.Pressed(EditorActions.Score), () => new object[] { K(EditorActions.Score) }),
+                Latch(P, "done", () => c.RunState != SimPlayState.Stopped, () => new object[0]),
             };
         }
 
