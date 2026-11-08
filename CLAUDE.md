@@ -282,7 +282,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   answering from anywhere. Board: hex cursor (`Game/Hex`: axial Q east, R up the screen, pointy-top, turn
   k = direction k counter-clockwise from east; spoken as Civ's half-step x, y, x = Q + R/2, origin the
   game's (0, 0)). Keys Q NW, E NE, A W, D E, Z SW, C SE (scancodes; numpad 7 9 4 6 1 3; never the
-  arrows, user rule 2026-11-04), Alt+Shift+them skip (Alt+numpad), Ctrl+Home the origin, Ctrl+Up / Ctrl+Down the part on the hex edits
+  arrows, user rule 2026-11-04), Alt+Shift+them skip (Alt+numpad), Ctrl+Home the origin (the first chamber's centre on a production puzzle without that hex), Ctrl+Up / Ctrl+Down the part on the hex edits
   take (default order arm base, other part, track, gripper; reset when the cursor moves), then always
   "instructions", an empty hex's only category (Ctrl+Up / Ctrl+Down silent there; user decisions 2026-11-07): the board's tape keys then act on
   the program cursor's cell or the tape's selection (Ctrl+C / X, Delete, Backspace, Shift+arrows,
@@ -368,6 +368,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   builder escapes ButtonPress). Verified live 2026-11-04.
   NOT yet verified live: track drawing, reagents / products from the tray, placing a
   copy, Alt+Space (the game reads Alt itself), the numpad.
+- **Production puzzles** (`Game/Chambers`, 2026-11-08): only the hexes inside the puzzle's chambers exist. The board cursor stops at a chamber's edge, silently, carrying too (user decision: hard edges, the Sigmar rule); an Alt+Shift skip stops on the last hex that way; a track step off the chambers gets the game's refusal at once. Page Up / Page Down cycle the chambers (wrap; silent with one; off while drawing a track): each lands on the chamber's centre, "chamber 2, 4, 4", a carried part coming along. A conduit reads where it leads, "Conduit, to 3, 4" (the sim's mapping, hex for hex). An error on a chamber wall moves the cursor to the closest real hex.
 - **Completion** (`CompletionGameScreen`, 2026-11-04): one stop: the game's message, then its notice
   (tutorial, custom, hermit mode) or a TABLE (graph columns, SpeechChem's layout): a column per metric
   (cost / cycles / area or instructions; its name the column's context, spoken on crossing), first the

@@ -237,6 +237,7 @@ namespace MagnumOpus.Module.Game
                 if (!part.GetHexFootprint(solution).Contains(hex)) continue;
                 string name = PartName(ed, part);
                 if (type.isTrack) name = TrackHere(part, hex, name);
+                if (type.isConduit) name = ConduitHere(solution, part, hex, name);
                 // What this hex of a glyph takes or gives (the game draws it on the hex).
                 string role = GlyphRoles.At(part, hex);
                 if (role != null) name += ", " + role;
@@ -252,6 +253,16 @@ namespace MagnumOpus.Module.Game
                 result.Add(name);
             }
             return result;
+        }
+
+        /// <summary>A conduit hex and the hex a molecule dropped on it comes out at (the sim's
+        /// mapping: turned by the difference of the two ends, moved to the paired end).</summary>
+        private static string ConduitHere(Solution solution, Part conduit, HexIndex hex, string name)
+        {
+            var pair = solution.parts.FirstOrDefault(p => p != conduit && p.GetType().isConduit && p.conduitId == conduit.conduitId);
+            if (pair == null) return name;
+            var to = pair.GetHexPos() + (hex - conduit.GetHexPos()).Rotated(pair.GetRotation() - conduit.GetRotation());
+            return Strings.EditorConduitTo(name, Hex.Coords(to));
         }
 
         /// <summary>A track hex: the directions it joins in, each marked with the way a move takes it

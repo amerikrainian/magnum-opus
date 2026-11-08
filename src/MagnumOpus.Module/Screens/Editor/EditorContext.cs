@@ -106,7 +106,7 @@ namespace MagnumOpus.Module.Screens.Editor
 
         public void Reset()
         {
-            Cursor = new HexIndex(0, 0);
+            Cursor = Chambers.Home(Ed);
             _tape = false;
             Row = 0;
             Col = 0;
@@ -372,9 +372,20 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             var ed = _ctx.Ed;
             if (ed == null) return;
-            _ctx.Cursor = Hex.Step(_ctx.Cursor, dir);
+            var next = Hex.Step(_ctx.Cursor, dir);
+            if (Chambers.Exists(ed, next)) GoTo(next);
+        }
+
+        /// <summary>The cursor and the carried parts to this hex; <paramref name="first"/> is said
+        /// before the hex.</summary>
+        public void GoTo(HexIndex hex, string first = null)
+        {
+            var ed = _ctx.Ed;
+            if (ed == null) return;
+            _ctx.Cursor = hex;
             foreach (var c in _items) c.Part.SetHexPosAndUpdate(_ctx.Cursor + c.Offset);
             string readout = Board.Readout(ed, _ctx.Cursor);
+            if (first != null) readout = first + ", " + readout;
             string error = PlacementError();
             EditorContext.Say(error == null ? readout : readout + ", " + error);
         }
@@ -524,9 +535,16 @@ namespace MagnumOpus.Module.Screens.Editor
             var ed = _ctx.Ed;
             if (ed == null) return;
             var hexes = _track.GetTrack();
-            var target = Hex.Step(End(), dir) - _track.GetHexPos();
+            var hex = Hex.Step(End(), dir);
+            var target = hex - _track.GetHexPos();
             if (hexes.Count >= 2 && hexes[hexes.Count - 2] == target) _track.RemoveTrackBack();
             else if (hexes.Contains(target)) return; // a track does not cross itself
+            else if (!Chambers.Exists(ed, hex))
+            {
+                // The game refuses the step, its tooltip the reason.
+                EditorContext.Say(EditorContext.Error(GameText.Translate("Parts cannot be placed here.")));
+                return;
+            }
             else _track.AddTrackBack(target);
             _ctx.Cursor = End();
             EditorContext.Say(Board.Readout(ed, _ctx.Cursor));

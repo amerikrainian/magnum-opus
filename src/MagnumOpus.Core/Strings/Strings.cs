@@ -324,6 +324,8 @@ namespace MagnumOpus.Core.Strings
             // A track turned (its shape is its hexes, it has no one direction).
             D("editor.rotated", "rotated"),
             D("editor.length", "length {0}"),
+            D("editor.chamber", "chamber {0}"),
+            D("editor.conduit_to", "{0}, to {1}"),
             // Drawing a track from its end: {0} = its hexes so far.
             D("editor.drawing", "drawing track, {0} hexes"),
             D("editor.track_done", "track, {0} hexes"),
@@ -486,6 +488,8 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.diagram", "Show diagram"),
             D("bind.ed.jump", "Jump between the board and the tape"),
             D("bind.ed.origin", "Cursor to the origin"),
+            D("bind.ed.chamber.prev", "Previous chamber"),
+            D("bind.ed.chamber.next", "Next chamber"),
             D("bind.cinematic.next", "Next line"),
             D("bind.ed.part_prev", "Previous part on this hex"),
             D("bind.ed.part_next", "Next part on this hex"),
@@ -765,6 +769,8 @@ namespace MagnumOpus.Core.Strings
         public static string EditorDeleted(string what) => F("editor.deleted", what);
         public static string EditorRotated => Get("editor.rotated");
         public static string EditorLength(int length) => F("editor.length", length);
+        public static string EditorChamber(int number) => F("editor.chamber", number);
+        public static string EditorConduitTo(string name, string hex) => F("editor.conduit_to", name, hex);
         public static string EditorDrawing(int hexes) => F("editor.drawing", hexes);
         public static string EditorTrackDone(int hexes) => F("editor.track_done", hexes);
         public static string EditorTrackHexes(int hexes) => F("editor.track_hexes", hexes);

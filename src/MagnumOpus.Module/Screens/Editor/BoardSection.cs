@@ -104,6 +104,11 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.HexE, Strings.Get("bind.ed.hex.e"), _ => Move(HexDir.East));
             yield return new ElementAction(EditorActions.HexSW, Strings.Get("bind.ed.hex.sw"), _ => Move(HexDir.SouthWest));
             yield return new ElementAction(EditorActions.HexSE, Strings.Get("bind.ed.hex.se"), _ => Move(HexDir.SouthEast));
+            if (!_ctx.Draw.Active && Chambers.All(_ctx.Ed).Length > 1)
+            {
+                yield return new ElementAction(EditorActions.ChamberPrev, Strings.Get("bind.ed.chamber.prev"), _ => CycleChamber(-1));
+                yield return new ElementAction(EditorActions.ChamberNext, Strings.Get("bind.ed.chamber.next"), _ => CycleChamber(1));
+            }
 
             if (_ctx.Carry.Active)
             {
@@ -121,7 +126,7 @@ namespace MagnumOpus.Module.Screens.Editor
                 yield break;
             }
 
-            yield return new ElementAction(EditorActions.Origin, Strings.Get("bind.ed.origin"), _ => { _ctx.Cursor = new HexIndex(0, 0); SayHex(); });
+            yield return new ElementAction(EditorActions.Origin, Strings.Get("bind.ed.origin"), _ => { _ctx.Cursor = Chambers.Home(_ctx.Ed); SayHex(); });
             yield return new ElementAction(EditorActions.SkipNW, Strings.Get("bind.ed.skip.nw"), _ => Skip(HexDir.NorthWest));
             yield return new ElementAction(EditorActions.SkipNE, Strings.Get("bind.ed.skip.ne"), _ => Skip(HexDir.NorthEast));
             yield return new ElementAction(EditorActions.SkipW, Strings.Get("bind.ed.skip.w"), _ => Skip(HexDir.West));
@@ -221,8 +226,24 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             if (_ctx.Carry.Active) { _ctx.Carry.Move(dir); return; }
             if (_ctx.Draw.Active) { _ctx.Draw.Step(dir); return; }
-            _ctx.Cursor = Hex.Step(_ctx.Cursor, dir);
+            var next = Hex.Step(_ctx.Cursor, dir);
+            if (!Chambers.Exists(_ctx.Ed, next)) return; // a chamber's edge: the key does nothing
+            _ctx.Cursor = next;
             SayHex();
+        }
+
+        // To the centre of the next chamber, wrapping; a carried part comes along.
+        private void CycleChamber(int step)
+        {
+            var ed = _ctx.Ed;
+            var chambers = Chambers.All(ed);
+            int n = chambers.Length;
+            if (n < 2) return;
+            int at = ((Chambers.IndexOf(ed, _ctx.Cursor) + step) % n + n) % n;
+            string chamber = Strings.EditorChamber(at + 1);
+            if (_ctx.Carry.Active) { _ctx.Carry.GoTo(chambers[at].hexPos, chamber); return; }
+            _ctx.Cursor = chambers[at].hexPos;
+            EditorContext.Say(chamber + ", " + Board.Readout(ed, _ctx.Cursor));
         }
 
         private void SayHex()
@@ -241,6 +262,14 @@ namespace MagnumOpus.Module.Screens.Editor
             for (int i = 1; i <= SkipLimit; i++)
             {
                 var h = Hex.Step(_ctx.Cursor, dir, i);
+                if (!Chambers.Exists(ed, h))
+                {
+                    // A chamber's edge stops it, on the last hex that way; already there: nothing.
+                    if (i == 1) return;
+                    _ctx.Cursor = Hex.Step(_ctx.Cursor, dir, i - 1);
+                    SayHex();
+                    return;
+                }
                 if (string.Join("|", Board.Contents(ed, h, world)) == here) continue;
                 _ctx.Cursor = h;
                 SayHex();

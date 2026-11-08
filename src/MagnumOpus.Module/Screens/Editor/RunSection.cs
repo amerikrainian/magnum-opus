@@ -248,11 +248,13 @@ namespace MagnumOpus.Module.Screens.Editor
             Speech.Say(text, interrupt: true);
             RunLog.Add(ed.GetCycle() + 1, text);
             var hexes = ErrorHexes(e);
-            if (hexes.Count > 0 && hexes[0] != _ctx.Cursor)
+            // An atom leaving a chamber is reported on its wall, no hex of the board: the closest one.
+            var errorHex = hexes.Count > 0 ? Chambers.Nearest(ed, hexes[0]) : default(HexIndex);
+            if (hexes.Count > 0 && errorHex != _ctx.Cursor)
             {
                 // The board cursor goes to the error; when it actually moves and the board is where
                 // the player is, the new hex is read after the message.
-                _ctx.Cursor = hexes[0];
+                _ctx.Cursor = errorHex;
                 if (Equals(Navigation.FocusedStopKey, EditorContext.StopBoard))
                     Speech.Say(Board.Readout(ed, _ctx.Cursor), interrupt: false);
             }
