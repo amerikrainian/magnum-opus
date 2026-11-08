@@ -263,6 +263,7 @@ namespace MagnumOpus.Module.Screens.Editor
             if (SdlKeyboard.CtrlHeld) return; // Ctrl+letters are the clipboard here; Alt types as plain
             if (!_ctx.CanEdit()) return;
             PlaceAtCursor(_ctx, type, insert: SdlKeyboard.ShiftHeld, withPlace: false);
+            if (SdlKeyboard.ShiftHeld) MagnumOpus.Module.Tutorial.Tutorials.Report(MagnumOpus.Module.Tutorial.TutorialEvents.Inserted);
         }
 
         /// <summary>An instruction at the program cursor (inserting or overwriting), the cursor stepped

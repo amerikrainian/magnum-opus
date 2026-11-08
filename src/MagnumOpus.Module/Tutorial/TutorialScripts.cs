@@ -18,9 +18,10 @@ namespace MagnumOpus.Module.Tutorial
     /// </summary>
     internal static class TutorialScripts
     {
-        private const string Introduction = "P044", Arms = "P001", Pivots = "P004";
+        private const string Introduction = "P044", Arms = "P001", Pivots = "P004", Pistons = "P002", Tracks = "P003";
 
-        public static bool Has(string puzzleId) => puzzleId == Introduction || puzzleId == Arms || puzzleId == Pivots;
+        public static bool Has(string puzzleId) =>
+            puzzleId == Introduction || puzzleId == Arms || puzzleId == Pivots || puzzleId == Pistons || puzzleId == Tracks;
 
         public static List<TutorialStep> For(string puzzleId, TutorialContext c)
         {
@@ -29,6 +30,8 @@ namespace MagnumOpus.Module.Tutorial
                 case Introduction: return IntroductionSteps(c);
                 case Arms: return ArmsSteps(c);
                 case Pivots: return PivotsSteps(c);
+                case Pistons: return PistonsSteps(c);
+                case Tracks: return TracksSteps(c);
                 default: return new List<TutorialStep>();
             }
         }
@@ -119,6 +122,49 @@ namespace MagnumOpus.Module.Tutorial
             };
         }
 
+        // ---- Lesson: Pistons: the game's arm shows a reset, then the player's own piston. ----
+
+        private static List<TutorialStep> PistonsSteps(TutorialContext c)
+        {
+            const string P = "tut.pistons.";
+            Func<bool> armPlaced = () => c.PlayerArms.Any();
+            return new List<TutorialStep>
+            {
+                Latch(P, "meet", () => c.Pressed(EditorActions.ArmPrefix + 1), () => new object[0]),
+                Latch(P, "tape", () => Equals(c.Stop, EditorContext.StopProgram) && c.Pressed(UiActions.Home, UiActions.End), () => new object[] { K(EditorActions.Jump), K(UiActions.Home), K(UiActions.End) }),
+                Latch(P, "reset", () => c.Pressed(UiActions.Left, UiActions.Right), () => new object[] { c.Note(1, 0) + " " + c.Note(1, 1), K(UiActions.Left), K(UiActions.Right) }),
+                Latch(P, "goal", () => armPlaced() || c.FreeHighlights.Contains(c.Cursor), () => new object[] { c.Note(0, 0), K(EditorActions.CatPrev), K(EditorActions.CatNext) }),
+                Live(P, "carry", armPlaced, () => new object[] { K(UiActions.Activate) }),
+                Live(P, "program", () => c.PlayerArms.Any(a => a.program.Count() >= 2), () => new object[0]),
+                Latch(P, "insert", () => c.Pressed(TutorialEvents.Inserted), () => new object[0]),
+                Latch(P, "shift", () => c.Pressed(EditorActions.ShiftLeft, EditorActions.ShiftRight), () => new object[] { K(EditorActions.ShiftLeft), K(EditorActions.ShiftRight) }),
+                Latch(P, "done", () => c.RunState != SimPlayState.Stopped, () => new object[0]),
+            };
+        }
+
+        // ---- Lesson: Tracks: the game highlights the hexes the track covers; its notes say to make
+        // a track between the reagent and the product and to put an arm on it. ----
+
+        private static List<TutorialStep> TracksSteps(TutorialContext c)
+        {
+            const string P = "tut.tracks.";
+            Func<Part> track = () => c.Solution.parts.FirstOrDefault(p => p.GetType().isTrack && !p.GetIsFixed());
+            Func<bool> trackPlaced = () => track() != null;
+            Func<bool> trackDrawn = () => track() != null && !c.Editor.Draw.Active && track().GetTrack().Count >= 2;
+            return new List<TutorialStep>
+            {
+                Latch(P, "meet", () => c.Pressed(EditorActions.ArmPrefix + 1), () => new object[] { K(EditorActions.ArmPrefix + 1) }),
+                Latch(P, "read", () => c.Pressed(HexMoves) && c.CursorOn(p => p.GetType().isTrack), () => new object[0]),
+                Latch(P, "parts", () => c.Pressed(EditorActions.PartPrev, EditorActions.PartNext), () => new object[] { K(EditorActions.ArmPrefix + 1), K(EditorActions.PartPrev), K(EditorActions.PartNext) }),
+                Latch(P, "goal", () => trackPlaced() || c.FreeHighlights.Contains(c.Cursor), () => new object[0]),
+                Latch(P, "carry", () => trackPlaced() || c.Editor.Carry.Active, () => new object[] { K(UiActions.Activate) }),
+                Latch(P, "draw", trackDrawn, () => new object[] { K(UiActions.Activate) }),
+                Latch(P, "extend", () => c.Pressed(EditorActions.DrawTrack) && !c.Editor.Draw.Active, () => new object[] { K(EditorActions.DrawTrack), K(UiActions.Activate) }),
+                Live(P, "arm", () => c.PlayerArms.Any(), () => new object[] { c.Note(0, 1) }),
+                Latch(P, "done", () => c.RunState != SimPlayState.Stopped, () => new object[] { Instr("move_plus"), Instr("move_minus") }),
+            };
+        }
+
         // ---- builders ----
 
         private static TutorialStep Latch(string prefix, string id, Func<bool> met, Func<object[]> args, bool after = false) =>
@@ -142,5 +188,6 @@ namespace MagnumOpus.Module.Tutorial
     internal static class TutorialEvents
     {
         public const string ProgrammedFromBoard = "tutorial.programmed_from_board";
+        public const string Inserted = "tutorial.inserted";
     }
 }

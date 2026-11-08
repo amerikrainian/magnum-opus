@@ -234,6 +234,37 @@ namespace MagnumOpus.Core.Strings
             // {0} molecule.
             D("tut.pivots.reagent", "Before you program it, size up the job: go to a reagent and hit {0} to hear what it's made of."),
             D("tut.pivots.program", "You're all set! Remember to pivot!"),
+            // Lesson: Pistons.
+            D("tut.pistons.meet", "Pistons! These arms can stretch and pull back. As per usual, arm 1 has an example for you to look at."),
+            // {0} jump, {1} home, {2} end.
+            D("tut.pistons.tape", "As per usual, {0} goes to its tape. We're sure you already know, but {1} and {2} jump to the first and last instruction on said tape, respectively."),
+            // {0} the game's notes on reset, {1} {2} cycles.
+            D("tut.pistons.reset", "{0} A reset takes up cells of its own, and they read as what it's undoing: walk along with {1} and {2} to hear them."),
+            // {0} the game's note, {1} {2} category keys.
+            D("tut.pistons.goal", "Your turn! {0} You know the drill: {1} and {2} to Highlighted, then go to the empty one."),
+            // {0} activate.
+            D("tut.pistons.carry", "In Parts, {0} on the piston arm picks it up, same as last time."),
+            D("tut.pistons.program", "Get a couple of instructions on its tape."),
+            D("tut.pistons.insert", "Forgot something? Shift with an instruction's key slips one in and pushes the rest along."),
+            // {0} {1} shift the program.
+            D("tut.pistons.shift", "Whole thing off by a cycle? {0} and {1} slide it along."),
+            D("tut.pistons.done", "You're all set!"),
+            // Lesson: Tracks. {0} arm 1's key.
+            D("tut.tracks.meet", "Tracks! An arm on one can slide along these. Check our usual culprit {0}"),
+            D("tut.tracks.read", "Walk along the track with the hex keys. Each hex tells you which way a plus move and a minus move go from there."),
+            // {0} arm 1's key, {1} {2} part keys.
+            D("tut.tracks.parts", "An arm and a track can share a hex. {0} goes back to arm 1's, and {1} and {2} choose which one your edits take."),
+            D("tut.tracks.goal", "Your turn!"),
+            // {0} activate.
+            D("tut.tracks.carry", "In Parts, {0} on the track picks it up, same as last time."),
+            // {0} activate.
+            D("tut.tracks.draw", "{0} puts it down and you're drawing: the hex keys lay track from there, going back over it takes it up, and {0} ends it."),
+            // {0} extend, {1} activate.
+            D("tut.tracks.extend", "Need more later? {0} on a track picks the drawing back up, and {1} ends it again."),
+            // {0} the game's note.
+            D("tut.tracks.arm", "{0}"),
+            // {0} {1} the move instructions' keys.
+            D("tut.tracks.done", "You're all set! Arms move along tracks with {0} and {1}."),
             D("keys.instruction_bare", "An instruction takes a key without Ctrl, Shift or Alt, press another key"),
             D("mod.category.global", "Global"),
             D("mod.category.ui", "UI"),
