@@ -327,7 +327,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   tape type as plain ones. Alt+Backspace jumps from the board to the tape on the arm under the cursor
   (else the program cursor's arm) and back to the same hex. On the board: Enter picks up / puts down (`CarryMode`: out of the solution while carried, the hex it
   was taken by stays under the cursor, `Solution.IsAllowedPlacement` decides and its reason is spoken,
-  Escape restores it and the cursor, an editor pop restores it too); Ctrl+Enter carries a copy (the
+  Escape restores it and the cursor, an editor pop restores it too; the board's finding and reading keys work while carrying, the part following any jump, user request 2026-11-08); Ctrl+Enter carries a copy (the
   game's rules: no reagent, product, unique, conduit, or limited-count puzzle); Shift+A / D rotate (always round the cursor hex, the game's A / D while dragging: an arm by its gripper swings its base; a non-arm part then reads the hex again as a separate announcement; user decisions 2026-11-07, verified live on a product),
   Shift+W / S arm length; Delete removes; Shift+Enter extends a track (`TrackDrawMode`: hex keys extend
   the end or back up along it; a new track from the tray starts drawing when put down). Selection (user

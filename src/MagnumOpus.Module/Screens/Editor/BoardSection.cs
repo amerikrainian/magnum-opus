@@ -110,6 +110,10 @@ namespace MagnumOpus.Module.Screens.Editor
                 yield return new ElementAction(EditorActions.ChamberNext, Strings.Get("bind.ed.chamber.next"), _ => CycleChamber(1));
             }
 
+            // Finding and reading work while holding a part too; only drawing a track holds the cursor.
+            if (!_ctx.Draw.Active)
+                foreach (var key in FindingKeys(arms)) yield return key;
+
             if (_ctx.Carry.Active)
             {
                 yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ed.cancel"), _ => _ctx.Carry.Cancel());
@@ -126,13 +130,6 @@ namespace MagnumOpus.Module.Screens.Editor
                 yield break;
             }
 
-            yield return new ElementAction(EditorActions.Origin, Strings.Get("bind.ed.origin"), _ => { _ctx.Cursor = Chambers.Home(_ctx.Ed); SayHex(); });
-            yield return new ElementAction(EditorActions.SkipNW, Strings.Get("bind.ed.skip.nw"), _ => Skip(HexDir.NorthWest));
-            yield return new ElementAction(EditorActions.SkipNE, Strings.Get("bind.ed.skip.ne"), _ => Skip(HexDir.NorthEast));
-            yield return new ElementAction(EditorActions.SkipW, Strings.Get("bind.ed.skip.w"), _ => Skip(HexDir.West));
-            yield return new ElementAction(EditorActions.SkipE, Strings.Get("bind.ed.skip.e"), _ => Skip(HexDir.East));
-            yield return new ElementAction(EditorActions.SkipSW, Strings.Get("bind.ed.skip.sw"), _ => Skip(HexDir.SouthWest));
-            yield return new ElementAction(EditorActions.SkipSE, Strings.Get("bind.ed.skip.se"), _ => Skip(HexDir.SouthEast));
             if (arms > 0)
             {
                 yield return new ElementAction(UiActions.Up, Strings.Get("bind.ed.arm.prev"), _ => CycleArm(-1));
@@ -153,18 +150,6 @@ namespace MagnumOpus.Module.Screens.Editor
                     };
                 }
             }
-            for (int n = 1; n <= Math.Min(9, arms); n++)
-            {
-                int arm = n;
-                yield return new ElementAction(EditorActions.ArmPrefix + n, Strings.Get("bind.ed.arm"), _ => JumpToArm(arm));
-            }
-            yield return new ElementAction(EditorActions.CatPrev, Strings.Get("bind.ed.cat.prev"), _ => Category(-1));
-            yield return new ElementAction(EditorActions.CatNext, Strings.Get("bind.ed.cat.next"), _ => Category(1));
-            yield return new ElementAction(EditorActions.ItemPrev, Strings.Get("bind.ed.item.prev"), _ => Item(-1));
-            yield return new ElementAction(EditorActions.ItemNext, Strings.Get("bind.ed.item.next"), _ => Item(1));
-            yield return new ElementAction(EditorActions.Details, Strings.Get("bind.ed.details"), _ => SayDetails());
-            yield return new ElementAction(EditorActions.Molecule, Strings.Get("bind.ed.molecule"), _ => EditorContext.Say(Board.MoleculeAround(_ctx.Ed, _ctx.Cursor)));
-            yield return new ElementAction(EditorActions.Neighbours, Strings.Get("bind.ed.neighbours"), _ => EditorContext.Say(NeighboursText()));
 
             // Selecting and the clipboard.
             bool tape = Tape;
@@ -224,7 +209,39 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.DrawTrack, Strings.Get("bind.ed.track"), _ => ExtendTrack());
         }
 
+        // The keys that find things on the board and read them.
+        private IEnumerable<ElementAction> FindingKeys(int arms)
+        {
+            yield return new ElementAction(EditorActions.Origin, Strings.Get("bind.ed.origin"), _ => GoTo(Chambers.Home(_ctx.Ed)));
+            yield return new ElementAction(EditorActions.SkipNW, Strings.Get("bind.ed.skip.nw"), _ => Skip(HexDir.NorthWest));
+            yield return new ElementAction(EditorActions.SkipNE, Strings.Get("bind.ed.skip.ne"), _ => Skip(HexDir.NorthEast));
+            yield return new ElementAction(EditorActions.SkipW, Strings.Get("bind.ed.skip.w"), _ => Skip(HexDir.West));
+            yield return new ElementAction(EditorActions.SkipE, Strings.Get("bind.ed.skip.e"), _ => Skip(HexDir.East));
+            yield return new ElementAction(EditorActions.SkipSW, Strings.Get("bind.ed.skip.sw"), _ => Skip(HexDir.SouthWest));
+            yield return new ElementAction(EditorActions.SkipSE, Strings.Get("bind.ed.skip.se"), _ => Skip(HexDir.SouthEast));
+            for (int n = 1; n <= Math.Min(9, arms); n++)
+            {
+                int arm = n;
+                yield return new ElementAction(EditorActions.ArmPrefix + n, Strings.Get("bind.ed.arm"), _ => JumpToArm(arm));
+            }
+            yield return new ElementAction(EditorActions.CatPrev, Strings.Get("bind.ed.cat.prev"), _ => Category(-1));
+            yield return new ElementAction(EditorActions.CatNext, Strings.Get("bind.ed.cat.next"), _ => Category(1));
+            yield return new ElementAction(EditorActions.ItemPrev, Strings.Get("bind.ed.item.prev"), _ => Item(-1));
+            yield return new ElementAction(EditorActions.ItemNext, Strings.Get("bind.ed.item.next"), _ => Item(1));
+            yield return new ElementAction(EditorActions.Details, Strings.Get("bind.ed.details"), _ => SayDetails());
+            yield return new ElementAction(EditorActions.Molecule, Strings.Get("bind.ed.molecule"), _ => EditorContext.Say(Board.MoleculeAround(_ctx.Ed, _ctx.Cursor)));
+            yield return new ElementAction(EditorActions.Neighbours, Strings.Get("bind.ed.neighbours"), _ => EditorContext.Say(NeighboursText()));
+        }
+
         // ---- moving ----
+
+        // The cursor to a hex, read; a carried part comes along and says if it cannot go there.
+        private void GoTo(HexIndex hex)
+        {
+            if (_ctx.Carry.Active) { _ctx.Carry.GoTo(hex); return; }
+            _ctx.Cursor = hex;
+            SayHex();
+        }
 
         private void Move(HexDir dir)
         {
@@ -270,13 +287,11 @@ namespace MagnumOpus.Module.Screens.Editor
                 {
                     // A chamber's edge stops it, on the last hex that way; already there: nothing.
                     if (i == 1) return;
-                    _ctx.Cursor = Hex.Step(_ctx.Cursor, dir, i - 1);
-                    SayHex();
+                    GoTo(Hex.Step(_ctx.Cursor, dir, i - 1));
                     return;
                 }
                 if (string.Join("|", Board.Contents(ed, h, world)) == here) continue;
-                _ctx.Cursor = h;
-                SayHex();
+                GoTo(h);
                 return;
             }
         }
@@ -287,8 +302,7 @@ namespace MagnumOpus.Module.Screens.Editor
             var arms = Board.Arms(ed);
             if (n < 1 || n > arms.Count) return;
             _ctx.Row = n - 1;
-            _ctx.Cursor = Board.BaseHex(ed, arms[n - 1]);
-            SayHex();
+            GoTo(Board.BaseHex(ed, arms[n - 1]));
         }
 
         // Up / Down: the previous or next arm becomes the program cursor's, the cursor on the cell
@@ -384,8 +398,7 @@ namespace MagnumOpus.Module.Screens.Editor
             var items = cats[at].Value;
             if (_item >= 0 && items.Count < 2 && _ctx.Cursor == items[0]) return; // the only item, on it: nothing
             _item = _item < 0 ? (step > 0 ? 0 : items.Count - 1) : ((_item + step) % items.Count + items.Count) % items.Count;
-            _ctx.Cursor = items[_item];
-            SayHex();
+            GoTo(items[_item]);
         }
 
         // ---- editing ----
