@@ -359,7 +359,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   work as the atom / bond difference across each `RunCycleGlyphs` (bonds that arrive or leave with both their atoms, a reagent's molecule, are not "bonded" / "unbonded", 2026-11-07; a triplex glyph adds one of the bond's three kinds per side, each said, "Fire at 0, 0 and Fire at 1, 0, 1 of 3", then "triplex bonded ...", and hexes and molecules read "partial triplex bonds east, 2 of 3" / "1 partial triplex bond" until all three, 2026-11-08, verified live; content-mod glyphs included; one
   sentence per part, not per name), products from `outputDone`; ONE MESSAGE PER EVENT (user rule
   2026-11-04, SpeechChem's way): a step says "cycle N" then each actor's sentence queued; at play each
-  cycle's first message interrupts the last cycle's; fast forward says nothing (user rule 2026-11-04;
+  cycle's first message interrupts the last cycle's; fast forward says nothing, nor does the endless run Continue Editing starts after a win (steps still speak; 2026-11-08) (user rule 2026-11-04;
   a product is announced only up to its required count: the game keeps counting past it); errors when the
   game shows them (message + hexes, the board cursor moved there).
   Error panel (`ErrorSection`, a stop after Board while the game shows it): "Error, <message> at

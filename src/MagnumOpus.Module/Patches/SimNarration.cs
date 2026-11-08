@@ -343,7 +343,8 @@ namespace MagnumOpus.Module.Patches
             var state = ed.GetSimPlayState();
             bool fast = ed.isFastForward;
             // Fast forward is silent (user rule 2026-11-04); the run log and Alt+P keep the products.
-            if (state == SimPlayState.Playing && fast) return;
+            // So is the endless run after a win: Continue Editing sets the machine playing again.
+            if (state == SimPlayState.Playing && (fast || ed.wasCompleted)) return;
             // One message per event, SpeechChem's way ("cycle 3", "arm 1: grabbed Fire", "arm 2: ..."):
             // the first interrupts, the rest queue behind it. A step opens with the cycle's number;
             // at speed each cycle's first message cuts the last cycle's off, so what is said is the
