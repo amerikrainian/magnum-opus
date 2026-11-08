@@ -33,7 +33,7 @@ namespace MagnumOpus.Core.Input
         public event Action BindingsChanged;
 
         public string BindingsDisplay =>
-            _bindings.Count == 0 ? "(none)" : string.Join(", ", _bindings.Select(b => b.DisplayName));
+            _bindings.Count == 0 ? Strings.Strings.KeysNone : string.Join(", ", _bindings.Select(b => b.DisplayName));
 
         public InputAction(string key, string label)
         {
@@ -71,10 +71,16 @@ namespace MagnumOpus.Core.Input
 
         public InputAction Repeating() { Repeats = true; return this; }
 
-        /// <summary>Display-only subgroup within the category's settings tree; dispatch ignores it.</summary>
+        /// <summary>Display-only subgroup within the key list; dispatch ignores it.</summary>
         public string Group { get; private set; }
 
         public InputAction Grouped(string group) { Group = group; return this; }
+
+        /// <summary>Where the action works, for a rebind's conflicts: two actions collide only where
+        /// their scopes meet. Empty: everywhere. Dispatch ignores it.</summary>
+        public IReadOnlyList<string> Scopes { get; private set; } = new string[0];
+
+        public InputAction In(params string[] scopes) { Scopes = scopes; return this; }
 
         public void InvokePerformed() => Performed?.Invoke();
 

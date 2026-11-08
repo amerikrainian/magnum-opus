@@ -144,10 +144,14 @@ namespace MagnumOpus.Module.Screens.Editor
                 yield return new ElementAction(EditorActions.Jump, Strings.Get("bind.ed.jump"), _ => JumpToTape());
                 yield return new ElementAction(EditorActions.ShiftLeft, Strings.Get("bind.ed.shift_left"), _ => _ctx.Program?.ShiftInstructions(-1));
                 yield return new ElementAction(EditorActions.ShiftRight, Strings.Get("bind.ed.shift_right"), _ => _ctx.Program?.ShiftInstructions(1));
-                yield return new ElementAction(EditorActions.Instruction, Strings.Get("bind.ed.program_arm"), _ => ProgramArm())
+                foreach (var slot in InstructionSlots.All)
                 {
-                    HelpRows = () => ProgramEdits.HelpRows(_ctx, fromBoard: true),
-                };
+                    var s = slot;
+                    yield return new ElementAction(s.ActionKey, Instructions.Label(s.Type), _ => ProgramArm(s.Type))
+                    {
+                        HelpRows = () => ProgramEdits.HelpRows(_ctx, s, fromBoard: true),
+                    };
+                }
             }
             for (int n = 1; n <= Math.Min(9, arms); n++)
             {
@@ -539,11 +543,10 @@ namespace MagnumOpus.Module.Screens.Editor
 
         // Alt + an instruction key: the program cursor's arm gets it at that cursor's cycle, wherever
         // the board cursor is (user decision 2026-11-05), and the cursor steps on.
-        private void ProgramArm()
+        private void ProgramArm(InstructionType type)
         {
             if (!SdlKeyboard.AltHeld || SdlKeyboard.CtrlHeld || SdlKeyboard.ShiftHeld) return;
-            var type = ProgramEdits.PressedInstruction();
-            if (type == null || !_ctx.CanEdit()) return;
+            if (!_ctx.CanEdit()) return;
             ProgramSection.PlaceAtCursor(_ctx, type, insert: false, withPlace: true);
         }
 

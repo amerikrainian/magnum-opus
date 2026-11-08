@@ -82,10 +82,14 @@ namespace MagnumOpus.Module.Screens.Editor
                 int arm = n;
                 yield return new ElementAction(EditorActions.ArmPrefix + n, Strings.Get("bind.ed.arm"), _ => JumpToRow(arm - 1));
             }
-            yield return new ElementAction(EditorActions.Instruction, Strings.Get("bind.ed.instr"), _ => Type())
+            foreach (var slot in InstructionSlots.All)
             {
-                HelpRows = () => ProgramEdits.HelpRows(_ctx, fromBoard: false),
-            };
+                var s = slot;
+                yield return new ElementAction(s.ActionKey, Instructions.Label(s.Type), _ => Type(s.Type))
+                {
+                    HelpRows = () => ProgramEdits.HelpRows(_ctx, s, fromBoard: false),
+                };
+            }
             yield return new ElementAction(EditorActions.Delete, Strings.Get("bind.ed.delete"), _ => Delete());
             yield return new ElementAction(EditorActions.Copy, Strings.Get("bind.ed.copy"), _ => Copy(cut: false));
             yield return new ElementAction(EditorActions.Cut, Strings.Get("bind.ed.cut"), _ => Copy(cut: true));
@@ -253,11 +257,10 @@ namespace MagnumOpus.Module.Screens.Editor
 
         // ---- editing ----
 
-        private void Type()
+        private void Type(InstructionType type)
         {
             if (SdlKeyboard.CtrlHeld) return; // Ctrl+letters are the clipboard here; Alt types as plain
-            var type = ProgramEdits.PressedInstruction();
-            if (type == null || !_ctx.CanEdit()) return;
+            if (!_ctx.CanEdit()) return;
             PlaceAtCursor(_ctx, type, insert: SdlKeyboard.ShiftHeld, withPlace: false);
         }
 

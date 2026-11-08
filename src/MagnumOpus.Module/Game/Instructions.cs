@@ -37,9 +37,13 @@ namespace MagnumOpus.Module.Game
             return null;
         }
 
+        /// <summary>The instruction's keys, as the key list says them (the player's, which default to
+        /// the game's); empty when it has none.</summary>
+        public static string Hotkey(InstructionType t) => MagnumOpus.Module.Input.InstructionSlots.Keys(t);
+
         /// <summary>The instruction's hotkey as the game draws it on its tile, upper case (its
         /// Keyboard Layout option decides the letter); empty when it has none.</summary>
-        public static string Hotkey(InstructionType t)
+        internal static string GameHotkey(InstructionType t)
         {
             if (ReferenceEquals(t, null)) return "";
             try { return GameText.Clean(SolutionEditorScreen.GetCharacterFromKey(t.GetHotkey())).ToUpperInvariant(); }

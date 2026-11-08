@@ -16,6 +16,18 @@
 | Ctrl+Shift+M | The Magnum Opus menu (settings, all keys) |
 | Ctrl+Shift+N | Hand the keyboard back to the game, and take it again |
 
+## Changing keys
+
+Every key the mod uses can be changed: in the Magnum Opus menu (Ctrl+Shift+M), All keys lists them
+by group, each with its current keys. Enter on one shows its keys: Enter on a key replaces or removes
+it, Add key gives the action another, and Reset to default puts it back. Press the new key when
+asked, with any of Ctrl, Shift and Alt; Escape cancels. A key another action already has wherever
+this one works is refused and named. Changes are saved at once, and F1 lists your keys.
+
+Each instruction has its own key, one key without Ctrl, Shift or Alt. Changing it moves all three
+of its forms: the key alone types on the tape, Shift with it inserts, Alt with it programs from the
+board. Until you change one, an instruction follows the game's Keyboard Layout option.
+
 ## Dropdowns
 
 Language, Resolution and Keyboard Layout in Options are dropdowns: they read as "combo box" with

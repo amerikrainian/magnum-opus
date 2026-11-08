@@ -94,6 +94,29 @@ namespace MagnumOpus.Module.Input
             }
         }
 
+        /// <summary>Whether any key is down this frame or was last frame: false means no key can be
+        /// pressed, held or released now.</summary>
+        public static bool AnyActive
+        {
+            get
+            {
+                if (!_primed) return false;
+                for (int i = 0; i < _current.Length; i++)
+                    if (_current[i] != 0 || _previous[i] != 0) return true;
+                return false;
+            }
+        }
+
+        private static readonly Scancode[] Named = (Scancode[])Enum.GetValues(typeof(Scancode));
+
+        /// <summary>The first named key that went down this frame, or null: a rebind's capture.</summary>
+        public static Scancode? FirstPressed()
+        {
+            foreach (var key in Named)
+                if (JustPressed((int)key)) return key;
+            return null;
+        }
+
         private const int LCtrl = 224, LShift = 225, LAlt = 226, LGui = 227, RCtrl = 228, RShift = 229, RAlt = 230, RGui = 231;
 
         public static bool IsModifier(int scancode) => scancode >= LCtrl && scancode <= RGui;

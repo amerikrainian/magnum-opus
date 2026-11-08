@@ -47,10 +47,17 @@ namespace MagnumOpus.Module.Input
             }
         }
 
-        private static string KeyName(Scancode key)
+        public static string KeyName(Scancode key)
         {
             switch (key)
             {
+                case Scancode.LeftBracket: return "Left Bracket";
+                case Scancode.RightBracket: return "Right Bracket";
+                case Scancode.KpDivide: return "Numpad Divide";
+                case Scancode.KpMultiply: return "Numpad Multiply";
+                case Scancode.KpMinus: return "Numpad Minus";
+                case Scancode.KpPlus: return "Numpad Plus";
+                case Scancode.KpPeriod: return "Numpad Period";
                 case Scancode.Up: return "Up Arrow";
                 case Scancode.Down: return "Down Arrow";
                 case Scancode.Left: return "Left Arrow";
@@ -61,6 +68,7 @@ namespace MagnumOpus.Module.Input
                 case Scancode.PageDown: return "Page Down";
                 default:
                     string s = key.ToString();
+                    if (s.StartsWith("Kp", StringComparison.Ordinal)) return "Numpad " + s.Substring(2);
                     return s.StartsWith("Num", StringComparison.Ordinal) && s.Length == 4 ? s.Substring(3) : s;
             }
         }
@@ -79,7 +87,7 @@ namespace MagnumOpus.Module.Input
         public static KeyboardBinding Deserialize(string data)
         {
             var parts = (data ?? "").Split('|');
-            if (!Enum.TryParse(parts[0], out Scancode key)) return null;
+            if (!Enum.TryParse(parts[0], out Scancode key) || !Enum.IsDefined(typeof(Scancode), key)) return null;
             bool ctrl = false, shift = false, alt = false;
             if (parts.Length > 1)
                 foreach (var m in parts[1].Split(','))

@@ -38,9 +38,10 @@ namespace MagnumOpus.Module.Input
         public bool CtrlHeld => SdlKeyboard.CtrlHeld;
         public bool AltHeld => SdlKeyboard.AltHeld;
         public bool ShiftHeld => SdlKeyboard.ShiftHeld;
-        public bool EscapeDown => SdlKeyboard.JustPressed((int)Scancode.Escape);
-        public bool UpHeld => SdlKeyboard.Held((int)Scancode.Up);
-        public bool DownHeld => SdlKeyboard.Held((int)Scancode.Down);
+        // The search's keys are the navigation actions', so a rebind moves them too.
+        public bool EscapeDown => MagnumOpus.Core.Input.InputManager.Find(MagnumOpus.Core.UI.UiActions.Back)?.JustPressed == true;
+        public bool UpHeld => MagnumOpus.Core.Input.InputManager.Find(MagnumOpus.Core.UI.UiActions.Up)?.Held == true;
+        public bool DownHeld => MagnumOpus.Core.Input.InputManager.Find(MagnumOpus.Core.UI.UiActions.Down)?.Held == true;
 
         private readonly StringBuilder _typed = new StringBuilder(4);
 

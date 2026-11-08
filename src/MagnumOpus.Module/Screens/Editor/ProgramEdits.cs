@@ -13,21 +13,6 @@ namespace MagnumOpus.Module.Screens.Editor
     /// </summary>
     internal static class ProgramEdits
     {
-        /// <summary>The instruction of the instruction key pressed this frame: the key's character on
-        /// the player's layout matched against the game's hotkeys (which follow its Keyboard Layout
-        /// option). Null when the key is no instruction's.</summary>
-        public static InstructionType PressedInstruction()
-        {
-            foreach (var sc in EditorKeys.InstructionKeys)
-            {
-                if (!SdlKeyboard.JustPressed((int)sc)) continue;
-                int key = SdlKeyboard.KeyFor((int)sc);
-                foreach (var t in InstructionTypes.instructions)
-                    if (!ReferenceEquals(t, null) && (int)t.GetHotkey() == key && key != 0) return t;
-            }
-            return null;
-        }
-
         /// <summary>Whether this arm's program may take this instruction; says why not.</summary>
         public static bool Allowed(SolutionEditorScreen ed, Part arm, int armNumber, InstructionType type)
         {
@@ -57,33 +42,28 @@ namespace MagnumOpus.Module.Screens.Editor
             return ins.GetValue();
         }
 
-        /// <summary>The key help's rows for the instruction keys (user request 2026-11-07): one per
-        /// instruction the puzzle permits, in the tray's order, its name and its key ("pivot counter:
-        /// Alt+Q" from the board, "Q" on the tape, where Shift with the key inserts: one more row).
-        /// Enter on a row places the instruction as the key would.</summary>
-        public static IEnumerable<KeyHelpEntry> HelpRows(EditorContext ctx, bool fromBoard)
+        /// <summary>The key help's row for an instruction key (user request 2026-11-07), when the
+        /// puzzle permits it and it has a key: its name and its keys ("pivot counter: Alt+Q" from the
+        /// board, "Q" on the tape, where Shift with the key inserts: one more row, after the last
+        /// instruction's). Enter on a row places the instruction as the key would.</summary>
+        public static IEnumerable<KeyHelpEntry> HelpRows(EditorContext ctx, InstructionSlot slot, bool fromBoard)
         {
-            var ed = ctx.Ed;
-            var puzzle = ed?.GetSolution()?.GetPuzzle();
+            var puzzle = ctx.Ed?.GetSolution()?.GetPuzzle();
             if (puzzle == null) yield break;
-            foreach (var type in InstructionTraySection.RowOrder())
-            {
-                if (!puzzle.HasPermissionForInstr(type)) continue;
-                string key = Instructions.Hotkey(type);
-                if (key.Length == 0) continue;
-                var t = type;
+            var t = slot.Type;
+            string keys = InstructionSlots.Keys(slot, alt: fromBoard);
+            if (puzzle.HasPermissionForInstr(t) && keys.Length > 0)
                 yield return new KeyHelpEntry
                 {
-                    ActionKey = EditorActions.Instruction,
+                    ActionKey = slot.ActionKey,
                     Label = Instructions.Label(t),
-                    Keys = fromBoard ? "Alt+" + key : key,
+                    Keys = keys,
                     Run = () => { if (ctx.CanEdit()) ProgramSection.PlaceAtCursor(ctx, t, insert: false, withPlace: fromBoard); },
                 };
-            }
-            if (!fromBoard)
+            if (!fromBoard && ReferenceEquals(slot, InstructionSlots.All[InstructionSlots.All.Length - 1]))
                 yield return new KeyHelpEntry
                 {
-                    ActionKey = EditorActions.Instruction,
+                    ActionKey = slot.ActionKey,
                     Label = Strings.Get("bind.ed.instr_insert"),
                     Keys = Strings.Get("help.ed.instr_insert_keys"),
                     Run = () => { },

@@ -4,6 +4,7 @@ using HarmonyLib;
 using MagnumOpus.Core;
 using MagnumOpus.Core.Screens;
 using MagnumOpus.Module.Game;
+using MagnumOpus.Module.Input;
 using MagnumOpus.Module.Screens;
 using MagnumOpus.Module.UI;
 
@@ -44,17 +45,57 @@ namespace MagnumOpus.Module.Patches
         /// <summary>Set for one frame to make the game see a key as pressed (synthesized presses).</summary>
         public static int Forced;
 
-        /// <summary>Whether the game should see this navigation key now: focus mode off, no modeled
-        /// screen, a raw-input screen, or a game screen that passes it. A mod overlay (the key help,
-        /// the mod menu) and a child screen (a dropdown's list, a prompt) own every key they get:
-        /// Escape closing a dropdown list must not also close the screen beneath it.</summary>
-        public static bool GameSees(int key)
+        /// <summary>Whether the screen on top hands this key to the game: focus mode off, no modeled
+        /// screen, or a game screen that passes it. A mod overlay (the key help, the mod menu) and a
+        /// child screen (a dropdown's list, a prompt) own every key they get: Escape closing a
+        /// dropdown list must not also close the screen beneath it.</summary>
+        public static bool PassedToGame(int key)
         {
             if (!FocusMode.Active) return true;
             var screen = ScreenManager.Current;
-            if (screen == null || screen.CapturesRawInput) return true;
+            if (screen == null) return true;
             if (screen.ParentScreen != null) return false;
             return screen is GameScreen gs && gs.PassKeyToGame(key);
+        }
+
+        /// <summary>Whether the game should see this key now: the screen passes it, and it is not an
+        /// Escape the player has moved Back away from.</summary>
+        public static bool GameSees(int key) =>
+            PassedToGame(key) && !(FocusMode.Active && key == Escape && !BackIsEscape());
+
+        private static bool BackIsEscape()
+        {
+            var back = Core.Input.InputManager.Find(Core.UI.UiActions.Back);
+            if (back == null) return true;
+            foreach (var b in back.Bindings)
+                if (b is KeyboardBinding k && k.Key == Scancode.Escape && !k.Ctrl && !k.Shift && !k.Alt) return true;
+            return false;
+        }
+
+        private static int _reboundFrame = -1;
+        private static readonly HashSet<int> _rebound = new HashSet<int>();
+
+        // A key the player bound to something that answers on this screen: the game must not act on
+        // it too. Only changed actions: the defaults are the claimed keys above and ClaimsKey.
+        private static bool Rebound(int key)
+        {
+            if (!FocusMode.Active || Core.Input.KeyBindings.Changed.Count == 0) return false;
+            if (_reboundFrame != SdlKeyboard.Frame)
+            {
+                _reboundFrame = SdlKeyboard.Frame;
+                _rebound.Clear();
+                foreach (var action in Core.Input.KeyBindings.Changed)
+                {
+                    if (!Core.Input.InputManager.IsLive(action)) continue;
+                    if (action.Category != Core.Input.InputCategory.Global && !Core.UI.Navigation.WouldHandle(action)) continue;
+                    foreach (var binding in action.Bindings)
+                    {
+                        if (binding is KeyboardBinding keyboard) _rebound.Add(SdlKeyboard.KeyFor((int)keyboard.Key));
+                        else if (binding is FixedInstructionKey instruction) _rebound.Add(SdlKeyboard.KeyFor((int)instruction.Key));
+                    }
+                }
+            }
+            return _rebound.Contains(key);
         }
 
         // A modeled game screen anywhere on our stack that takes this key too (the editor's letters
@@ -81,7 +122,13 @@ namespace MagnumOpus.Module.Patches
                     __result = global::InputManager.isKeyInputEnabled;
                     return false;
                 }
-                if (!(Claimed.Contains(key) || ScreenClaims(key)) || GameSees(key)) return true;
+                // A key being captured for a rebind is nobody else's.
+                if (ScreenManager.Current != null && ScreenManager.Current.CapturesRawInput)
+                {
+                    __result = false;
+                    return false;
+                }
+                if (!(Claimed.Contains(key) || ScreenClaims(key) || Rebound(key)) || GameSees(key)) return true;
                 __result = false;
                 return false;
             }

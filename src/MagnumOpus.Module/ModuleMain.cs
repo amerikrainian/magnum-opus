@@ -53,6 +53,8 @@ namespace MagnumOpus.Module
             GraphAnnouncer.PositionText = (i, n) => host.Settings.SpeakPositions ? Strings.Position(i, n) : null;
             GraphAnnouncer.ExpandedStateText = Strings.ExpandedState;
             InputBinding.RegisterType("keyboard", KeyboardBinding.Deserialize);
+            InputBinding.RegisterType(LayoutInstructionKey.TypeName, LayoutInstructionKey.Deserialize);
+            InputBinding.RegisterType(FixedInstructionKey.TypeName, FixedInstructionKey.Deserialize);
 
             // A per-load UNIQUE id: the host loads the new module before disposing the old one, and
             // UnpatchSelf removes by id, so a fixed id would let the old teardown strip the new patches.
@@ -60,6 +62,9 @@ namespace MagnumOpus.Module
 
             LanguageSync.Start(host.PluginDir);
             RegisterInput();
+            KeyBindings.Snapshot();
+            KeyBindings.Load(host.Settings.Store.GetString(KeyBindings.StoreKey, ""));
+            KeyBindings.Persist = saved => host.Settings.Store.SetString(KeyBindings.StoreKey, saved);
             RegisterScreens();
             FocusMode.Set(host.Settings.FocusModeOnLaunch);
             // Once per launch: a reloaded module does not ask again.
@@ -81,7 +86,8 @@ namespace MagnumOpus.Module
             InputManager.Register(UiActions.Activate, "Activate", InputCategory.UI)
                 .AddBinding(new KeyboardBinding(Scancode.Return)).AddBinding(new KeyboardBinding(Scancode.KpEnter));
             InputManager.Register(UiActions.Secondary, "Secondary action", InputCategory.UI).AddBinding(new KeyboardBinding(Scancode.Backspace));
-            InputManager.Register(UiActions.Back, "Back", InputCategory.UI).AddBinding(new KeyboardBinding(Scancode.Escape));
+            // ForwardBack answers only where no screen does; the key help lists Back where one does.
+            InputManager.Register(UiActions.Back, "Back", InputCategory.UI, ForwardBack).When(() => false).AddBinding(new KeyboardBinding(Scancode.Escape));
             InputManager.Register(UiActions.Home, "Jump to first", InputCategory.UI).AddBinding(new KeyboardBinding(Scancode.Home));
             InputManager.Register(UiActions.End, "Jump to last", InputCategory.UI).AddBinding(new KeyboardBinding(Scancode.End));
             InputManager.Register(UiActions.RegionPrev, "Previous section", InputCategory.UI).AddBinding(new KeyboardBinding(Scancode.Up, alt: true));
@@ -95,6 +101,17 @@ namespace MagnumOpus.Module
                 .AddBinding(new KeyboardBinding(Scancode.M, ctrl: true, shift: true));
             InputManager.Register(HelpScreen.ActionKey, "Keys here", InputCategory.Global, HelpScreen.Toggle)
                 .AddBinding(new KeyboardBinding(Scancode.F1));
+
+            foreach (var action in InputManager.Actions)
+                if (action.Group == null)
+                    action.Grouped(action.Key.StartsWith("ui.", StringComparison.Ordinal) ? KeyGroups.Navigation : KeyGroups.Global);
+        }
+
+        // Back on a game screen is the game's Escape: a Back rebound off Escape makes the game see one.
+        private static void ForwardBack()
+        {
+            if (!SdlKeyboard.Held((int)Scancode.Escape) && Patches.GameKeys.PassedToGame(Patches.GameKeys.Escape))
+                Patches.GameKeys.Forced = Patches.GameKeys.Escape;
         }
 
         private static void ToggleFocus()
@@ -203,7 +220,7 @@ namespace MagnumOpus.Module
         public void Dispose()
         {
             try { ScreenManager.Shutdown(); } catch (Exception e) { _host?.LogError("[dispose] screens: " + e); }
-            try { InputManager.Clear(); } catch (Exception e) { _host?.LogError("[dispose] input: " + e); }
+            try { KeyBindings.Clear(); InputManager.Clear(); } catch (Exception e) { _host?.LogError("[dispose] input: " + e); }
             try { _harmony?.UnpatchAll(_harmony.Id); } catch (Exception e) { _host?.LogError("[dispose] harmony: " + e); }
             _harmony = null;
             _host = null;

@@ -173,7 +173,7 @@ fingerprint), though the mod survives without one (section 4).
 `%LOCALAPPDATA%\MagnumOpus\magnumopus.log`, a fresh file per launch (the one path to give testers), also
 served by `GET /log?since=N&grep=S`. Settings: `%LOCALAPPDATA%\MagnumOpus\settings.json` (flat
 `{"key": "value"}`: `speech.output` auto|prism|sapi|clipboard, `speech.trace`, `mappings.download`,
-`focus_mode_on_launch`, `speak_positions`).
+`focus_mode_on_launch`, `speak_positions`, `key_bindings`).
 
 ## 9. Dev server (DEBUG builds; on by default, `MAGNUMOPUS_NO_DEV=1` disables, `MAGNUMOPUS_DEV_PORT` moves it from 8776)
 `GET /health`, `POST /say`, `GET /speech?since=N`, `GET /log?since=N&grep=S`, `GET /screen` (the game's
@@ -249,6 +249,8 @@ Type-ahead characters come from the same snapshot through `SDL_GetKeyFromScancod
   that throws reads silent and each distinct failure is logged once (a throwing label once failed the
   tick on every navigator rebuild). The host counts repeats of the same tick failure instead of logging
   them, until a reload (`Runtime.TickFrame`).
+
+- **Rebinding** (user request 2026-11-08, from StarVaders / DiceVaders): `Core/Input/KeyBindings` (tested): the registered bindings are the defaults (`Snapshot` after `RegisterInput`), the store's `key_bindings` string (`mod.menu=keyboard:M|ctrl,shift keyboard:F10;...`, one entry per action differing from its defaults, unknown actions kept) is `Load`ed over them, every change saves at once. `Protected` (ui.up / down / activate / back, mod.menu) keep one key. UI: mod menu, All keys = groups (`InputAction.Group`) -> `KeyGroupScreen` -> `ActionKeysScreen` -> `BindKeyScreen` (capture: every key up, the first named key with the modifiers held, bare Escape cancels; `dev.key:` injections work on it). Conflicts: only where both actions work (`InputAction.Scopes`, `KeyScopes`; no scopes = everywhere), so S can be Details on the board and an instruction on the tape; a key shared only elsewhere is taken and named. **Add new actions with a group and scopes.** Each instruction is its own action `ed.instr.<name>` (`Input/InstructionKeys`, tray order): default `LayoutInstructionKey` (follows the game's Keyboard Layout), a rebind `FixedInstructionKey` (a physical key, no modifiers); one key answers alone (tape), Shift (insert) and Alt (from the board; `CombosIn` says so for conflicts). A key the player bound is hidden from the game where it answers (`GameKeys.Rebound`), every key during a capture; a Back rebound off Escape forces the game an Escape (`ModuleMain.ForwardBack`), and a real Escape no longer reaches it. The game's own keys that pass through stay the game's (Sigmar's Space, Quick Hotkeys, F2 on puzzle info).
 
 ## 12. Screens (`src/MagnumOpus.Module/Screens/`; verified live 2026-11-03 unless noted)
 `GameScreen<T>` is active while game screen T is on top with no fade running; every `GameScreen<T>`

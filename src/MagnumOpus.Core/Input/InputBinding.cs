@@ -16,6 +16,14 @@ namespace MagnumOpus.Core.Input
         public abstract bool Held();
         public abstract bool Released();
 
+        /// <summary>Each key combination this binding answers to, as <see cref="DisplayName"/> names
+        /// one ("Ctrl+M"): what a rebind compares to find two actions on one key.</summary>
+        public virtual IEnumerable<string> Combos => new[] { DisplayName };
+
+        /// <summary>The combinations it answers to in one scope (null: anywhere): what a rebind
+        /// compares where a binding means less in some places.</summary>
+        public virtual IEnumerable<string> CombosIn(string scope) => Combos;
+
         /// <summary>True when this combo is one the type-ahead search owns while a search is live (a
         /// bare letter, space, up/down, escape), so a live search swallows the action instead.</summary>
         public virtual bool ConflictsWithTypeahead => false;
@@ -39,6 +47,9 @@ namespace MagnumOpus.Core.Input
         /// <summary>Register a binding kind's deserializer (the module registers "keyboard").</summary>
         public static void RegisterType(string type, Func<string, InputBinding> deserialize)
             => _deserializers[type] = deserialize;
+
+        /// <summary>Whether bindings of this kind can be saved and rebuilt (a rebind makes them).</summary>
+        public static bool CanDeserialize(string type) => type != null && _deserializers.ContainsKey(type);
 
         /// <summary>Rebuild a binding from a (type, data) pair, or null if the type is unknown/invalid.</summary>
         public static InputBinding Deserialize(string type, string data)

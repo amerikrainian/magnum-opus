@@ -134,6 +134,41 @@ namespace MagnumOpus.Core.Strings
             D("mod.focus_on_launch", "Keyboard navigation on at launch"),
             // The all-keys list's category headings; {0} = the category.
             D("mod.key_category", "{0} keys"),
+            D("mod.category.navigation", "Navigation"),
+            D("mod.category.board", "Board"),
+            D("mod.category.program", "Program"),
+            D("mod.category.instructions", "Instruction"),
+            D("mod.category.editor", "Editor"),
+            // The mod's key rebinding (the mod menu's All keys). {0} = the action.
+            D("rebind.prompt", "Press a key for {0}, Escape cancels"),
+            // {0} = the key, {1} = another action that has it elsewhere.
+            D("rebind.conflict", "{0} is also {1}"),
+            D("keys.add", "Add key"),
+            // An action's reset; read "Reset to default: Ctrl+M" with its default keys.
+            D("keys.reset", "Reset to default"),
+            D("keys.reset_all", "Reset all keys"),
+            D("keys.reset_all.ask", "Reset all keys to their defaults?"),
+            D("keys.reset_all.done", "All keys reset"),
+            D("keys.yes", "Yes"),
+            D("keys.no", "No"),
+            D("keys.none", "No keys"),
+            D("keys.replace", "Replace"),
+            D("keys.remove", "Remove"),
+            // {0} = the key.
+            D("keys.removed", "Removed {0}"),
+            // Why a protected action's last key cannot be removed (the mod menu, Enter, Escape, Up, Down).
+            D("keys.needed", "its last key, cannot be removed"),
+            // {0} = the action's keys after the reset.
+            D("keys.reset.done", "Reset to {0}"),
+            D("keys.cancelled", "Cancelled"),
+            // The key being replaced pressed again; {0} = the key.
+            D("keys.kept", "Kept {0}"),
+            // Refused: {0} = the key, {1} = the action that has it.
+            D("keys.taken", "{0} is already {1}, press another key"),
+            // {0} = the new key.
+            D("keys.bound", "Bound to {0}"),
+            // Refused: an instruction's key is one key alone; Shift inserts and Alt programs from the board.
+            D("keys.instruction_bare", "An instruction takes a key without Ctrl, Shift or Alt, press another key"),
             D("mod.category.global", "Global"),
             D("mod.category.ui", "UI"),
             D("mod.category.game", "Game"),
@@ -481,8 +516,6 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.play", "Play or pause"),
             D("bind.ed.step", "Step one cycle"),
             D("bind.ed.fast", "Fast forward"),
-            D("bind.ed.instr", "Place instruction, Shift inserts"),
-            D("bind.ed.program_arm", "Program the chosen arm"),
             D("bind.ed.instr_insert", "Insert an instruction"),
             D("bind.ed.shift_left", "Move instructions a cycle left"),
             D("bind.ed.shift_right", "Move instructions a cycle right"),
@@ -690,7 +723,13 @@ namespace MagnumOpus.Core.Strings
         /// <summary>The spoken label of an input action ("bind.ui.down" -> "Navigate down"); the
         /// registration label when no entry exists.</summary>
         public static string BindLabel(string actionKey, string fallback)
-            => Has("bind." + actionKey) ? Get("bind." + actionKey) : fallback;
+        {
+            // An instruction's action reads as the instruction.
+            const string instruction = "ed.instr.";
+            if (actionKey != null && actionKey.StartsWith(instruction, System.StringComparison.Ordinal))
+                return Instruction(actionKey.Substring(instruction.Length));
+            return Has("bind." + actionKey) ? Get("bind." + actionKey) : fallback;
+        }
 
         public static string ScreenConfirm => Get("screen.confirm");
         public static string ScreenCredits => Get("screen.credits");
@@ -702,6 +741,26 @@ namespace MagnumOpus.Core.Strings
         public static string ScreenModMenu => Get("screen.mod_menu");
         public static string ModSettings => Get("mod.settings");
         public static string ModKeyHelp => Get("mod.key_help");
+        public static string RebindPrompt(string action) => F("rebind.prompt", action);
+        public static string RebindConflict(string key, string what) => F("rebind.conflict", key, what);
+        public static string KeysAdd => Get("keys.add");
+        public static string KeysReset => Get("keys.reset");
+        public static string KeysResetAll => Get("keys.reset_all");
+        public static string KeysResetAllAsk => Get("keys.reset_all.ask");
+        public static string KeysResetAllDone => Get("keys.reset_all.done");
+        public static string KeysYes => Get("keys.yes");
+        public static string KeysNo => Get("keys.no");
+        public static string KeysNone => Get("keys.none");
+        public static string KeysReplace => Get("keys.replace");
+        public static string KeysRemove => Get("keys.remove");
+        public static string KeysRemoved(string key) => F("keys.removed", key);
+        public static string KeysNeeded => Get("keys.needed");
+        public static string KeysResetDone(string keys) => F("keys.reset.done", keys);
+        public static string KeysCancelled => Get("keys.cancelled");
+        public static string KeysKept(string key) => F("keys.kept", key);
+        public static string KeysTaken(string key, string action) => F("keys.taken", key, action);
+        public static string KeysBound(string key) => F("keys.bound", key);
+        public static string KeysInstructionBare => Get("keys.instruction_bare");
         public static string ModClose => Get("mod.close");
         public static string ModSpeakPositions => Get("mod.speak_positions");
         public static string ModFocusOnLaunch => Get("mod.focus_on_launch");

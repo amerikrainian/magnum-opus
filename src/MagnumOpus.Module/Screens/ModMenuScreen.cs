@@ -73,38 +73,4 @@ namespace MagnumOpus.Module.Screens
             yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ui.back"), _ => ParentScreen?.RemoveChild(this));
         }
     }
-
-    /// <summary>Every key the mod binds, by category, whatever the screen. The keys that do
-    /// something HERE are <see cref="HelpScreen"/>'s (F1).</summary>
-    public sealed class KeyListScreen : Screen
-    {
-        public override string Key => "mod.keys";
-        public override string ScreenName => Strings.ModKeyHelp;
-        public override bool IsActive() => false;
-
-        public override void Build(GraphBuilder b)
-        {
-            b.PushContext(Strings.ModKeyHelp, null, positions: false);
-            foreach (InputCategory category in Enum.GetValues(typeof(InputCategory)))
-            {
-                var actions = new List<InputAction>();
-                foreach (var action in InputManager.Actions)
-                    if (action.Category == category) actions.Add(action);
-                if (actions.Count == 0) continue;
-                b.PushContext(Strings.KeyCategory(category.ToString()), Strings.RoleList);
-                foreach (var action in actions)
-                {
-                    var a = action;
-                    b.AddItem(ControlId.Structural("keys:" + a.Key), Nodes.Text(() => Strings.HelpRow(a.DisplayLabel, a.BindingsDisplay)));
-                }
-                b.PopContext();
-            }
-            b.PopContext();
-        }
-
-        public override IEnumerable<ElementAction> GetActions()
-        {
-            yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ui.back"), _ => ParentScreen?.RemoveChild(this));
-        }
-    }
 }
