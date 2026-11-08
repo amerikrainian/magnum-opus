@@ -119,6 +119,8 @@ namespace MagnumOpus.Module
             ScreenManager.Register(new PeriodicTableGameScreen());
             ScreenManager.Register(new SolutionRecorderGameScreen());
             ScreenManager.Register(new CinematicGameScreen());
+            ScreenManager.Register(new CreditsGameScreen());
+            ScreenManager.Register(new DlcCreditsGameScreen());
             ScreenManager.Register(new UploadGameScreen());
             ScreenManager.Register(new SolutionEditorGameScreen());
             ScreenManager.Register(new SolitaireGameScreen());

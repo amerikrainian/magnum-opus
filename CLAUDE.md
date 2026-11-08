@@ -422,6 +422,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   Verified live: the cursor against a screenshot, free-marble order, select / replace / clear / unselect,
   locked, Rules and back, the story stop (landing, Enter, the divider), Space. NOT verified: a win, the Quintessence and Colvan
   variants (five-marble quintessence picks), New Game.
+- **Credits** (`CreditsGameScreen`, `DlcCreditsGameScreen`, 2026-11-08): the game's timed cards, read from what it draws (`TextCapture`) and spoken as each appears, queued; Escape stays the game's (it skips only once seen).
 - **Fallback** (`FallbackScreen`): buttons only from a frame that began with this screen on top
   (`ButtonPress.LastFrameScreen`: the frame a screen opens in still draws the one beneath, whose buttons
   were once read on the new screen). The screen's human type name ("Journal Submission"), the text it draws

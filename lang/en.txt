@@ -71,6 +71,7 @@ bind.mod.focus=Toggle navigation
 bind.mod.menu=Mod menu
 bind.mod.help=Keys here
 screen.confirm=Confirm
+screen.credits=Credits
 screen.error=Error
 screen.help=Keys here
 help.none=no keys here

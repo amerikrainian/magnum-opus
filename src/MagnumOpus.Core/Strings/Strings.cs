@@ -118,6 +118,7 @@ namespace MagnumOpus.Core.Strings
 
             // Screen names, spoken on entry when the game gives the screen no title of its own.
             D("screen.confirm", "Confirm"),
+            D("screen.credits", "Credits"),
             D("screen.error", "Error"),
             D("screen.help", "Keys here"),
             D("help.none", "no keys here"),
@@ -685,6 +686,7 @@ namespace MagnumOpus.Core.Strings
             => Has("bind." + actionKey) ? Get("bind." + actionKey) : fallback;
 
         public static string ScreenConfirm => Get("screen.confirm");
+        public static string ScreenCredits => Get("screen.credits");
         public static string ScreenError => Get("screen.error");
         public static string ScreenHelp => Get("screen.help");
         public static string HelpNone => Get("help.none");
