@@ -170,7 +170,7 @@ fingerprint), though the mod survives without one (section 4).
 `%LOCALAPPDATA%\MagnumOpus\magnumopus.log`, a fresh file per launch (the one path to give testers), also
 served by `GET /log?since=N&grep=S`. Settings: `%LOCALAPPDATA%\MagnumOpus\settings.json` (flat
 `{"key": "value"}`: `speech.output` auto|prism|sapi|clipboard, `speech.trace`, `mappings.download`,
-`focus_mode_on_launch`, `speak_positions`, `key_bindings`, `tutorial_done`).
+`focus_mode_on_launch`, `speak_positions`, `key_bindings`, `tutorial_done`, `board_items_stay`, `short_directions`).
 
 ## 9. Dev server (DEBUG builds; on by default, `MAGNUMOPUS_NO_DEV=1` disables, `MAGNUMOPUS_DEV_PORT` moves it from 8776)
 `GET /health`, `POST /say`, `GET /speech?since=N`, `GET /log?since=N&grep=S`, `GET /screen` (the game's
@@ -286,7 +286,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   the program cursor's cell or the tape's selection (Ctrl+C / X, Delete, Backspace, Shift+arrows,
   Ctrl+Shift+A, Escape clears, Enter runs to the cell) and the part edits find no part. ONE CLIPBOARD for the player: Ctrl+V pastes what was
   copied or cut last (`EditorContext.PartsOnClipboard`), parts at the board cursor, instructions at the program cursor; parts on the tape stop paste nothing, silently, Up / Down choose the program cursor's arm (wrapping, silent with one; the cursor lands after the arm's last instruction, a Reset's filled cells included, "arm 2, 5"; user decision 2026-11-05: the board cursor's position never chooses it), Left / Right move the program cursor a cycle on that arm and Home / End to its first / last instruction (the tape's keys), [ ] categories,
-  , . items, S details, W molecule (size, composition, bonds, holder; the layout is read hex by hex), X neighbours. A hex reads coordinates, then the atom in play, arm
+  , . items (each moves the cursor there; Backslash, saved, makes them stay and say "Salt, 3 northwest, 2 west" from the cursor, Slash then going there as if landed on, user request 2026-11-08; the mod menu's Abbreviate directions shortens every direction word: `Strings.HexDirection`, and `<dir:N>` in a string's value), S details, W molecule (size, composition, bonds, holder; the layout is read hex by hex), X neighbours. A hex reads coordinates, then the atom in play, arm
   bases ("arm 1, Piston Arm, northeast, length 1"), wheels ("arm 3, Van Berlo's Wheel, Water east, Air northeast, ..."; the hexes round one read its atom, "Air, Van Berlo's Wheel", at its live rotation, 2026-11-08), grippers, other parts (`Game/Board`; a track hex
   reads its joins marked with the move that goes there, "Track, +northeast, -southeast": the game
   draws a minus sign on the end drawn first and a plus on the last (both at a loop's seam); no "end" /

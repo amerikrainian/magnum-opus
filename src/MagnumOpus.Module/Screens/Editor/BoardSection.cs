@@ -24,6 +24,8 @@ namespace MagnumOpus.Module.Screens.Editor
     /// without leaving the board (Ctrl+C / X, Delete, Backspace, Shift+arrows select, Ctrl+Shift+A
     /// all, Escape clears, Enter runs to the cell), and the part edits find no part. Ctrl+V pastes
     /// what was copied last, wherever it goes (<see cref="EditorContext.PartsOnClipboard"/>). Reading: [ ] categories, , . items, S details, W the molecule, X neighbours.
+    /// , . move the cursor to each item; Backslash (saved) makes them stay and say the item and where
+    /// it lies from the cursor, Slash then moving the cursor there.
     /// The program cursor's arm is chosen here, never by where the board cursor is (user decision
     /// 2026-11-05), with the tape's own keys (a grid of arms by cycles): Up / Down cycle the arms
     /// (wrapping; one arm: nothing) and put the program cursor on the cell after the arm's last
@@ -54,10 +56,19 @@ namespace MagnumOpus.Module.Screens.Editor
         private readonly EditorContext _ctx;
         private string _category;
         private int _item = -1;
+        private HexIndex? _itemSaidFrom; // where the cursor was when , or . last said an item
+
+        /// <summary>One thing a board category lists: where it is and what it is called.</summary>
+        private struct BoardItem
+        {
+            public readonly HexIndex At;
+            public readonly string Name;
+            public BoardItem(HexIndex at, string name) { At = at; Name = name; }
+        }
 
         public BoardSection(EditorContext ctx) { _ctx = ctx; }
 
-        public override void OnPop() { _category = null; _item = -1; }
+        public override void OnPop() { _category = null; _item = -1; _itemSaidFrom = null; }
 
         public override void Build(GraphBuilder b)
         {
@@ -228,6 +239,9 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.CatNext, Strings.Get("bind.ed.cat.next"), _ => Category(1));
             yield return new ElementAction(EditorActions.ItemPrev, Strings.Get("bind.ed.item.prev"), _ => Item(-1));
             yield return new ElementAction(EditorActions.ItemNext, Strings.Get("bind.ed.item.next"), _ => Item(1));
+            yield return new ElementAction(EditorActions.ItemSnap, Strings.Get("bind.ed.item.snap"), _ => ToggleSnap());
+            if (Prefs.BoardItemsStay)
+                yield return new ElementAction(EditorActions.ItemJump, Strings.Get("bind.ed.item.jump"), _ => JumpToItem());
             yield return new ElementAction(EditorActions.Details, Strings.Get("bind.ed.details"), _ => SayDetails());
             yield return new ElementAction(EditorActions.Molecule, Strings.Get("bind.ed.molecule"), _ => EditorContext.Say(Board.MoleculeAround(_ctx.Ed, _ctx.Cursor)));
             yield return new ElementAction(EditorActions.Neighbours, Strings.Get("bind.ed.neighbours"), _ => EditorContext.Say(NeighboursText()));
@@ -356,24 +370,24 @@ namespace MagnumOpus.Module.Screens.Editor
             return string.Join("; ", parts);
         }
 
-        private List<KeyValuePair<string, List<HexIndex>>> Categories(SolutionEditorScreen ed)
+        private List<KeyValuePair<string, List<BoardItem>>> Categories(SolutionEditorScreen ed)
         {
-            var cats = new List<KeyValuePair<string, List<HexIndex>>>();
+            var cats = new List<KeyValuePair<string, List<BoardItem>>>();
             var solution = ed.GetSolution();
-            void Add(string key, IEnumerable<HexIndex> hexes)
+            void Add(string key, IEnumerable<BoardItem> found)
             {
-                var items = hexes.ToList();
-                if (items.Count > 0) cats.Add(new KeyValuePair<string, List<HexIndex>>(key, items));
+                var items = found.ToList();
+                if (items.Count > 0) cats.Add(new KeyValuePair<string, List<BoardItem>>(key, items));
             }
-            Add("reagents", solution.parts.Where(p => p.GetType().isInput).Select(p => p.GetHexPos()));
-            Add("products", solution.parts.Where(p => p.GetType().IsOutput()).Select(p => p.GetHexPos()));
-            Add("arms", Board.Arms(ed).Select(p => Board.BaseHex(ed, p)));
-            Add("glyphs", solution.parts.Where(p => p.GetType().glyphHexes.Length > 0).Select(p => p.GetHexPos()));
-            Add("tracks", solution.parts.Where(p => p.GetType().isTrack).Select(p => p.GetHexPos()));
-            Add("highlights", solution.GetPuzzle().highlights);
+            Add("reagents", solution.parts.Where(p => p.GetType().isInput).Select(p => new BoardItem(p.GetHexPos(), Board.MoleculeName(ed, p))));
+            Add("products", solution.parts.Where(p => p.GetType().IsOutput()).Select(p => new BoardItem(p.GetHexPos(), Board.MoleculeName(ed, p))));
+            Add("arms", Board.Arms(ed).Select(p => new BoardItem(Board.BaseHex(ed, p), _ctx.Label(p))));
+            Add("glyphs", solution.parts.Where(p => p.GetType().glyphHexes.Length > 0).Select(p => new BoardItem(p.GetHexPos(), Board.PartName(ed, p))));
+            Add("tracks", solution.parts.Where(p => p.GetType().isTrack).Select(p => new BoardItem(p.GetHexPos(), Board.PartName(ed, p))));
+            Add("highlights", solution.GetPuzzle().highlights.Select(h => new BoardItem(h, Strings.EditorHexHighlighted)));
             if (Board.Running(ed))
                 Add("atoms", ed.GetSimulation().GetMolecules().Where(m => m.GetAtoms().Count > 0)
-                    .Select(m => m.GetAtoms().Keys.OrderBy(h => h.R).ThenBy(h => h.Q).First()));
+                    .Select(m => new BoardItem(m.GetAtoms().Keys.OrderBy(h => h.R).ThenBy(h => h.Q).First(), MagnumOpus.Module.Patches.SimNarration.DescribeMolecule(m))));
             return cats;
         }
 
@@ -396,9 +410,31 @@ namespace MagnumOpus.Module.Screens.Editor
             int at = cats.FindIndex(c => c.Key == _category);
             if (at < 0) { at = 0; _category = cats[0].Key; _item = -1; }
             var items = cats[at].Value;
-            if (_item >= 0 && items.Count < 2 && _ctx.Cursor == items[0]) return; // the only item, on it: nothing
+            bool stay = Prefs.BoardItemsStay;
+            // The only item, nothing new to say about it (on it, or said from this hex): nothing.
+            if (_item >= 0 && items.Count < 2 && (stay ? _itemSaidFrom == _ctx.Cursor : _ctx.Cursor == items[0].At)) return;
             _item = _item < 0 ? (step > 0 ? 0 : items.Count - 1) : ((_item + step) % items.Count + items.Count) % items.Count;
-            GoTo(items[_item]);
+            if (!stay) { GoTo(items[_item].At); return; }
+            _itemSaidFrom = _ctx.Cursor;
+            EditorContext.Say(items[_item].Name + ", " + Hex.Describe(_ctx.Cursor, items[_item].At));
+        }
+
+        // Backslash: , and . move the cursor to each item, or stay and say where it lies.
+        private void ToggleSnap()
+        {
+            Prefs.BoardItemsStay = !Prefs.BoardItemsStay;
+            _itemSaidFrom = null;
+            EditorContext.Say(Prefs.BoardItemsStay ? Strings.EditorSnapOff : Strings.EditorSnapOn);
+        }
+
+        // Slash: the cursor to the item , or . last said, read as if landed on by them. None said
+        // yet, or the list has since shrunk past it: nothing.
+        private void JumpToItem()
+        {
+            var cats = Categories(_ctx.Ed);
+            int at = cats.FindIndex(c => c.Key == _category);
+            if (at < 0 || _item < 0 || _item >= cats[at].Value.Count) return;
+            GoTo(cats[at].Value[_item].At);
         }
 
         // ---- editing ----

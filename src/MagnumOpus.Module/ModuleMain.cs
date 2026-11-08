@@ -52,6 +52,7 @@ namespace MagnumOpus.Module
             InputManager.FocusActive = () => FocusMode.Active;
             GraphAnnouncer.PositionText = (i, n) => host.Settings.SpeakPositions ? Strings.Position(i, n) : null;
             GraphAnnouncer.ExpandedStateText = Strings.ExpandedState;
+            Strings.AbbreviateDirections = () => Prefs.ShortDirections;
             InputBinding.RegisterType("keyboard", KeyboardBinding.Deserialize);
             InputBinding.RegisterType(LayoutInstructionKey.TypeName, LayoutInstructionKey.Deserialize);
             InputBinding.RegisterType(FixedInstructionKey.TypeName, FixedInstructionKey.Deserialize);

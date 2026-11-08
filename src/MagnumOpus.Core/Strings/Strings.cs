@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MagnumOpus.Core.Strings
 {
@@ -132,6 +133,7 @@ namespace MagnumOpus.Core.Strings
             D("mod.close", "Close"),
             D("mod.speak_positions", "Speak list positions"),
             D("mod.focus_on_launch", "Keyboard navigation on at launch"),
+            D("mod.short_directions", "Abbreviate directions"),
             // The all-keys list's category headings; {0} = the category.
             D("mod.key_category", "{0} keys"),
             D("mod.category.navigation", "Navigation"),
@@ -172,7 +174,7 @@ namespace MagnumOpus.Core.Strings
             D("tutorial.stop", "Tutorial"),
             D("tutorial.restart", "Restart tutorial"),
             // Lesson: Introduction. {0} repeat, {1} key help, {2}-{7} the hex keys NW NE W E SW SE.
-            D("tut.intro.move", "Welcome! We figured we'll start you off easy and let you watch this machine to learn the ropes. If you need to repeat this information, hit {0} to do so. If you get confused, {1} is your friend. Now, what you're really here for: the board is a field of hexes. Move with {2} northwest, {3} northeast, {4} west, {5} east, {6} southwest and {7} southeast."),
+            D("tut.intro.move", "Welcome! We figured we'll start you off easy and let you watch this machine to learn the ropes. If you need to repeat this information, hit {0} to do so. If you get confused, {1} is your friend. Now, what you're really here for: the board is a field of hexes. Move with {2} <dir:2>, {3} <dir:1>, {4} <dir:3>, {5} <dir:0>, {6} <dir:4> and {7} <dir:5>."),
             // {0} neighbours.
             D("tut.intro.neighbours", "A hex says its coordinates, then what is on it. {0} reads what is on the hexes around you."),
             // {0} the game's note, {1} {2} category keys, {3} {4} item keys.
@@ -202,7 +204,7 @@ namespace MagnumOpus.Core.Strings
             // {0} {1} rotate, {2} {3} length, {4} put down, {5} cancel.
             D("tut.arms.place", "You are holding the arm. The hex keys move it and say when it cannot go there. {0} and {1} turn it, {2} and {3} change its length, {4} puts it down and {5} cancels. Now place it on that empty highlighted hex."),
             // {0} the reagent's hex, {1} {2} rotate, {3} activate.
-            D("tut.arms.reach", "The gripper has to be on the reagent, at {0}. By default, the arm starts out facing east, but you can rotate it as we've just described with {1} and {2}. On the board the same keys adjust it, and {3} picks it up again."),
+            D("tut.arms.reach", "The gripper has to be on the reagent, at {0}. By default, the arm starts out facing <dir:0>, but you can rotate it as we've just described with {1} and {2}. On the board the same keys adjust it, and {3} picks it up again."),
             D("tut.arms.reach.after", "The gripper is over the reagent."),
             // {0} jump, {1} {2} arms.
             D("tut.arms.tape", "Now its program. {0} on the arm goes to its tape, and {1} and {2} change arms there."),
@@ -347,6 +349,14 @@ namespace MagnumOpus.Core.Strings
             D("hex.dir.3", "west"),
             D("hex.dir.4", "southwest"),
             D("hex.dir.5", "southeast"),
+            // The same six when the mod menu's Abbreviate directions is on. Any value may name a
+            // direction with <dir:N> (N = the number above), which follows that setting.
+            D("hex.short.0", "e"),
+            D("hex.short.1", "ne"),
+            D("hex.short.2", "nw"),
+            D("hex.short.3", "w"),
+            D("hex.short.4", "sw"),
+            D("hex.short.5", "se"),
             // An offset of zero.
             D("hex.here", "here"),
             // A run of steps one way: {0} = count, {1} = direction ("3 east").
@@ -387,6 +397,9 @@ namespace MagnumOpus.Core.Strings
             D("editor.cat.tracks", "Tracks"),
             D("editor.cat.atoms", "Atoms"),
             D("editor.cat.highlights", "Highlighted"),
+            // Whether , and . move the board cursor to an item (Backslash).
+            D("editor.snap_on", "Auto-snap on"),
+            D("editor.snap_off", "Auto-snap off"),
             // A hex the game marks in a lesson.
             D("editor.hex_highlighted", "highlighted"),
             // One kind of atom in that summary: {0} = how many, {1} = the atom.
@@ -625,18 +638,18 @@ namespace MagnumOpus.Core.Strings
             D("editor.cell_removed", "arm {0}, {1}, removed {2}"),
 
             // Key help labels of the editor's keys.
-            D("bind.ed.hex.nw", "Cursor northwest"),
-            D("bind.ed.hex.ne", "Cursor northeast"),
-            D("bind.ed.hex.w", "Cursor west"),
-            D("bind.ed.hex.e", "Cursor east"),
-            D("bind.ed.hex.sw", "Cursor southwest"),
-            D("bind.ed.hex.se", "Cursor southeast"),
-            D("bind.ed.skip.nw", "Skip northwest"),
-            D("bind.ed.skip.ne", "Skip northeast"),
-            D("bind.ed.skip.w", "Skip west"),
-            D("bind.ed.skip.e", "Skip east"),
-            D("bind.ed.skip.sw", "Skip southwest"),
-            D("bind.ed.skip.se", "Skip southeast"),
+            D("bind.ed.hex.nw", "Cursor <dir:2>"),
+            D("bind.ed.hex.ne", "Cursor <dir:1>"),
+            D("bind.ed.hex.w", "Cursor <dir:3>"),
+            D("bind.ed.hex.e", "Cursor <dir:0>"),
+            D("bind.ed.hex.sw", "Cursor <dir:4>"),
+            D("bind.ed.hex.se", "Cursor <dir:5>"),
+            D("bind.ed.skip.nw", "Skip <dir:2>"),
+            D("bind.ed.skip.ne", "Skip <dir:1>"),
+            D("bind.ed.skip.w", "Skip <dir:3>"),
+            D("bind.ed.skip.e", "Skip <dir:0>"),
+            D("bind.ed.skip.sw", "Skip <dir:4>"),
+            D("bind.ed.skip.se", "Skip <dir:5>"),
             D("bind.ed.tape.prev", "Program cursor back a cycle"),
             D("bind.ed.tape.next", "Program cursor forward a cycle"),
             D("bind.ed.tape.first", "Program cursor to the first instruction"),
@@ -648,6 +661,8 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.cat.next", "Next category"),
             D("bind.ed.item.prev", "Previous item"),
             D("bind.ed.item.next", "Next item"),
+            D("bind.ed.item.jump", "Cursor to the item"),
+            D("bind.ed.item.snap", "Toggle auto-snap to items"),
             D("bind.ed.details", "Details"),
             D("bind.ed.molecule", "Molecule"),
             D("bind.ed.neighbours", "Neighbours"),
@@ -708,11 +723,23 @@ namespace MagnumOpus.Core.Strings
         /// key itself (a missing key is then audible rather than silent).</summary>
         public static string Get(string key)
         {
-            if (_overrides.TryGetValue(key, out var o)) return o;
-            if (_defaults.TryGetValue(key, out var v)) return v;
+            if (_overrides.TryGetValue(key, out var o)) return Directions(o);
+            if (_defaults.TryGetValue(key, out var v)) return Directions(v);
             CoreLog.Warning("Strings: missing key " + key);
             return key;
         }
+
+        /// <summary>Whether direction words are spoken short ("nw"); the module points this at the
+        /// player's setting.</summary>
+        public static Func<bool> AbbreviateDirections = () => false;
+
+        private static readonly Regex DirectionToken = new Regex("<dir:([0-5])>", RegexOptions.Compiled);
+
+        // A value names a direction as <dir:N>, so its word follows the setting in every language.
+        private static string Directions(string value) =>
+            value.IndexOf("<dir:", StringComparison.Ordinal) < 0
+                ? value
+                : DirectionToken.Replace(value, m => HexDirection(m.Groups[1].Value[0] - '0'));
 
         /// <summary>Whether a key exists in the defaults (for optional lookups like role words).</summary>
         public static bool Has(string key) => _defaults.ContainsKey(key) || _overrides.ContainsKey(key);
@@ -801,7 +828,7 @@ namespace MagnumOpus.Core.Strings
             "# This file is the template, generated from the mod's strings table: copy it to\n" +
             "# <language>.txt, named for the game's language code (see the mod's documentation),\n" +
             "# and translate the values. key=value, one per line; keep every {0} slot (their\n" +
-            "# order is free); a missing key is spoken in English. The mod follows the game's language.\n";
+            "# order is free) and leave a <dir:N> as it is (the mod says a direction there); a missing key is spoken in English. The mod follows the game's language.\n";
 
         /// <summary>The translator template (lang/en.txt): every key with its English default, one per
         /// line, under a header that tells a translator what to do with it.</summary>
@@ -907,6 +934,9 @@ namespace MagnumOpus.Core.Strings
         public static string EditorHexHighlighted => Get("editor.hex_highlighted");
         public static string ModClose => Get("mod.close");
         public static string ModSpeakPositions => Get("mod.speak_positions");
+        public static string ModShortDirections => Get("mod.short_directions");
+        public static string EditorSnapOn => Get("editor.snap_on");
+        public static string EditorSnapOff => Get("editor.snap_off");
         public static string ModFocusOnLaunch => Get("mod.focus_on_launch");
 
         public static string ItemKind(string kind) => Get("item." + kind);
@@ -928,7 +958,7 @@ namespace MagnumOpus.Core.Strings
 
         // ---- the solution editor ----
         public static string HexCoords(string x, string y) => F("hex.coords", x, y);
-        public static string HexDirection(int dir) => Get("hex.dir." + dir);
+        public static string HexDirection(int dir) => Get((AbbreviateDirections() ? "hex.short." : "hex.dir.") + dir);
         public static string HexHere => Get("hex.here");
         public static string HexSteps(int count, string direction) => F("hex.steps", count, direction);
         public static string EditorBoard => Get("editor.board");

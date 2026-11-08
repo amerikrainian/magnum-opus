@@ -14,7 +14,8 @@ namespace MagnumOpus.Module.Input
         public const string ChamberPrev = "ed.chamber.prev", ChamberNext = "ed.chamber.next";
         public const string ArmPrefix = "ed.arm.";
         public const string CatPrev = "ed.cat.prev", CatNext = "ed.cat.next", ItemPrev = "ed.item.prev", ItemNext = "ed.item.next";
-        // S reads details on the board only (on the tape S is an instruction); / everywhere.
+        public const string ItemJump = "ed.item.jump", ItemSnap = "ed.item.snap";
+        // S reads details on the board only (on the tape S is an instruction).
         public const string Details = "ed.details", Molecule = "ed.molecule", Neighbours = "ed.neighbours";
         public const string Score = "ed.score", Tips = "ed.tips", Products = "ed.products", Diagram = "ed.diagram";
         public const string Play = "ed.play", Step = "ed.step", Fast = "ed.fast";
@@ -100,6 +101,8 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.CatNext, "Next category", KeyGroups.Board, Board, new KeyboardBinding(Scancode.RightBracket));
             Key(EditorActions.ItemPrev, "Previous item", KeyGroups.Board, Cursors, new KeyboardBinding(Scancode.Comma));
             Key(EditorActions.ItemNext, "Next item", KeyGroups.Board, Cursors, new KeyboardBinding(Scancode.Period));
+            Key(EditorActions.ItemJump, "Cursor to the item", KeyGroups.Board, Board, new KeyboardBinding(Scancode.Slash));
+            Key(EditorActions.ItemSnap, "Toggle auto-snap to items", KeyGroups.Board, Board, new KeyboardBinding(Scancode.Backslash));
             Key(EditorActions.Details, "Details", KeyGroups.Board, new[] { KeyScopes.Board, KeyScopes.Tray }, new KeyboardBinding(Scancode.S));
             Key(EditorActions.Molecule, "Molecule", KeyGroups.Board, new[] { KeyScopes.Board, KeyScopes.Tray, KeyScopes.Molecule }, new KeyboardBinding(Scancode.W));
             Key(EditorActions.Neighbours, "Neighbours", KeyGroups.Board, cursorMoves, new KeyboardBinding(Scancode.X));

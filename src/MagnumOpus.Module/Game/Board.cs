@@ -55,6 +55,16 @@ namespace MagnumOpus.Module.Game
             return name;
         }
 
+        /// <summary>A reagent or product by its molecule's name alone ("Water"); an unnamed molecule
+        /// by <see cref="PartName"/>.</summary>
+        public static string MoleculeName(SolutionEditorScreen ed, Part part)
+        {
+            var molecule = part.GetMoleculeForInputOutput(SolutionOf(ed));
+            return molecule != null && molecule.displayName.HasValue()
+                ? GameText.Clean(molecule.displayName.GetValue().GetTranslated())
+                : PartName(ed, part);
+        }
+
         /// <summary>A part type's name. The game calls the one-, two-, three- and six-armed assemblies
         /// all "Fixed-Length Arm" and tells them apart by their picture, so a multi-armed one carries
         /// its gripper count: "Fixed-Length Arm (2 grippers)".</summary>
