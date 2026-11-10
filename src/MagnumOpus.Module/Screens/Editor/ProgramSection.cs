@@ -15,7 +15,8 @@ namespace MagnumOpus.Module.Screens.Editor
     /// The program stop: the instruction tape, rows = arms (the game's numbering, which the board
     /// shares), columns = cycles, 1-based. Up / Down change the arm, Left / Right the column, Home /
     /// End go to the row's first and last instruction; a cell a Reset or Repeat fills reads what runs
-    /// there ("clockwise, from reset").
+    /// there ("clockwise, from reset"), and the Reset's or Repeat's own cell what runs in it
+    /// ("repeat, grab").
     /// Programming, typed like text (user decision 2026-11-04): an instruction key (the game's own,
     /// on its layout) puts that instruction at the cursor and steps on a cycle, overwriting; with
     /// Shift it inserts, pushing what follows right up to the first gap (the game's insert). Delete
@@ -128,11 +129,27 @@ namespace MagnumOpus.Module.Screens.Editor
             var arm = RowArm(ctx);
             if (arm == null) return "";
             var ins = Instruction(ctx);
-            string label = ins != null ? Instructions.Label(ins) : ExpansionLabel(ed, arm, ctx.Col);
+            string label = ins != null ? InstructionLabel(ed, arm, ctx.Col, ins) : ExpansionLabel(ed, arm, ctx.Col);
             string cell = label != null ? Strings.EditorCell(ctx.Col + 1, label) : (ctx.Col + 1).ToString();
             string error = ProgramErrors.AtCell(ed, arm, ctx.Col);
             if (error != null) cell += ", " + error;
             return withArm ? Strings.EditorArm(ctx.Row + 1) + ", " + cell : cell;
+        }
+
+        // An instruction's cell; a Reset or Repeat adds what runs in its own cell, the first of
+        // its expansion ("repeat, grab"; the game draws that there while the solution runs, and
+        // only the extent line while editing). Nothing added when it has nothing to run (idle).
+        private static string InstructionLabel(SolutionEditorScreen ed, Part arm, int col, InstructionType ins)
+        {
+            string label = Instructions.Label(ins);
+            if (ins.category != InstructionCategory.Repeat && ins.category != InstructionCategory.Reset) return label;
+            var program = ProgramErrors.Expanded(ed, arm);
+            if (program == null || !program.TryGetValue(col, out var expanded)) return label;
+            var expansion = expanded.expansion;
+            if (expansion == null || expansion.Length == 0) return label;
+            var first = expansion[0];
+            if (ReferenceEquals(first, null) || first == InstructionTypes.idle || first == InstructionTypes.placeholderIdle) return label;
+            return Strings.EditorExpansionFirst(label, Instructions.Label(first));
         }
 
         // A cell a Reset or Repeat fills (the game draws a line through them): what runs there, and

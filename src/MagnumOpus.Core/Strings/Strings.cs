@@ -428,6 +428,9 @@ namespace MagnumOpus.Core.Strings
             D("editor.close_armed", "close?"),
             // A tape cell filled by a Reset or Repeat: {0} = what runs there, {1} = the source.
             D("editor.expansion", "{0}, from {1}"),
+            // A Reset or Repeat cell: {0} = the instruction, {1} = what runs in its own cell (the
+            // first of what it repeats or resets; the game draws that there during a run).
+            D("editor.expansion_first", "{0}, {1}"),
             // A run log line: {0} = cycle, {1} = the event.
             D("editor.log_entry", "{0}: {1}"),
             // The engine's state, spoken when it changes.
@@ -1102,6 +1105,7 @@ namespace MagnumOpus.Core.Strings
         public static string EditorCellChange(int arm, int col, string instruction) => F("editor.cell_change", arm, col, instruction);
         public static string EditorCellRemoved(int arm, int col, string instruction) => F("editor.cell_removed", arm, col, instruction);
         public static string EditorExpansion(string what, string source) => F("editor.expansion", what, source);
+        public static string EditorExpansionFirst(string instruction, string first) => F("editor.expansion_first", instruction, first);
         public static string EditorLogEntry(int cycle, string text) => F("editor.log_entry", cycle, text);
         public static string RunRunning => Get("run.running");
         public static string RunFast => Get("run.fast");

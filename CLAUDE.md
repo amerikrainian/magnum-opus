@@ -300,7 +300,9 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   pickup or drop until it saves). Program: rows = arms, columns = cycles (1-based); Enter runs to the cell (the game's Alt+click on the
   program, its code run from `RunSection.RunTo`: stopped, the cell must hold an instruction and the run
   starts; running, the cell's next turn; it fast forwards silently and says only "cycle N" where it
-  pauses, user decision 2026-11-05; NOT yet verified live); Reset / Repeat cells
+  pauses, user decision 2026-11-05; NOT yet verified live); a Reset / Repeat's own cell reads what runs in it,
+  "repeat, grab", "reset, drop" (its expansion's first; the game draws that there only during a run,
+  user request 2026-11-09, verified live); the cells it fills
   read "clockwise, from reset" (each arm's own expansion, `EditableProgram.GetReferenceForPart`, so they
   read while an error stops the compile). Instruction errors (`Editor/ProgramErrors`, 2026-11-05): a
   Reset / Repeat whose filled cells hold an instruction (the only compile failure; the game draws its
