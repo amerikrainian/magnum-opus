@@ -15,6 +15,9 @@ namespace MagnumOpus.Module.Input
         public const string ArmPrefix = "ed.arm.";
         public const string CatPrev = "ed.cat.prev", CatNext = "ed.cat.next", ItemPrev = "ed.item.prev", ItemNext = "ed.item.next";
         public const string ItemJump = "ed.item.jump", ItemSnap = "ed.item.snap";
+        // The player's marks on the board ("ed.mark" is the selection's corner).
+        public const string HexMarkPlace = "ed.hexmark.place", HexMarkClear = "ed.hexmark.clear", HexMarkClearAll = "ed.hexmark.clear_all";
+        public const string HexMarkPrefix = "ed.hexmark.";
         // S reads details on the board only (on the tape S is an instruction).
         public const string Details = "ed.details", Molecule = "ed.molecule", Neighbours = "ed.neighbours";
         public const string Score = "ed.score", Tips = "ed.tips", Products = "ed.products", Diagram = "ed.diagram";
@@ -103,6 +106,9 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.ItemNext, "Next item", KeyGroups.Board, Cursors, new KeyboardBinding(Scancode.Period));
             Key(EditorActions.ItemJump, "Cursor to the item", KeyGroups.Board, Board, new KeyboardBinding(Scancode.Slash));
             Key(EditorActions.ItemSnap, "Toggle auto-snap to items", KeyGroups.Board, Board, new KeyboardBinding(Scancode.Backslash));
+            Key(EditorActions.HexMarkPlace, "Place a mark", KeyGroups.Board, Board, new KeyboardBinding(Scancode.M));
+            Key(EditorActions.HexMarkClear, "Clear the mark here", KeyGroups.Board, Board, new KeyboardBinding(Scancode.M, shift: true));
+            Key(EditorActions.HexMarkClearAll, "Clear all marks", KeyGroups.Board, Board, new KeyboardBinding(Scancode.M, alt: true, shift: true));
             Key(EditorActions.Details, "Details", KeyGroups.Board, new[] { KeyScopes.Board, KeyScopes.Tray }, new KeyboardBinding(Scancode.S));
             Key(EditorActions.Molecule, "Molecule", KeyGroups.Board, new[] { KeyScopes.Board, KeyScopes.Tray, KeyScopes.Molecule }, new KeyboardBinding(Scancode.W));
             Key(EditorActions.Neighbours, "Neighbours", KeyGroups.Board, cursorMoves, new KeyboardBinding(Scancode.X));
@@ -121,6 +127,8 @@ namespace MagnumOpus.Module.Input
             var digits = new[] { Scancode.Num1, Scancode.Num2, Scancode.Num3, Scancode.Num4, Scancode.Num5, Scancode.Num6, Scancode.Num7, Scancode.Num8, Scancode.Num9 };
             for (int i = 0; i < digits.Length; i++)
                 Key(EditorActions.ArmPrefix + (i + 1), "Jump to arm " + (i + 1), KeyGroups.Program, BoardOrTape, new KeyboardBinding(digits[i]));
+            for (int i = 0; i < digits.Length; i++)
+                Key(EditorActions.HexMarkPrefix + (i + 1), "Jump to mark " + (i + 1), KeyGroups.Board, Board, new KeyboardBinding(digits[i], ctrl: true));
             Key(EditorActions.SelectUp, "Select up", KeyGroups.Program, BoardOrTape, new KeyboardBinding(Scancode.Up, shift: true)).Repeating();
             Key(EditorActions.SelectDown, "Select down", KeyGroups.Program, BoardOrTape, new KeyboardBinding(Scancode.Down, shift: true)).Repeating();
             Key(EditorActions.SelectLeft, "Select left", KeyGroups.Program, BoardOrTape, new KeyboardBinding(Scancode.Left, shift: true)).Repeating();

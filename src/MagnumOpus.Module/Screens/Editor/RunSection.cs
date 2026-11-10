@@ -256,7 +256,7 @@ namespace MagnumOpus.Module.Screens.Editor
                 // the player is, the new hex is read after the message.
                 _ctx.Cursor = errorHex;
                 if (Equals(Navigation.FocusedStopKey, EditorContext.StopBoard))
-                    Speech.Say(Board.Readout(ed, _ctx.Cursor), interrupt: false);
+                    Speech.Say(_ctx.Readout(_ctx.Cursor), interrupt: false);
             }
         }
 

@@ -399,6 +399,11 @@ namespace MagnumOpus.Core.Strings
             D("editor.cat.tracks", "Tracks"),
             D("editor.cat.atoms", "Atoms"),
             D("editor.cat.highlights", "Highlighted"),
+            D("editor.cat.marks", "Marks"),
+            // The player's marks on the board: {0} = the mark's number.
+            D("editor.hex_mark", "mark {0}"),
+            D("editor.hex_mark_cleared", "cleared"),
+            D("editor.hex_marks_cleared", "marks cleared"),
             // Whether , and . move the board cursor to an item (Backslash).
             D("editor.snap_on", "Auto-snap on"),
             D("editor.snap_off", "Auto-snap off"),
@@ -668,6 +673,10 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.item.next", "Next item"),
             D("bind.ed.item.jump", "Cursor to the item"),
             D("bind.ed.item.snap", "Toggle auto-snap to items"),
+            D("bind.ed.hexmark.place", "Place a mark"),
+            D("bind.ed.hexmark.clear", "Clear the mark here"),
+            D("bind.ed.hexmark.clear_all", "Clear all marks"),
+            D("bind.ed.hexmark.jump", "Jump to mark"),
             D("bind.ed.details", "Details"),
             D("bind.ed.molecule", "Molecule"),
             D("bind.ed.neighbours", "Neighbours"),
@@ -986,6 +995,9 @@ namespace MagnumOpus.Core.Strings
         public static string EditorCycle(int n) => F("editor.cycle", n);
         public static string EditorCategory(string name, int count) => F("editor.category", name, count);
         public static string EditorCategoryName(string key) => Get("editor.cat." + key);
+        public static string EditorHexMark(int n) => F("editor.hex_mark", n);
+        public static string EditorHexMarkCleared => Get("editor.hex_mark_cleared");
+        public static string EditorHexMarksCleared => Get("editor.hex_marks_cleared");
         public static string EditorAtomCount(int count, string atom) => F("editor.atom_count", count, atom);
         public static string EditorMoleculeBonds(int n) => n == 1 ? Get("editor.molecule_bond_one") : F("editor.molecule_bonds", n);
         public static string EditorMoleculeTriplex(int n) => n == 1 ? Get("editor.molecule_triplex_one") : F("editor.molecule_triplex", n);

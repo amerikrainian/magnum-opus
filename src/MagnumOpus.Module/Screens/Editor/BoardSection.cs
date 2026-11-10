@@ -90,9 +90,8 @@ namespace MagnumOpus.Module.Screens.Editor
         // line a move speaks), so landing on the board says it too.
         private string HexReadout()
         {
-            var ed = _ctx.Ed;
-            if (ed == null) return "";
-            string readout = Board.Readout(ed, _ctx.Cursor);
+            if (_ctx.Ed == null) return "";
+            string readout = _ctx.Readout(_ctx.Cursor);
             string error = _ctx.Carry.Active ? _ctx.Carry.PlacementError() : null;
             return error == null ? readout : readout + ", " + error;
         }
@@ -239,6 +238,18 @@ namespace MagnumOpus.Module.Screens.Editor
             yield return new ElementAction(EditorActions.ItemPrev, Strings.Get("bind.ed.item.prev"), _ => Item(-1));
             yield return new ElementAction(EditorActions.ItemNext, Strings.Get("bind.ed.item.next"), _ => Item(1));
             yield return new ElementAction(EditorActions.ItemSnap, Strings.Get("bind.ed.item.snap"), _ => ToggleSnap());
+            yield return new ElementAction(EditorActions.HexMarkPlace, Strings.Get("bind.ed.hexmark.place"), _ => PlaceMark());
+            if (_ctx.Marks.Count > 0)
+            {
+                yield return new ElementAction(EditorActions.HexMarkClear, Strings.Get("bind.ed.hexmark.clear"), _ => ClearMark());
+                yield return new ElementAction(EditorActions.HexMarkClearAll, Strings.Get("bind.ed.hexmark.clear_all"), _ => ClearAllMarks());
+            }
+            foreach (var kv in _ctx.Marks)
+            {
+                if (kv.Key > 9) break;
+                var at = kv.Value;
+                yield return new ElementAction(EditorActions.HexMarkPrefix + kv.Key, Strings.Get("bind.ed.hexmark.jump"), _ => GoTo(at));
+            }
             if (Prefs.BoardItemsStay)
                 yield return new ElementAction(EditorActions.ItemJump, Strings.Get("bind.ed.item.jump"), _ => JumpToItem());
             yield return new ElementAction(EditorActions.Details, Strings.Get("bind.ed.details"), _ => SayDetails());
@@ -277,13 +288,12 @@ namespace MagnumOpus.Module.Screens.Editor
             string chamber = Strings.EditorChamber(at + 1);
             if (_ctx.Carry.Active) { _ctx.Carry.GoTo(chambers[at].hexPos, chamber); return; }
             _ctx.Cursor = chambers[at].hexPos;
-            EditorContext.Say(chamber + ", " + Board.Readout(ed, _ctx.Cursor));
+            EditorContext.Say(chamber + ", " + _ctx.Readout(_ctx.Cursor));
         }
 
         private void SayHex()
         {
-            var ed = _ctx.Ed;
-            if (ed != null) EditorContext.Say(Board.Readout(ed, _ctx.Cursor));
+            if (_ctx.Ed != null) EditorContext.Say(_ctx.Readout(_ctx.Cursor));
         }
 
         // To the next hex that way whose contents read differently; nothing within reach: silent.
@@ -362,6 +372,7 @@ namespace MagnumOpus.Module.Screens.Editor
                 var items = found.ToList();
                 if (items.Count > 0) cats.Add(new KeyValuePair<string, List<BoardItem>>(key, items));
             }
+            Add("marks", _ctx.Marks.Select(kv => new BoardItem(kv.Value, Strings.EditorHexMark(kv.Key))));
             Add("reagents", solution.parts.Where(p => p.GetType().isInput).Select(p => new BoardItem(p.GetHexPos(), Board.MoleculeName(ed, p))));
             Add("products", solution.parts.Where(p => p.GetType().IsOutput()).Select(p => new BoardItem(p.GetHexPos(), Board.MoleculeName(ed, p))));
             Add("arms", Board.Arms(ed).Select(p => new BoardItem(Board.BaseHex(ed, p), _ctx.Label(p))));
@@ -418,6 +429,38 @@ namespace MagnumOpus.Module.Screens.Editor
             int at = cats.FindIndex(c => c.Key == _category);
             if (at < 0 || _item < 0 || _item >= cats[at].Value.Count) return;
             GoTo(cats[at].Value[_item].At);
+        }
+
+        // ---- marks ----
+
+        // M: the lowest free number on the cursor hex; a hex already marked keeps its mark, said again.
+        private void PlaceMark()
+        {
+            int mark = _ctx.MarkAt(_ctx.Cursor);
+            if (mark == 0)
+            {
+                mark = 1;
+                while (_ctx.Marks.ContainsKey(mark)) mark++;
+                _ctx.Marks[mark] = _ctx.Cursor;
+            }
+            EditorContext.Say(Strings.EditorHexMark(mark));
+        }
+
+        // Shift+M: the mark on the cursor hex; none there: nothing.
+        private void ClearMark()
+        {
+            int mark = _ctx.MarkAt(_ctx.Cursor);
+            if (mark == 0) return;
+            _ctx.Marks.Remove(mark);
+            EditorContext.Say(Strings.EditorHexMarkCleared);
+        }
+
+        // Alt+Shift+M: every mark.
+        private void ClearAllMarks()
+        {
+            if (_ctx.Marks.Count == 0) return;
+            _ctx.Marks.Clear();
+            EditorContext.Say(Strings.EditorHexMarksCleared);
         }
 
         // ---- editing ----
@@ -502,7 +545,7 @@ namespace MagnumOpus.Module.Screens.Editor
         private void SayRotated(Part part)
         {
             EditorContext.Say(_ctx.Facing(part));
-            if (!part.HasArms()) EditorContext.Say(Board.Readout(_ctx.Ed, _ctx.Cursor), interrupt: false);
+            if (!part.HasArms()) EditorContext.Say(_ctx.Readout(_ctx.Cursor), interrupt: false);
         }
 
         private void Length(int delta)

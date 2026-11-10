@@ -76,6 +76,27 @@ namespace MagnumOpus.Module.Screens.Editor
         public readonly List<KeyValuePair<Part, HexIndex>> PartClipboard = new List<KeyValuePair<Part, HexIndex>>();
         public readonly List<KeyValuePair<Part, HexIndex>> CutParts = new List<KeyValuePair<Part, HexIndex>>();
 
+        /// <summary>The player's marks on the board, by number (M places the lowest free one); hexes
+        /// only, gone with another solution (user request 2026-11-10: they do not persist).</summary>
+        public readonly SortedDictionary<int, HexIndex> Marks = new SortedDictionary<int, HexIndex>();
+
+        /// <summary>The number of the mark on a hex, or 0.</summary>
+        public int MarkAt(HexIndex hex)
+        {
+            foreach (var kv in Marks) if (kv.Value == hex) return kv.Key;
+            return 0;
+        }
+
+        /// <summary>A board hex as the cursor reads it: its mark first, then <see cref="Board.Readout"/>.</summary>
+        public string Readout(HexIndex hex)
+        {
+            var ed = Ed;
+            if (ed == null) return "";
+            int mark = MarkAt(hex);
+            string readout = Board.Readout(ed, hex);
+            return mark == 0 ? readout : Strings.EditorHexMark(mark) + ", " + readout;
+        }
+
         /// <summary>The board hex Alt+Backspace left for the tape, or null.</summary>
         public HexIndex? JumpHex;
 
@@ -113,6 +134,7 @@ namespace MagnumOpus.Module.Screens.Editor
             Selecting = false;
             Corner = null;
             JumpHex = null;
+            Marks.Clear();
             // Parts copied in another puzzle may not belong in this one.
             PartClipboard.Clear();
             CutParts.Clear();
@@ -393,7 +415,7 @@ namespace MagnumOpus.Module.Screens.Editor
             if (ed == null) return;
             _ctx.Cursor = hex;
             foreach (var c in _items) c.Part.SetHexPosAndUpdate(_ctx.Cursor + c.Offset);
-            string readout = Board.Readout(ed, _ctx.Cursor);
+            string readout = _ctx.Readout(_ctx.Cursor);
             if (first != null) readout = first + ", " + readout;
             string error = PlacementError();
             EditorContext.Say(error == null ? readout : readout + ", " + error);
@@ -556,7 +578,7 @@ namespace MagnumOpus.Module.Screens.Editor
             }
             else _track.AddTrackBack(target);
             _ctx.Cursor = End();
-            EditorContext.Say(Board.Readout(ed, _ctx.Cursor));
+            EditorContext.Say(_ctx.Readout(_ctx.Cursor));
         }
 
         public bool Finish()
