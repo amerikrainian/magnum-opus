@@ -257,7 +257,10 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   group the chapter's location, "House Colvan", and no screen name on the main campaign, the chapter's
   name being the gems' stop, user decision 2026-11-09; every unlocked chapter a group by its name when
   the campaign shares the screen, as De Re Metallica does, its one location the screen name), chapter gems (not on such a campaign: the game slides them off the screen), Journal /
-  campaign switch (store notice without the DLC) / Options. Enter runs the game's click code. The unlock
+  campaign switch (store notice without the DLC) / Options. Enter runs the game's click code. Focus
+  survives the screens opened from it (`KeepStateOnPop`: back on the item opened, user request
+  2026-11-09); a chapter change forgets the items stop (`Navigation.ForgetStop`), so a new chapter, or
+  the old one again, lands on its first item (verified live: puzzle info, Options, chapter switches). The unlock
   sequence is spoken as the game plays it (it only sounds it).
 - **Letters** (`DocumentGameScreen`): sections as lines, Close (the game's Escape: marks seen, pops).
 - **Cutscenes** (`CinematicGameScreen`): the location bar ("Alchemist's Workshop, House Van Tassen") as

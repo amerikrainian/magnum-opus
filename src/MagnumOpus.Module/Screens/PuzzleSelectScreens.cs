@@ -3,6 +3,7 @@ using System.Linq;
 using MagnumOpus.Core;
 using MagnumOpus.Core.Graph;
 using MagnumOpus.Core.Strings;
+using MagnumOpus.Core.UI;
 using MagnumOpus.Module.Game;
 using MagnumOpus.Module.UI;
 
@@ -27,6 +28,14 @@ namespace MagnumOpus.Module.Screens
     public sealed class PuzzleSelectGameScreen : GameScreen<PuzzleSelectScreen>
     {
         public override string Key => "game.puzzleselect";
+
+        // Focus survives the screens opened from here (puzzle info, a cutscene, a letter, the editor
+        // and back): the player returns to the item they opened (user request 2026-11-09). Not across
+        // chapters: a chapter change forgets the items stop (Build), and a remembered item the new
+        // chapter lacks falls back to its first.
+        public override bool KeepStateOnPop => true;
+        private const string ItemsStop = "items";
+        private CampaignChapter _builtChapter;
 
         // What the unlock sequence has played so far, to speak each new event once.
         private int _eventsSeen = -1;
@@ -53,8 +62,10 @@ namespace MagnumOpus.Module.Screens
             if (g == null) return;
             var chapter = Shown(g);
             var campaign = chapter.campaign;
+            if (_builtChapter != null && chapter != _builtChapter) Navigation.ForgetStop(this, ItemsStop);
+            _builtChapter = chapter;
 
-            b.BeginStop("items");
+            b.BeginStop(ItemsStop);
             if (campaign.sameScreenChapters)
             {
                 foreach (var c in campaign.chapters.Where(g.IsUnlocked))

@@ -58,6 +58,11 @@ namespace MagnumOpus.Core.UI
         /// page removed): drop its per-screen state so reopening starts fresh.</summary>
         public virtual void ScreenClosed(Screen screen) { }
 
+        /// <summary>Forget where a screen's Tab-stop was left, so the next entry lands on its start: its
+        /// content changed into something else (a new chapter's items). Kept state only; focus already
+        /// inside the stop is left alone.</summary>
+        public virtual void ForgetStop(Screen screen, object stopKey) { }
+
         /// <summary>Move focus to a graph node by id, applied when the node exists in a render, with one
         /// retry frame for content that appears mid-build.</summary>
         public virtual void FocusNode(Graph.ControlId id, bool announce = true) { }
@@ -137,6 +142,8 @@ namespace MagnumOpus.Core.UI
         public static void Blur() => Active?.Blur();
 
         public static void ScreenClosed(Screen screen) => Active?.ScreenClosed(screen);
+
+        public static void ForgetStop(Screen screen, object stopKey) => Active?.ForgetStop(screen, stopKey);
 
         public static void FocusNode(Graph.ControlId id, bool announce = true) => Active?.FocusNode(id, announce);
 

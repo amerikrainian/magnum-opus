@@ -101,6 +101,12 @@ namespace MagnumOpus.Core.UI
             _graph = screen != null ? new KeyGraph(() => BuildRender(screen), _state) : null;
         }
 
+        public override void ForgetStop(Screens.Screen screen, object stopKey)
+        {
+            if (screen != null && stopKey != null && _states.TryGetValue(screen, out var state))
+                state.StopMemory.Remove(stopKey);
+        }
+
         public override void ScreenClosed(Screens.Screen screen)
         {
             if (screen == null) return;
