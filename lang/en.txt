@@ -85,6 +85,7 @@ mod.focus_on_launch=Keyboard navigation on at launch
 mod.short_directions=Abbreviate directions
 mod.interrupt_playing=Interrupt speech while playing
 mod.arm_change_to_end=Changing arm goes to the end of its program
+mod.arm_wrap=Wrap round the arms
 mod.key_category={0} keys
 mod.category.navigation=Navigation
 mod.category.board=Board

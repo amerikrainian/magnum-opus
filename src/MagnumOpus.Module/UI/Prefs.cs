@@ -8,6 +8,7 @@ namespace MagnumOpus.Module.UI
         private const string ShortDirectionsKey = "short_directions";
         private const string InterruptWhilePlayingKey = "interrupt_while_playing";
         private const string ArmChangeToEndKey = "arm_change_to_end";
+        private const string ArmWrapKey = "arm_wrap";
 
         private static MagnumOpus.Contracts.ISettingsStore Store => ModuleMain.Host.Settings.Store;
 
@@ -41,6 +42,14 @@ namespace MagnumOpus.Module.UI
         {
             get => Store.GetBool(ArmChangeToEndKey, false);
             set => Store.SetBool(ArmChangeToEndKey, value);
+        }
+
+        /// <summary>Changing the program cursor's arm wraps round the ends of the arm list, on the
+        /// tape and the board (the mod menu, on by default; user request 2026-11-09).</summary>
+        public static bool ArmWrap
+        {
+            get => Store.GetBool(ArmWrapKey, true);
+            set => Store.SetBool(ArmWrapKey, value);
         }
     }
 }

@@ -215,13 +215,15 @@ namespace MagnumOpus.Module.Screens.Editor
         /// cursor's, said with the arm ("arm 2, 5"). The cursor keeps its cycle, or with the mod
         /// menu's Changing arm goes to the end of its program lands on the cell after the arm's last
         /// instruction (cycle 1 on an empty tape; a Reset's filled cells included, user decision
-        /// 2026-11-05). Nothing at the ends and with one arm.</summary>
+        /// 2026-11-05). Wraps round the ends (the mod menu's Wrap round the arms, on by default; off,
+        /// nothing at the ends); with one arm, nothing (the Tab rule).</summary>
         internal static void ChangeArm(EditorContext ctx, int step)
         {
             var arms = Board.Arms(ctx.Ed);
             if (arms.Count < 2) return;
             int row = Math.Max(0, Math.Min(arms.Count - 1, ctx.Row)) + step;
-            if (row < 0 || row >= arms.Count) return;
+            if (MagnumOpus.Module.UI.Prefs.ArmWrap) row = (row % arms.Count + arms.Count) % arms.Count;
+            else if (row < 0 || row >= arms.Count) return;
             ctx.Row = row;
             ctx.Selecting = false;
             if (MagnumOpus.Module.UI.Prefs.ArmChangeToEnd)
