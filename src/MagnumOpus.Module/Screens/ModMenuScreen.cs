@@ -34,7 +34,7 @@ namespace MagnumOpus.Module.Screens
 
         public override void Build(GraphBuilder b)
         {
-            b.PushContext(Strings.ScreenModMenu, Strings.RoleList);
+            b.PushContext(Strings.ScreenModMenu);
             b.AddItem(ControlId.Structural("modmenu:settings"), Nodes.Button(() => Strings.ModSettings, () => PushChild(new ModSettingsScreen())));
             b.AddItem(ControlId.Structural("modmenu:keys"), Nodes.Button(() => Strings.ModKeyHelp, () => PushChild(new KeyListScreen())));
             b.AddItem(ControlId.Structural("modmenu:close"), Nodes.Button(() => Strings.ModClose, Close));
@@ -57,7 +57,7 @@ namespace MagnumOpus.Module.Screens
         public override void Build(GraphBuilder b)
         {
             var settings = ModuleMain.Host?.Settings;
-            b.PushContext(Strings.ModSettings, Strings.RoleList);
+            b.PushContext(Strings.ModSettings);
             if (settings != null)
             {
                 b.AddItem(ControlId.Structural("modsettings:positions"), Nodes.Toggle(() => Strings.ModSpeakPositions,

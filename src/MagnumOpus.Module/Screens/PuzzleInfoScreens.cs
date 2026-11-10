@@ -51,7 +51,7 @@ namespace MagnumOpus.Module.Screens
             _story.Build(b);
 
             b.BeginStop("solutions");
-            b.PushContext(Strings.InfoSolutions, Strings.RoleList);
+            b.PushContext(Strings.InfoSolutions);
             for (int i = 0; i < solutions.Length; i++)
             {
                 var solution = solutions[i];

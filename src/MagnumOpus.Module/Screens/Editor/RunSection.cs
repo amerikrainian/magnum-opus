@@ -425,7 +425,7 @@ namespace MagnumOpus.Module.Screens.Editor
             var log = RunLog.Entries;
             if (log.Count == 0) return;
             b.BeginStop(EditorContext.StopLog);
-            b.PushContext(Strings.EditorLog, Strings.RoleList);
+            b.PushContext(Strings.EditorLog);
             for (int i = Math.Max(0, log.Count - Shown); i < log.Count; i++)
             {
                 string line = Strings.EditorLogEntry(log[i].Cycle, log[i].Text);

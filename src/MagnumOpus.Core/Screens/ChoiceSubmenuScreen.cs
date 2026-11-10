@@ -84,7 +84,7 @@ namespace MagnumOpus.Core.Screens
 
         public override void Build(GraphBuilder b)
         {
-            if (_speakTitle) b.PushContext(_title, Strings.RoleList);
+            if (_speakTitle) b.PushContext(_title);
             string row = null;
             for (int i = 0; i < _options.Count; i++)
             {

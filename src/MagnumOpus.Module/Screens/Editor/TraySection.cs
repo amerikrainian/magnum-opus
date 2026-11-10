@@ -101,7 +101,7 @@ namespace MagnumOpus.Module.Screens.Editor
             bool first = true;
             foreach (var section in sections)
             {
-                b.PushContext(section.Key, Strings.RoleList);
+                b.PushContext(section.Key);
                 foreach (var item in section.Value)
                 {
                     var it = item;

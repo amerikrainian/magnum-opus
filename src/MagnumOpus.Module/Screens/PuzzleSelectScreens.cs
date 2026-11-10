@@ -64,7 +64,7 @@ namespace MagnumOpus.Module.Screens
             if (!campaign.sameScreenChapters)
             {
                 b.BeginStop("chapters");
-                b.PushContext(Strings.SelectChapters, Strings.RoleList);
+                b.PushContext(Strings.SelectChapters);
                 foreach (var c in Campaigns.opusMagnum.chapters)
                 {
                     var ch = c;
@@ -93,7 +93,7 @@ namespace MagnumOpus.Module.Screens
 
         private void Chapter(GraphBuilder b, PuzzleSelectScreen g, CampaignChapter chapter)
         {
-            b.PushContext(Strings.SelectChapter(GameText.Of(chapter.title), GameText.Of(chapter.name)), Strings.RoleList);
+            b.PushContext(Strings.SelectChapter(GameText.Of(chapter.title), GameText.Of(chapter.name)));
             for (int i = 0; i < chapter.campaignItems.Count; i++)
             {
                 var item = chapter.campaignItems[i];
