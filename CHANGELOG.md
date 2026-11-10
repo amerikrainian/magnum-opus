@@ -1,5 +1,15 @@
 # Changelog
 
+## V0.0.4
+
+- Cutscenes now announce their location when they open.
+- Reset and Repeat instructions now say what runs in their own cell.
+- Changing arms with Up and Down now keeps the cursor on the same cycle with a toggle in mod settings to snap to end of instruction.
+- Changing arms now wraps around on both the program and the board with a toggle to turn this off.
+- Several items lost their list roles; it was pointlessly verbose anyways.
+- The puzzle list is now named after the chapter's location.
+- Returning to the puzzle list, from a puzzle, a cutscene, Options and so on, now puts you back on the item you opened.
+
 ## V0.0.3
 
 - When a story is done, we no longer narrate any visible lines. You can, however, still reach them in the tab stops.
