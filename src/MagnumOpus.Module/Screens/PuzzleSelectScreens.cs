@@ -11,8 +11,10 @@ namespace MagnumOpus.Module.Screens
     /// <summary>
     /// The campaign map (the game's PuzzleSelectScreen: immediate-mode, mouse only). Three Tab stops:
     ///  1. the chapter's campaign items (puzzles, cutscenes, letters, solitaire): name, kind,
-    ///     completed; a locked row (the game draws it blank) says "locked". For a campaign whose
-    ///     chapters share the screen (De Re Metallica) every unlocked chapter is a group;
+    ///     completed; a locked row (the game draws it blank) says "locked". Their group is the
+    ///     chapter's location ("House Colvan"; the chapter's name is the gems' stop, user decision
+    ///     2026-11-09). For a campaign whose chapters share the screen (De Re Metallica, one location
+    ///     for all) every unlocked chapter is a group by its name, and the location is the screen's;
     ///  2. the chapter gems (the main campaign's chapters, locked or not, the current one selected;
     ///     none on a campaign that shows its chapters together);
     ///  3. Journal, the campaign switch, Options.
@@ -35,7 +37,10 @@ namespace MagnumOpus.Module.Screens
             get
             {
                 var g = Game;
-                return g == null ? null : GameText.Of(Shown(g).locationName);
+                if (g == null) return null;
+                var chapter = Shown(g);
+                // On the main campaign the location is the items' group, said on entry already.
+                return chapter.campaign.sameScreenChapters ? GameText.Of(chapter.locationName) : null;
             }
         }
 
@@ -93,7 +98,9 @@ namespace MagnumOpus.Module.Screens
 
         private void Chapter(GraphBuilder b, PuzzleSelectScreen g, CampaignChapter chapter)
         {
-            b.PushContext(Strings.SelectChapter(GameText.Of(chapter.title), GameText.Of(chapter.name)));
+            b.PushContext(chapter.campaign.sameScreenChapters
+                ? Strings.SelectChapter(GameText.Of(chapter.title), GameText.Of(chapter.name))
+                : GameText.Of(chapter.locationName));
             for (int i = 0; i < chapter.campaignItems.Count; i++)
             {
                 var item = chapter.campaignItems[i];

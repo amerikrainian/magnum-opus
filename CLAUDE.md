@@ -253,8 +253,10 @@ Type-ahead characters come from the same snapshot through `SDL_GetKeyFromScancod
 `GameScreen<T>` is active while game screen T is on top with no fade running; every `GameScreen<T>`
 registers T, and `FallbackScreen` (layer -10) covers every other game screen.
 - **Title** (`TitleGateScreen`): "Press any key to continue"; any key reaches the game as Escape.
-- **Puzzle select** (`PuzzleSelectGameScreen`): items (name, kind, completed; locked rows "locked"; every
-  unlocked chapter when the campaign shares the screen, as De Re Metallica does), chapter gems (not on such a campaign: the game slides them off the screen), Journal /
+- **Puzzle select** (`PuzzleSelectGameScreen`): items (name, kind, completed; locked rows "locked"; their
+  group the chapter's location, "House Colvan", and no screen name on the main campaign, the chapter's
+  name being the gems' stop, user decision 2026-11-09; every unlocked chapter a group by its name when
+  the campaign shares the screen, as De Re Metallica does, its one location the screen name), chapter gems (not on such a campaign: the game slides them off the screen), Journal /
   campaign switch (store notice without the DLC) / Options. Enter runs the game's click code. The unlock
   sequence is spoken as the game plays it (it only sounds it).
 - **Letters** (`DocumentGameScreen`): sections as lines, Close (the game's Escape: marks seen, pops).
