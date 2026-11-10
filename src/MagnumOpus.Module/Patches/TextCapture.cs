@@ -23,9 +23,16 @@ namespace MagnumOpus.Module.Patches
 
         public static bool Enabled;
         private static List<Drawn> _drawing = new List<Drawn>();
+        private static object _drawingScreen;
+        private static bool _drewWithInput;
 
         /// <summary>Last frame's drawn text, top of the screen first (the game's y grows upward).</summary>
         public static List<Drawn> LastFrame { get; private set; } = new List<Drawn>();
+
+        /// <summary>The screen on top while last frame was captured, when it drew text with input
+        /// (an empty string counts); null otherwise (capture off, a fade running). A screen whose
+        /// entry reads captured text waits for this to be itself.</summary>
+        public static object LastFrameScreen { get; private set; }
 
         public static void Apply(Harmony harmony)
         {
@@ -40,13 +47,18 @@ namespace MagnumOpus.Module.Patches
         public static void NewFrame()
         {
             LastFrame = _drawing.OrderByDescending(d => d.Y).ThenBy(d => d.X).ToList();
+            LastFrameScreen = _drewWithInput ? _drawingScreen : null;
             _drawing = new List<Drawn>();
+            _drawingScreen = GameScreens.Top;
+            _drewWithInput = false;
         }
 
         // __0 text, __1 position, __14 doRender (by position: shipping parameter names are obfuscated).
         private static void Postfix(string __0, Vector2 __1, bool __14)
         {
-            if (!Enabled || !__14 || string.IsNullOrWhiteSpace(__0) || !InputManager.isMouseButtonInputEnabled) return;
+            if (!Enabled || !__14 || !InputManager.isMouseButtonInputEnabled) return;
+            _drewWithInput = true;
+            if (string.IsNullOrWhiteSpace(__0)) return;
             _drawing.Add(new Drawn { Text = __0, X = __1.X, Y = __1.Y });
         }
     }

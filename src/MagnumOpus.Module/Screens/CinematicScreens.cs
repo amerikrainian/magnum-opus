@@ -20,6 +20,9 @@ namespace MagnumOpus.Module.Screens
     /// heard, Enter or Space here finishes the typing and the slide (the game's own clocks,
     /// timeSinceEvent and cinematicsEventTime) and hands the game Space for the frame, so its own
     /// advance runs (sounds, the seen flag, the end of the scene). Escape passes.
+    /// The location bar ("The Greathall, House Van Tassen") is the screen's name, spoken on entry:
+    /// the game hardcodes it in its render code by vignette and only draws it, so it is read from
+    /// what it draws (<see cref="TextCapture"/>); the screen waits for the first frame captured.
     /// </summary>
     public sealed class CinematicGameScreen : GameScreen<CinematicScreen>
     {
@@ -27,6 +30,25 @@ namespace MagnumOpus.Module.Screens
 
         private CinematicScreen _seenScreen;
         private int _seenEvent = -1;
+
+        public CinematicGameScreen() { ReadsText.Add(typeof(CinematicScreen)); }
+
+        public override string ScreenName => Location();
+
+        // Active once a frame of the scene has been captured (the fade draws without input), so the
+        // entry reads the location.
+        public override bool IsActive() => base.IsActive() && ReferenceEquals(TextCapture.LastFrameScreen, Game);
+
+        // The text drawn on the location bar: centred, 68 px below the top of the screen
+        // (CinematicScreen's update draws it there). Null when the scene has none.
+        private static string Location()
+        {
+            var size = global::InputManager.screenSize;
+            foreach (var d in TextCapture.LastFrame)
+                if (System.Math.Abs(d.X - size.X / 2f) < 1f && System.Math.Abs(d.Y - (size.Y - 68f)) < 1f)
+                    return GameText.Clean(d.Text);
+            return null;
+        }
 
         public override bool PassKeyToGame(int sdlKeycode) => sdlKeycode == GameKeys.Escape;
 
