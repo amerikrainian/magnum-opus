@@ -135,6 +135,7 @@ namespace MagnumOpus.Core.Strings
             D("mod.focus_on_launch", "Keyboard navigation on at launch"),
             D("mod.short_directions", "Abbreviate directions"),
             D("mod.interrupt_playing", "Interrupt speech while playing"),
+            D("mod.arm_change_to_end", "Changing arm goes to the end of its program"),
             // The all-keys list's category headings; {0} = the category.
             D("mod.key_category", "{0} keys"),
             D("mod.category.navigation", "Navigation"),
@@ -940,6 +941,7 @@ namespace MagnumOpus.Core.Strings
         public static string ModSpeakPositions => Get("mod.speak_positions");
         public static string ModShortDirections => Get("mod.short_directions");
         public static string ModInterruptWhilePlaying => Get("mod.interrupt_playing");
+        public static string ModArmChangeToEnd => Get("mod.arm_change_to_end");
         public static string EditorSnapOn => Get("editor.snap_on");
         public static string EditorSnapOff => Get("editor.snap_off");
         public static string ModFocusOnLaunch => Get("mod.focus_on_launch");

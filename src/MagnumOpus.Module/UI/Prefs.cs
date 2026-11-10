@@ -7,6 +7,7 @@ namespace MagnumOpus.Module.UI
         private const string BoardItemsStayKey = "board_items_stay";
         private const string ShortDirectionsKey = "short_directions";
         private const string InterruptWhilePlayingKey = "interrupt_while_playing";
+        private const string ArmChangeToEndKey = "arm_change_to_end";
 
         private static MagnumOpus.Contracts.ISettingsStore Store => ModuleMain.Host.Settings.Store;
 
@@ -31,6 +32,15 @@ namespace MagnumOpus.Module.UI
         {
             get => Store.GetBool(InterruptWhilePlayingKey, false);
             set => Store.SetBool(InterruptWhilePlayingKey, value);
+        }
+
+        /// <summary>Changing the program cursor's arm (the tape's and the board's Up / Down) puts the
+        /// cursor on the cell after the arm's last instruction; off, it keeps its cycle (the mod menu,
+        /// user request 2026-11-09).</summary>
+        public static bool ArmChangeToEnd
+        {
+            get => Store.GetBool(ArmChangeToEndKey, false);
+            set => Store.SetBool(ArmChangeToEndKey, value);
         }
     }
 }

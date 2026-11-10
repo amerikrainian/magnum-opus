@@ -68,6 +68,8 @@ namespace MagnumOpus.Module.Screens
                     () => Prefs.ShortDirections, v => Prefs.ShortDirections = v));
                 b.AddItem(ControlId.Structural("modsettings:interrupt_playing"), Nodes.Toggle(() => Strings.ModInterruptWhilePlaying,
                     () => Prefs.InterruptWhilePlaying, v => Prefs.InterruptWhilePlaying = v));
+                b.AddItem(ControlId.Structural("modsettings:arm_change_to_end"), Nodes.Toggle(() => Strings.ModArmChangeToEnd,
+                    () => Prefs.ArmChangeToEnd, v => Prefs.ArmChangeToEnd = v));
             }
             b.PopContext();
         }

@@ -202,12 +202,34 @@ namespace MagnumOpus.Module.Screens.Editor
 
         internal void MoveRow(int step, bool select)
         {
+            if (!select) { ChangeArm(_ctx, step); return; }
             int count = Board.Arms(_ctx.Ed).Count;
             int row = Math.Max(0, Math.Min(count - 1, _ctx.Row + step));
             if (row == _ctx.Row) return;
             StartOrEndSelection(select);
             _ctx.Row = row;
             Spoken(withArm: true, select: select);
+        }
+
+        /// <summary>Up / Down on the tape and the board: the previous or next arm becomes the program
+        /// cursor's, said with the arm ("arm 2, 5"). The cursor keeps its cycle, or with the mod
+        /// menu's Changing arm goes to the end of its program lands on the cell after the arm's last
+        /// instruction (cycle 1 on an empty tape; a Reset's filled cells included, user decision
+        /// 2026-11-05). Nothing at the ends and with one arm.</summary>
+        internal static void ChangeArm(EditorContext ctx, int step)
+        {
+            var arms = Board.Arms(ctx.Ed);
+            if (arms.Count < 2) return;
+            int row = Math.Max(0, Math.Min(arms.Count - 1, ctx.Row)) + step;
+            if (row < 0 || row >= arms.Count) return;
+            ctx.Row = row;
+            ctx.Selecting = false;
+            if (MagnumOpus.Module.UI.Prefs.ArmChangeToEnd)
+            {
+                var program = arms[row].program;
+                ctx.Col = program.Count() == 0 ? 0 : Math.Min(EditorContext.MaxColumn, program.LastInstructionIndex() + 1);
+            }
+            EditorContext.Say(CellText(ctx, withArm: true));
         }
 
         internal void MoveColumn(int col, bool select)

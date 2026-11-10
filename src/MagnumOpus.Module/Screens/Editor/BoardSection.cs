@@ -27,9 +27,8 @@ namespace MagnumOpus.Module.Screens.Editor
     /// , . move the cursor to each item; Backslash (saved) makes them stay and say the item and where
     /// it lies from the cursor, Slash then moving the cursor there.
     /// The program cursor's arm is chosen here, never by where the board cursor is (user decision
-    /// 2026-11-05), with the tape's own keys (a grid of arms by cycles): Up / Down cycle the arms
-    /// (wrapping; one arm: nothing) and put the program cursor on the cell after the arm's last
-    /// instruction ("arm 2, 5"); Left / Right move it a cycle back and forward, Home / End to the
+    /// 2026-11-05), with the tape's own keys (a grid of arms by cycles): Up / Down change the arm
+    /// as the tape's do (<see cref="ProgramSection.ChangeArm"/>, "arm 2, 5"); Left / Right move it a cycle back and forward, Home / End to the
     /// arm's first and last instruction; digits jump the board cursor to an arm's base and make it
     /// the program's arm.
     /// Editing (stopped engine): Enter picks the part under the cursor up (<see cref="CarryMode"/>)
@@ -143,8 +142,8 @@ namespace MagnumOpus.Module.Screens.Editor
 
             if (arms > 0)
             {
-                yield return new ElementAction(UiActions.Up, Strings.Get("bind.ed.arm.prev"), _ => CycleArm(-1));
-                yield return new ElementAction(UiActions.Down, Strings.Get("bind.ed.arm.next"), _ => CycleArm(1));
+                yield return new ElementAction(UiActions.Up, Strings.Get("bind.ed.arm.prev"), _ => ProgramSection.ChangeArm(_ctx, -1));
+                yield return new ElementAction(UiActions.Down, Strings.Get("bind.ed.arm.next"), _ => ProgramSection.ChangeArm(_ctx, 1));
                 yield return new ElementAction(UiActions.Left, Strings.Get("bind.ed.tape.prev"), _ => TapeTo(_ctx.Col - 1));
                 yield return new ElementAction(UiActions.Right, Strings.Get("bind.ed.tape.next"), _ => TapeTo(_ctx.Col + 1));
                 yield return new ElementAction(UiActions.Home, Strings.Get("bind.ed.tape.first"), _ => TapeEdge(first: true));
@@ -317,22 +316,6 @@ namespace MagnumOpus.Module.Screens.Editor
             if (n < 1 || n > arms.Count) return;
             _ctx.Row = n - 1;
             GoTo(Board.BaseHex(ed, arms[n - 1]));
-        }
-
-        // Up / Down: the previous or next arm becomes the program cursor's, the cursor on the cell
-        // after its last instruction (cycle 1 on an empty tape; a Reset's filled cells included,
-        // user decision 2026-11-05); "arm 2, 5". Wraps; with one arm it
-        // does nothing and says nothing (the Tab rule, user rule 2026-11-04).
-        private void CycleArm(int step)
-        {
-            var arms = Board.Arms(_ctx.Ed);
-            if (arms.Count < 2) return;
-            int row = Math.Max(0, Math.Min(arms.Count - 1, _ctx.Row));
-            _ctx.Row = ((row + step) % arms.Count + arms.Count) % arms.Count;
-            _ctx.Selecting = false;
-            var program = arms[_ctx.Row].program;
-            _ctx.Col = program.Count() == 0 ? 0 : Math.Min(EditorContext.MaxColumn, program.LastInstructionIndex() + 1);
-            EditorContext.Say(ProgramSection.CellText(_ctx, withArm: true));
         }
 
         // Left / Right / Home / End: the program cursor on its own arm (the board cursor's position
