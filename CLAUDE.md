@@ -358,7 +358,7 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   reads a tray part's tooltip description; multi-armed assemblies read "(N grippers)".
   Instructions stop (`InstructionTraySection`): the game's tray as five key columns, the bottom row left-aligned
   into the place of the game's Delete tile (left out): Q/A/X, W/S/C, E/D/V, R/F/B, T/G; Right from B goes nowhere (user request 2026-11-14, verified live), each tile "grab, F" (no role word, user rule), "not available"
-  where the puzzle forbids it, "limit reached" for a second period override; Enter places at the program
+  where the puzzle forbids it, "limit reached" for a second period override (the game allows one: every placement path refuses it with those words, `ProgramEdits.LimitReached`, and a paste MOVES the solution's override, the game's Ctrl+drag rule, one undo step; user decision 2026-11-14, verified live; NOT verified: an override on a fixed arm, which makes the pasted one not fit); Enter places at the program
   cursor ("4, grab"), S the game's description (the tape has no details key: S types retract there; `/` dropped 2026-11-07, user request).
   Undo / redo (Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z): the game's buffer stepped directly (an injected chord
   cannot give the game Ctrl), the change spoken (new states, three at most, else a count).

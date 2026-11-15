@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using MagnumOpus.Core.Strings;
 using MagnumOpus.Core.UI;
 using MagnumOpus.Module.Game;
@@ -22,6 +23,33 @@ namespace MagnumOpus.Module.Screens.Editor
                 EditorContext.Say(Strings.EditorUnavailable(Instructions.Label(type)));
                 return false;
             }
+            return true;
+        }
+
+        /// <summary>The game allows one period override in a solution: once there is one, its tile
+        /// greys and its key places nothing (SolutionEditorProgramPanel.IsLimitReached).</summary>
+        public static bool LimitReached(Solution solution, InstructionType type) =>
+            type != null && type.isPeriodOverride && solution.parts.Any(p => p.program.HasInstruction(type));
+
+        /// <summary>Remove every period override in the solution as a modification (paste moves the
+        /// override, as the game's Ctrl+drag of one does); false, removing nothing, when one sits on
+        /// a fixed arm (the game cannot pick its instructions up).</summary>
+        public static bool TakeOverride(Solution solution)
+        {
+            var found = new List<KeyValuePair<Part, int>>();
+            foreach (var p in solution.parts)
+            {
+                var program = p.program;
+                if (program.Count() == 0) continue;
+                for (int c = program.FirstInstructionIndex(); c <= program.LastInstructionIndex(); c++)
+                {
+                    var ins = program.GetInstruction(c);
+                    if (!ins.HasValue() || !ins.GetValue().isPeriodOverride) continue;
+                    if (p.GetIsFixed()) return false;
+                    found.Add(new KeyValuePair<Part, int>(p, c));
+                }
+            }
+            foreach (var f in found) f.Key.program.RemoveInstruction(f.Value, asModification: true);
             return true;
         }
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## V0.0.6
+
+- Fixed the jagged instructions alignment in the instructions tray.
+- You can no longer place multiple period overrides per puzzle.
+
 ## V0.0.5
 
 - Added marks: m to place one, shift+m to clear one while standing on its hex, alt+shift+m to clear all of them. Jump to one with ctrl+digits or via the usual categories.

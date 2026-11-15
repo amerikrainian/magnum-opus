@@ -314,6 +314,7 @@ namespace MagnumOpus.Module.Screens.Editor
         {
             var arm = RowArm(ctx);
             if (arm == null || !ProgramEdits.Allowed(ctx.Ed, arm, ctx.Row + 1, type)) return;
+            if (ProgramEdits.LimitReached(ctx.Ed.GetSolution(), type)) { EditorContext.Say(Strings.EditorLimitReached); return; }
             ctx.Selecting = false;
             int col = ctx.Col;
             ProgramEdits.Place(arm, col, type, insert);
@@ -432,6 +433,9 @@ namespace MagnumOpus.Module.Screens.Editor
         }
 
         // Parts copied last have no place on the tape: nothing (silent, user decision 2026-11-07).
+        // A period override moves rather than copies (the game's Ctrl+drag of instructions, which
+        // never makes a second one; user decision 2026-11-14): the solution's override is taken
+        // out first, unless it is on a fixed arm, when the pasted one does not fit.
         internal void Paste()
         {
             if (_ctx.PartsOnClipboard || _ctx.Clipboard.Count == 0 || !_ctx.CanEdit()) return;
@@ -443,6 +447,7 @@ namespace MagnumOpus.Module.Screens.Editor
                 int r = _ctx.Row + clip.Row;
                 if (r >= arms.Count) continue;
                 if (arms[r].GetIsFixed() || !ed.GetSolution().GetPuzzle().HasPermissionForInstr(clip.Type)) continue;
+                if (clip.Type.isPeriodOverride && !ProgramEdits.TakeOverride(ed.GetSolution())) continue;
                 arms[r].program.SetInstruction(_ctx.Col + clip.Col, clip.Type);
                 placed.Add(clip.Type);
             }

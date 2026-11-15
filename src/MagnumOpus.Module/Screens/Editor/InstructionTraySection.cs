@@ -125,20 +125,15 @@ namespace MagnumOpus.Module.Screens.Editor
             var solution = _ctx.Ed?.GetSolution();
             if (solution == null) return null;
             if (!solution.GetPuzzle().HasPermissionForInstr(t)) return Strings.EditorNotAvailable;
-            if (LimitReached(solution, t)) return Strings.EditorLimitReached;
+            if (ProgramEdits.LimitReached(solution, t)) return Strings.EditorLimitReached;
             return null;
         }
-
-        // The game allows one period override in a solution.
-        private static bool LimitReached(Solution solution, InstructionType t) =>
-            t.isPeriodOverride && solution.parts.Any(p => p.program.HasInstruction(t));
 
         private void Place(InstructionType t)
         {
             if (_ctx.FinishDrawing()) return;
             var ed = _ctx.Ed;
             if (ed == null || !_ctx.CanEdit()) return;
-            if (LimitReached(ed.GetSolution(), t)) { EditorContext.Say(Strings.EditorLimitReached); return; }
             ProgramSection.PlaceAtCursor(_ctx, t, insert: false, withPlace: true);
         }
     }
