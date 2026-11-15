@@ -356,8 +356,8 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   game draws the whole molecule on the tile; a repeating product reads its unit and offset, "repeating, 2 Iron; 2 bonds; every 2 east", and its placeholder hex "repeats here": the game stores it laid out six times, the placeholder's name blank, 2026-11-08), W opens `MoleculeViewerScreen` (a child screen: hex keys
   walk the molecule in its own frame, each hex its atom and bond directions; W summary; X neighbours; Shift+A / D turn it round the cursor hex, a turned copy only, gone on closing, user request 2026-11-08; Escape). S
   reads a tray part's tooltip description; multi-armed assemblies read "(N grippers)".
-  Instructions stop (`InstructionTraySection`): the game's tray as five key columns (Q/A, W/S/X, E/D/C,
-  R/F/V, T/G/B; its Delete tile left out), each tile "grab, F" (no role word, user rule), "not available"
+  Instructions stop (`InstructionTraySection`): the game's tray as five key columns, the bottom row left-aligned
+  into the place of the game's Delete tile (left out): Q/A/X, W/S/C, E/D/V, R/F/B, T/G; Right from B goes nowhere (user request 2026-11-14, verified live), each tile "grab, F" (no role word, user rule), "not available"
   where the puzzle forbids it, "limit reached" for a second period override; Enter places at the program
   cursor ("4, grab"), S the game's description (the tape has no details key: S types retract there; `/` dropped 2026-11-07, user request).
   Undo / redo (Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z): the game's buffer stepped directly (an injected chord

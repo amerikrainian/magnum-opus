@@ -11,10 +11,11 @@ using MagnumOpus.Module.UI;
 namespace MagnumOpus.Module.Screens.Editor
 {
     /// <summary>
-    /// The instruction tray (SolutionEditorProgramPanel's grid beside the tape), laid out as the game
-    /// draws it: three rows of five mirroring the keyboard (Q W E R T, A S D F G, Z X C V B), built as
-    /// five columns so Up / Down keep the key column and Left / Right the row; the bottom row's Delete
-    /// button is left out (it is the Delete key). Each tile reads its name and the game's hotkey
+    /// The instruction tray (SolutionEditorProgramPanel's grid beside the tape) as three rows mirroring
+    /// the keyboard (Q W E R T, A S D F G, X C V B), built as five columns so Up / Down keep the column
+    /// and Left / Right the row. The game draws its Delete button under A (it is the Delete key, left
+    /// out here), so the bottom row is shifted left to fill its place: Q A X, W S C, E D V, R F B, T G
+    /// (user request 2026-11-14); Right from the bottom row's last tile goes nowhere. Each tile reads its name and the game's hotkey
     /// letter (which follows its Keyboard Layout option); one the puzzle does not permit reads "not
     /// available" (the game draws a blank slot there), the period override "limit reached" once the
     /// solution has one (the game greys it). Enter puts the instruction at the program cursor and
@@ -39,14 +40,14 @@ namespace MagnumOpus.Module.Screens.Editor
                     if (r < column.Length && !ReferenceEquals(column[r], null)) yield return column[r];
         }
 
-        // Columns left to right, each top to bottom (the game's tile positions).
+        // Columns left to right, each top to bottom; the bottom row left-aligned (see the summary).
         private static InstructionType[][] Columns() => new[]
         {
-            new[] { InstructionTypes.pivotLeft, InstructionTypes.rotateLeft },
-            new[] { InstructionTypes.extend, InstructionTypes.retract, InstructionTypes.periodOverride },
-            new[] { InstructionTypes.pivotRight, InstructionTypes.rotateRight, InstructionTypes.reset },
-            new[] { InstructionTypes.drop, InstructionTypes.grab, InstructionTypes.repeat },
-            new[] { InstructionTypes.moveMinus, InstructionTypes.movePlus, InstructionTypes.halt },
+            new[] { InstructionTypes.pivotLeft, InstructionTypes.rotateLeft, InstructionTypes.periodOverride },
+            new[] { InstructionTypes.extend, InstructionTypes.retract, InstructionTypes.reset },
+            new[] { InstructionTypes.pivotRight, InstructionTypes.rotateRight, InstructionTypes.repeat },
+            new[] { InstructionTypes.drop, InstructionTypes.grab, InstructionTypes.halt },
+            new[] { InstructionTypes.moveMinus, InstructionTypes.movePlus },
         };
 
         private const string IdPrefix = "editor:instr:";
@@ -80,7 +81,21 @@ namespace MagnumOpus.Module.Screens.Editor
                 }
                 b.EndColumn();
             }
+            BlockRaggedRight(b);
             b.PopContext();
+        }
+
+        // Core's columns step Right into a shorter column's last tile (from B up to G here): a
+        // self-edge on every tile with no tile to its right in the same row makes Right go nowhere.
+        private static void BlockRaggedRight(GraphBuilder b)
+        {
+            var columns = Columns().Select(c => c.Where(t => !ReferenceEquals(t, null)).ToArray()).ToArray();
+            for (int c = 0; c + 1 < columns.Length; c++)
+                for (int r = columns[c + 1].Length; r < columns[c].Length; r++)
+                {
+                    var id = ControlId.Structural(IdPrefix + columns[c][r].id);
+                    b.Connect(id, GraphDir.Right, id);
+                }
         }
 
         private bool Focused => Equals(Navigation.FocusedStopKey, Stop);
