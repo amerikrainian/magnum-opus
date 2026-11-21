@@ -15,7 +15,7 @@ namespace MagnumOpus.Module.Screens
     ///  1. the issue (a dropdown of every issue, the game's previous / next arrows, the issue's text),
     ///     then its five puzzles, named as the game prints them with their author; a completed one
     ///     says so; Enter opens it as the game's click does (Sigmar's Garden II says what unlocks it);
-    ///  2. the tabs and Close (the game's Escape). The pictures of the products are not described.
+    ///  2. the tabs and Close (<see cref="JournalTabs"/>). The pictures of the products are not described.
     /// </summary>
     public sealed class JournalGameScreen : GameScreen<JournalScreen>
     {
@@ -64,15 +64,7 @@ namespace MagnumOpus.Module.Screens
             }
 
             b.BeginStop("tabs");
-            b.AddItem(ControlId.Structural("journal:tab:journal"), new NodeVtable
-            {
-                ControlType = ControlTypes.Button,
-                Announcements = new List<NodeAnnouncement> { Nodes.LabelPart(() => GameText.Translate("The Journal")), Nodes.SelectedPart(() => true) },
-                SearchText = () => GameText.Translate("The Journal"),
-            });
-            b.AddItem(ControlId.Structural("journal:tab:editor"), Nodes.Button(() => GameText.Translate("Puzzle Editor"), () => OpenEditor(PuzzleEditorScreenType.PersonalPuzzles)));
-            b.AddItem(ControlId.Structural("journal:tab:workshop"), Nodes.Button(() => GameText.Translate("Steam Workshop"), () => OpenEditor(PuzzleEditorScreenType.WorkshopPuzzles)));
-            b.AddItem(ControlId.Structural("journal:close"), Nodes.Button(() => Strings.ModClose, () => GameKeys.Forced = GameKeys.Escape));
+            JournalTabs.Build(b, 0);
         }
 
         private static bool IsSolitaire(Puzzle puzzle) => puzzle.puzzleId == Puzzles.sigmarsGardenII.puzzleId;
@@ -116,13 +108,41 @@ namespace MagnumOpus.Module.Screens
             Assets.sounds.click_button.PlaySound(1f);
             Speech.Say(GameText.Of(Volume.issueName));
         }
+    }
 
-        // MenuButtons' click, except that the game also makes this tab the one its Journal button
-        // opens from then on: the puzzle editor is not operable yet, so that button stays the Journal.
-        private static void OpenEditor(PuzzleEditorScreenType type)
+    /// <summary>The journal's three tabs (JournalScreen.MenuButtons, drawn on the journal and on both
+    /// puzzle editor screens) and Close (the game's Escape). The current tab reads selected; another
+    /// runs the game's click, which also makes it the tab the Journal button opens from then on.</summary>
+    internal static class JournalTabs
+    {
+        private static readonly string[] Names = { "The Journal", "Puzzle Editor", "Steam Workshop" };
+
+        public static void Build(GraphBuilder b, int current)
+        {
+            for (int i = 0; i < Names.Length; i++)
+            {
+                int tab = i;
+                string english = Names[i];
+                if (tab == current)
+                    b.AddItem(ControlId.Structural("journal:tab:" + tab), new NodeVtable
+                    {
+                        ControlType = ControlTypes.Button,
+                        Announcements = new List<NodeAnnouncement> { Nodes.LabelPart(() => GameText.Translate(english)), Nodes.SelectedPart(() => true) },
+                        SearchText = () => GameText.Translate(english),
+                    });
+                else
+                    b.AddItem(ControlId.Structural("journal:tab:" + tab), Nodes.Button(() => GameText.Translate(english), () => Open(tab)));
+            }
+            b.AddItem(ControlId.Structural("journal:close"), Nodes.Button(() => Strings.ModClose, () => GameKeys.Forced = GameKeys.Escape));
+        }
+
+        // MenuButtons' click.
+        private static void Open(int tab)
         {
             GameLogic.instance.PopScreen();
-            GameLogic.instance.PushScreen(new PuzzleEditorScreen(type));
+            if (tab == 0) GameLogic.instance.PushScreen(new JournalScreen(false));
+            else GameLogic.instance.PushScreen(new PuzzleEditorScreen(tab == 1 ? PuzzleEditorScreenType.PersonalPuzzles : PuzzleEditorScreenType.WorkshopPuzzles));
+            GameLogic.instance.field_2466 = tab;
             Assets.sounds.click_button.PlaySound(1f);
         }
     }

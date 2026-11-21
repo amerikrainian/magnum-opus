@@ -35,6 +35,10 @@ namespace MagnumOpus.Module.Input
         public const string PartPrev = "ed.part.prev", PartNext = "ed.part.next";
         public const string Undo = "ed.undo", Redo = "ed.redo";
         public const string TutorialRepeat = "ed.tutorial";
+        // The puzzle editor's molecule editor.
+        public const string BondNW = "mol.bond.nw", BondNE = "mol.bond.ne", BondW = "mol.bond.w", BondE = "mol.bond.e", BondSW = "mol.bond.sw", BondSE = "mol.bond.se";
+        public const string AtomPrev = "mol.atom.prev", AtomNext = "mol.atom.next", BondTypePrev = "mol.bondtype.prev", BondTypeNext = "mol.bondtype.next";
+        public const string MoleculeSave = "mol.save";
     }
 
     /// <summary>Where the editor's keys work, for a rebind's conflicts (<see cref="InputAction.Scopes"/>):
@@ -42,12 +46,15 @@ namespace MagnumOpus.Module.Input
     internal static class KeyScopes
     {
         public const string Board = "board", Tape = "tape", Tray = "tray", Solitaire = "solitaire", Molecule = "molecule", Cinematic = "cinematic";
+        // The puzzle editor's molecule editor, and the puzzle editor's product and reagent tiles.
+        public const string MoleculeEditor = "molecule_editor", PuzzleEditor = "puzzle_editor";
     }
 
     /// <summary>The key list's groups.</summary>
     internal static class KeyGroups
     {
         public const string Navigation = "navigation", Board = "board", Program = "program", Instructions = "instructions", Editor = "editor", Global = "global";
+        public const string MoleculeEditor = "molecule_editor";
     }
 
     /// <summary>
@@ -77,11 +84,12 @@ namespace MagnumOpus.Module.Input
         private static readonly string[] BoardOrTape = { KeyScopes.Board, KeyScopes.Tape };
         private static readonly string[] Editor = { KeyScopes.Board, KeyScopes.Tape, KeyScopes.Tray };
         private static readonly string[] Playing = { KeyScopes.Board, KeyScopes.Tape, KeyScopes.Tray, KeyScopes.Cinematic };
-        private static readonly string[] Cursors = { KeyScopes.Board, KeyScopes.Solitaire };
+        private static readonly string[] Cursors = { KeyScopes.Board, KeyScopes.Solitaire, KeyScopes.MoleculeEditor };
+        private static readonly string[] MoleculeEditor = { KeyScopes.MoleculeEditor };
 
         public static void Register()
         {
-            var cursorMoves = new[] { KeyScopes.Board, KeyScopes.Solitaire, KeyScopes.Molecule };
+            var cursorMoves = new[] { KeyScopes.Board, KeyScopes.Solitaire, KeyScopes.Molecule, KeyScopes.MoleculeEditor };
             var turning = new[] { KeyScopes.Board, KeyScopes.Molecule };
             Hex(EditorActions.HexNW, "Cursor northwest", cursorMoves, Scancode.Q, Scancode.Kp7);
             Hex(EditorActions.HexNE, "Cursor northeast", cursorMoves, Scancode.E, Scancode.Kp9);
@@ -110,7 +118,7 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.HexMarkClear, "Clear the mark here", KeyGroups.Board, Board, new KeyboardBinding(Scancode.M, shift: true));
             Key(EditorActions.HexMarkClearAll, "Clear all marks", KeyGroups.Board, Board, new KeyboardBinding(Scancode.M, alt: true, shift: true));
             Key(EditorActions.Details, "Details", KeyGroups.Board, new[] { KeyScopes.Board, KeyScopes.Tray }, new KeyboardBinding(Scancode.S));
-            Key(EditorActions.Molecule, "Molecule", KeyGroups.Board, new[] { KeyScopes.Board, KeyScopes.Tray, KeyScopes.Molecule }, new KeyboardBinding(Scancode.W));
+            Key(EditorActions.Molecule, "Molecule", KeyGroups.Board, new[] { KeyScopes.Board, KeyScopes.Tray, KeyScopes.Molecule, KeyScopes.MoleculeEditor, KeyScopes.PuzzleEditor }, new KeyboardBinding(Scancode.W));
             Key(EditorActions.Neighbours, "Neighbours", KeyGroups.Board, cursorMoves, new KeyboardBinding(Scancode.X));
             Key(EditorActions.Clone, "Pick up a copy", KeyGroups.Board, Board, new KeyboardBinding(Scancode.Return, ctrl: true));
             Key(EditorActions.DrawTrack, "Extend track", KeyGroups.Board, Board, new KeyboardBinding(Scancode.Return, shift: true));
@@ -152,7 +160,7 @@ namespace MagnumOpus.Module.Input
             Key(EditorActions.Tips, "Tutorial tips", KeyGroups.Editor, Editor, new KeyboardBinding(Scancode.T, ctrl: true, shift: true));
             Key(EditorActions.Diagram, "Show diagram", KeyGroups.Editor, Editor, new KeyboardBinding(Scancode.D, ctrl: true, shift: true));
             Key(EditorActions.Products, "Products", KeyGroups.Editor, Editor, new KeyboardBinding(Scancode.P, alt: true));
-            Key(EditorActions.Delete, "Delete", KeyGroups.Editor, BoardOrTape, new KeyboardBinding(Scancode.Delete));
+            Key(EditorActions.Delete, "Delete", KeyGroups.Editor, new[] { KeyScopes.Board, KeyScopes.Tape, KeyScopes.MoleculeEditor, KeyScopes.PuzzleEditor }, new KeyboardBinding(Scancode.Delete));
             Key(EditorActions.Copy, "Copy", KeyGroups.Editor, BoardOrTape, new KeyboardBinding(Scancode.C, ctrl: true));
             Key(EditorActions.Cut, "Cut", KeyGroups.Editor, BoardOrTape, new KeyboardBinding(Scancode.X, ctrl: true));
             Key(EditorActions.Paste, "Paste", KeyGroups.Editor, BoardOrTape, new KeyboardBinding(Scancode.V, ctrl: true));
@@ -163,6 +171,20 @@ namespace MagnumOpus.Module.Input
                 .AddBinding(new KeyboardBinding(Scancode.T, ctrl: true));
             Key(EditorActions.Undo, "Undo", KeyGroups.Editor, Editor, new KeyboardBinding(Scancode.Z, ctrl: true));
             Key(EditorActions.Redo, "Redo", KeyGroups.Editor, Editor, new KeyboardBinding(Scancode.Y, ctrl: true)).AddBinding(new KeyboardBinding(Scancode.Z, ctrl: true, shift: true));
+
+            // The molecule editor (a custom puzzle's product or reagent): Shift with a hex key bonds
+            // toward that neighbour (Shift+numpad turns into the navigation keys, so letters only).
+            Key(EditorActions.BondNW, "Bond northwest", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.Q, shift: true));
+            Key(EditorActions.BondNE, "Bond northeast", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.E, shift: true));
+            Key(EditorActions.BondW, "Bond west", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.A, shift: true));
+            Key(EditorActions.BondE, "Bond east", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.D, shift: true));
+            Key(EditorActions.BondSW, "Bond southwest", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.Z, shift: true));
+            Key(EditorActions.BondSE, "Bond southeast", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.C, shift: true));
+            Key(EditorActions.AtomPrev, "Previous atom", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.LeftBracket));
+            Key(EditorActions.AtomNext, "Next atom", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.RightBracket));
+            Key(EditorActions.BondTypePrev, "Previous bond type", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.LeftBracket, shift: true));
+            Key(EditorActions.BondTypeNext, "Next bond type", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.RightBracket, shift: true));
+            Key(EditorActions.MoleculeSave, "Save the molecule", KeyGroups.MoleculeEditor, MoleculeEditor, new KeyboardBinding(Scancode.S, ctrl: true));
         }
 
         private static InputAction Key(string key, string label, string group, string[] scopes, KeyboardBinding binding) =>

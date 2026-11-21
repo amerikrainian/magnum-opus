@@ -1,5 +1,9 @@
 # Changelog
 
+## V0.0.7
+
+- Adds initial pass at puzzle editor.
+
 ## V0.0.6
 
 - Fixed the jagged instructions alignment in the instructions tray.

@@ -143,6 +143,7 @@ namespace MagnumOpus.Core.Strings
             D("mod.category.program", "Program"),
             D("mod.category.instructions", "Instruction"),
             D("mod.category.editor", "Editor"),
+            D("mod.category.molecule_editor", "Molecule editor"),
             // The mod's key rebinding (the mod menu's All keys). {0} = the action.
             D("rebind.prompt", "Press a key for {0}, Escape cancels"),
             // {0} = the key, {1} = another action that has it elsewhere.
@@ -721,6 +722,29 @@ namespace MagnumOpus.Core.Strings
             D("bind.ed.paste", "Paste"),
             D("bind.ed.undo", "Undo"),
             D("bind.ed.redo", "Redo"),
+            D("bind.mol.bond.nw", "Bond <dir:2>"),
+            D("bind.mol.bond.ne", "Bond <dir:1>"),
+            D("bind.mol.bond.w", "Bond <dir:3>"),
+            D("bind.mol.bond.e", "Bond <dir:0>"),
+            D("bind.mol.bond.sw", "Bond <dir:4>"),
+            D("bind.mol.bond.se", "Bond <dir:5>"),
+            D("bind.mol.atom.prev", "Previous atom"),
+            D("bind.mol.atom.next", "Next atom"),
+            D("bind.mol.bondtype.prev", "Previous bond type"),
+            D("bind.mol.bondtype.next", "Next bond type"),
+            D("bind.mol.save", "Save"),
+            D("bind.pe.remove", "Remove"),
+
+            // The molecule editor (a custom puzzle's product or reagent). The two bond tools the
+            // game draws as pictures, and its repetition placeholder (the game's own word for it,
+            // from its error messages).
+            D("mol.bond.standard", "bond"),
+            D("mol.bond.triplex", "triplex bond"),
+            D("mol.repeat", "repetition placeholder"),
+            // A hex the game fills faintly with a copy of the repeating pattern; {0} = the atom.
+            D("mol.repeated", "{0}, repeated"),
+            // Spoken when an edit fixes the last error the game was showing.
+            D("mol.no_errors", "no errors"),
         };
 
         private static readonly Dictionary<string, string> _defaults = BuildDefaults();
@@ -971,6 +995,11 @@ namespace MagnumOpus.Core.Strings
         public static string SelectCompleted(string what) => F("select.completed", what);
         public static string SelectChapterUnlocked(string what) => F("select.chapter_unlocked", what);
         public static string InfoSolutions => Get("info.solutions");
+        public static string MolBondStandard => Get("mol.bond.standard");
+        public static string MolBondTriplex => Get("mol.bond.triplex");
+        public static string MolRepeat => Get("mol.repeat");
+        public static string MolRepeated(string atom) => F("mol.repeated", atom);
+        public static string MolNoErrors => Get("mol.no_errors");
 
         // ---- the solution editor ----
         public static string HexCoords(string x, string y) => F("hex.coords", x, y);
