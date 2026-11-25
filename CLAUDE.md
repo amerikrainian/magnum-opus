@@ -155,7 +155,7 @@ real-exe tests skip without the workspace). `MAGNUMOPUS_WRITE_LANG_TEMPLATE=1` r
 ## 7. Releases (the Non-Visual Calculus / Harkest Dungeon / Echopunks tooling, MIT attribution kept)
 Bump `Version` in `Directory.Build.props`, add a `## Vx.y.z` section to `CHANGELOG.md`, commit, tag, then:
 - `build_release.ps1` -> `releases\MagnumOpus-vX.Y.Z.zip`, root = game folder: the host files above minus
-  Mono.CSharp, `MagnumOpus\` (Core, Module, lang, mappings named + current obf + fingerprint). Refuses a build with dev tooling.
+  Mono.CSharp, `MagnumOpus\` (Core, Module, lang, mappings named + current obf + fingerprint), `MagnumOpusDocs` (the manual). Refuses a build with dev tooling.
 - `build-installer.ps1` -> `releases\MagnumOpusInstaller.exe` (Rust + wxWidgets, `installer\`: game
   detection, the GitHub releases of `amerikrainian/magnum-opus`, sha256 check, install manifest
   `MagnumOpus\install.json`, backups, repair, uninstall, the branch warning). `test-installer.ps1` = cargo
@@ -166,7 +166,8 @@ Bump `Version` in `Directory.Build.props`, add a `## Vx.y.z` section to `CHANGEL
 - Player docs (2026-11-25, SpeechChem's layout): an mdbook in `docs_src` (`mdbook build docs_src`, mdbook 0.5.2;
   `book/` gitignored): Introduction, Quick Start, Key Reference, Change Log (includes `CHANGELOG.md` from its
   line 2). `.github/workflows/build-docs.yml` publishes it to GitHub Pages on a push to main touching
-  `docs_src` or `CHANGELOG.md`. Not yet in the release zip (SpeechChem ships it as its `Docs` folder).
+  `docs_src` or `CHANGELOG.md` (Pages on since 2026-11-25, source GitHub Actions, served at
+  https://amerikrainian.com/magnum-opus/). `build_release.ps1` builds it and ships it as `MagnumOpusDocs`.
 Every game update with a new community mapping deserves a release (it bundles the new obf map and a new
 fingerprint), though the mod survives without one (section 4).
 

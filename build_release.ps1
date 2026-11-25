@@ -6,6 +6,7 @@
 #   MagnumOpus\MagnumOpus.Core.dll, MagnumOpus\MagnumOpus.Module.dll, MagnumOpus\lang\*.txt
 #   MagnumOpus\mappings\named\** (intermediary -> human names), mappings\obf\<mvid>.tsv (the
 #     current build), mappings\fingerprint.tsv (the matcher's reference for newer builds)
+#   MagnumOpusDocs\** (the rendered mdbook manual from docs_src; open index.html)
 # A Release build carries no dev tooling (no dev server, no Mono.CSharp): refused if it leaks.
 #
 # Adapted from the Non-Visual Calculus installer by Rashad Naqeeb (MIT),
@@ -26,6 +27,7 @@ $hostOut = Join-Path $root "src\MagnumOpus\bin\Release"
 $moduleOut = Join-Path $root "src\MagnumOpus.Module\bin\Release"
 $fingerprint = Join-Path $root "game\fingerprint.tsv"
 $zipPath = Join-Path $releaseDir "MagnumOpus-v$version.zip"
+$docsDir = Join-Path $root "docs_src"
 
 foreach ($dir in @($hostOut, $moduleOut)) { if (Test-Path $dir) { Remove-Item -LiteralPath $dir -Recurse -Force } }
 
@@ -33,6 +35,13 @@ Push-Location $root
 try {
     dotnet build MagnumOpus.slnx -c Release -v:minimal
     if ($LASTEXITCODE -ne 0) { throw "Release build failed with exit code $LASTEXITCODE (the module needs the game installed: see CLAUDE.md)" }
+
+    # mdbook logs INFO lines to stderr; under "Stop", Windows PowerShell turns those into a
+    # terminating error whenever the script's output is redirected. The exit code decides.
+    $ErrorActionPreference = "Continue"
+    mdbook build $docsDir 2>&1 | ForEach-Object { "$_" }
+    $ErrorActionPreference = "Stop"
+    if ($LASTEXITCODE -ne 0) { throw "Docs build failed with exit code $LASTEXITCODE (needs mdbook 0.5.2: cargo install mdbook --version 0.5.2 --locked)" }
 
     $rootFiles = @(
         (Join-Path $root "deploy\Lightning.exe.config"),
@@ -60,6 +69,7 @@ try {
     Copy-Item -Path (Join-Path $root "mappings\named") -Destination (Join-Path $modDir "mappings\named") -Recurse
     Copy-Item -Path (Join-Path $root "mappings\obf\*.tsv") -Destination (Join-Path $modDir "mappings\obf")
     Copy-Item -LiteralPath $fingerprint -Destination (Join-Path $modDir "mappings")
+    Copy-Item -Path (Join-Path $docsDir "book") -Destination (Join-Path $stageDir "MagnumOpusDocs") -Recurse
 
     if (Test-Path $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
     Compress-Archive -Path (Join-Path $stageDir "*") -DestinationPath $zipPath -Force
