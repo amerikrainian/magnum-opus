@@ -163,6 +163,10 @@ Bump `Version` in `Directory.Build.props`, add a `## Vx.y.z` section to `CHANGEL
   the CLI first: `cargo build --release --example cli` in `installer\`). The first e2e run of a session
   can fail while the local feed starts; rerun.
 - `create-release.ps1 vX.Y.Z` = the gh release with the zip, the installer and the CHANGELOG section.
+- Player docs (2026-11-25, SpeechChem's layout): an mdbook in `docs_src` (`mdbook build docs_src`, mdbook 0.5.2;
+  `book/` gitignored): Introduction, Quick Start, Key Reference, Change Log (includes `CHANGELOG.md` from its
+  line 2). `.github/workflows/build-docs.yml` publishes it to GitHub Pages on a push to main touching
+  `docs_src` or `CHANGELOG.md`. Not yet in the release zip (SpeechChem ships it as its `Docs` folder).
 Every game update with a new community mapping deserves a release (it bundles the new obf map and a new
 fingerprint), though the mod survives without one (section 4).
 
