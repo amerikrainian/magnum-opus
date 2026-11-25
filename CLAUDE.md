@@ -368,8 +368,8 @@ registers T, and `FallbackScreen` (layer -10) covers every other game screen.
   2026-11-04, SpeechChem's way): a step says "cycle N" then each actor's sentence queued; at play
   every message queues, nothing interrupts (user rule 2026-11-08; the mod menu's Interrupt speech while playing, off by default, has each cycle's first message cut off the last cycle's); fast forward says nothing, nor does the endless run Continue Editing starts after a win (steps still speak; 2026-11-08) (user rule 2026-11-04;
   a product is announced only up to its required count: the game keeps counting past it); errors when the
-  game shows them (message + hexes, the board cursor moved there).
-  Error panel (`ErrorSection`, a stop after Board while the game shows it): "Error, <message> at
+  game shows them (the arms involved first, then message + hexes, the board cursor moved there: "arm 1, arm 2, Atoms and arm bases may not collide. at -1.5, -1"; `Game/ErrorArms` matches the error's places to the arm bases, grippers and gripped atoms at the error's moment, the message telling base errors from gripper ones at time 0; user request 2026-11-25, verified live on a pull in two directions, an atom into an arm base, and a move without a track).
+  Error panel (`ErrorSection`, a stop after Board while the game shows it): "Error, arm 1, arm 2, <message> at
   <hexes>", Replay (replays the failing cycle up to the error; disabled when it is at the cycle's
   start) and Okay (stops the engine), the game's click code run directly (its private button
   builder escapes ButtonPress). Verified live 2026-11-04.

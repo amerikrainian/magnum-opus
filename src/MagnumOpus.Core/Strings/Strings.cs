@@ -448,6 +448,7 @@ namespace MagnumOpus.Core.Strings
             // An error the game shows: {0} = its message, {1} = where.
             D("run.error", "{0} at {1}"),
             D("run.error_places", "{0} and {1}"),
+            D("run.error_arms", "{0}, {1}"),
             // Instruction names (the game names both directions of a pair alike).
             D("instr.grab", "grab"),
             D("instr.drop", "drop"),
@@ -1156,6 +1157,7 @@ namespace MagnumOpus.Core.Strings
         public static string RunStopped => Get("run.stopped");
         public static string RunError(string message, string where) => F("run.error", message, where);
         public static string RunErrorPlaces(string a, string b) => F("run.error_places", a, b);
+        public static string RunErrorArms(string arms, string error) => F("run.error_arms", arms, error);
         public static string Instruction(string key) => Get("instr." + key);
         public static string EventArm(int n, string what) => F("event.arm", n, what);
         public static string EventActor(string who, string what) => F("event.actor", who, what);

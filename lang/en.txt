@@ -281,6 +281,7 @@ run.paused=paused
 run.stopped=stopped
 run.error={0} at {1}
 run.error_places={0} and {1}
+run.error_arms={0}, {1}
 instr.grab=grab
 instr.drop=drop
 instr.rotate_cw=clockwise

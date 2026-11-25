@@ -81,7 +81,7 @@ namespace MagnumOpus.Module.Screens.Editor
             }
             if (ed.GetSimulationError().HasValue() && ed.GetCycleTime() >= ed.GetSimulationError().GetValue().errorTime)
             {
-                EditorContext.Say(ErrorText(ed.GetSimulationError().GetValue()));
+                EditorContext.Say(ErrorText(ed, ed.GetSimulationError().GetValue()));
                 return;
             }
             var grid = CompiledProgramGrid.FromSolution(solution);
@@ -161,7 +161,7 @@ namespace MagnumOpus.Module.Screens.Editor
             }
             else if (ed.GetSimulationError().HasValue() && ed.GetCycleTime() >= ed.GetSimulationError().GetValue().errorTime)
             {
-                EditorContext.Say(ErrorText(ed.GetSimulationError().GetValue()));
+                EditorContext.Say(ErrorText(ed, ed.GetSimulationError().GetValue()));
                 return;
             }
             GameKeys.Forced = gameKey;
@@ -244,7 +244,7 @@ namespace MagnumOpus.Module.Screens.Editor
             var e = error.GetValue();
             if (ReferenceEquals(e, _spokenError) || ed.GetCycleTime() < e.errorTime) return;
             _spokenError = e;
-            string text = ErrorText(e);
+            string text = ErrorText(ed, e);
             Speech.Say(text, interrupt: true);
             RunLog.Add(ed.GetCycle() + 1, text);
             var hexes = ErrorHexes(e);
@@ -272,14 +272,20 @@ namespace MagnumOpus.Module.Screens.Editor
             return hexes;
         }
 
-        internal static string ErrorText(SimError e)
+        // The arms it involves first ("arm 1, arm 2, Atoms may not collide. at 1, 0 and 2, 0"),
+        // matched from the error's places (ErrorArms); then the game's message and the places.
+        internal static string ErrorText(SolutionEditorScreen ed, SimError e)
         {
             string message = GameText.Clean(e.errorMessage);
             var hexes = ErrorHexes(e);
-            if (hexes.Count == 0) return message;
-            string where = Hex.Coords(hexes[0]);
-            for (int i = 1; i < hexes.Count; i++) where = Strings.RunErrorPlaces(where, Hex.Coords(hexes[i]));
-            return Strings.RunError(message, where);
+            if (hexes.Count > 0)
+            {
+                string where = Hex.Coords(hexes[0]);
+                for (int i = 1; i < hexes.Count; i++) where = Strings.RunErrorPlaces(where, Hex.Coords(hexes[i]));
+                message = Strings.RunError(message, where);
+            }
+            var arms = ErrorArms.Of(ed, e);
+            return arms.Count == 0 ? message : Strings.RunErrorArms(string.Join(", ", arms.Select(Strings.EditorArm)), message);
         }
 
         // Each product with where it is (two can share a name) and how many of the puzzle's count
@@ -390,7 +396,7 @@ namespace MagnumOpus.Module.Screens.Editor
             if (Shown() == null) return;
             b.BeginStop(Stop);
             b.PushContext(GameText.Translate("Error"), null, positions: false);
-            b.AddItem(ControlId.Structural("editor:error:text"), Nodes.Text(() => { var e = Shown(); return e == null ? "" : RunSection.ErrorText(e); }));
+            b.AddItem(ControlId.Structural("editor:error:text"), Nodes.Text(() => { var e = Shown(); return e == null ? "" : RunSection.ErrorText(_ctx.Ed, e); }));
             b.AddItem(ControlId.Structural("editor:error:replay"), Nodes.Button(() => GameText.Translate("Replay"), Replay,
                 enabled: () => { var e = Shown(); return e != null && e.errorTime > 0f; }));
             b.AddItem(ControlId.Structural("editor:error:okay"), Nodes.Button(() => GameText.Translate("Okay"), Okay));
