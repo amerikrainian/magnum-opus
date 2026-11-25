@@ -1,5 +1,9 @@
 # Changelog
 
+## V0.0.8
+
+- During the simulation, if you receive an error, tries to clarify which arms caused it.
+
 ## V0.0.7
 
 - Adds initial pass at puzzle editor.
